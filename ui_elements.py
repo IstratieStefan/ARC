@@ -1,6 +1,8 @@
 import pygame
 import config
 import time
+import os
+import glob
 
 class Button:
     def __init__(self, text, rect, callback):
@@ -240,14 +242,53 @@ class SearchBox:
             pygame.draw.line(surface, config.COLORS['input_text'], (cx, cy_top), (cx, cy_bot), 2)
 
 class AppIcon(Button):
-    def __init__(self, name, icon_path, rect, cb):
-        super().__init__(name, rect, cb)
-        try: img=pygame.image.load(icon_path).convert_alpha()
-        except: img=pygame.Surface((rect[2]-10,rect[3]-30),pygame.SRCALPHA)
-        self.icon = pygame.transform.smoothscale(img,(rect[2]-10,rect[3]-30))
-    def draw(self, surf):
-        bg = config.COLORS['cell_active'] if self.hovered else config.COLORS['cell_bg']
-        pygame.draw.rect(surf, bg, self.rect, border_radius=config.RADIUS['button'])
-        ir = self.icon.get_rect(); ir.centerx=self.rect.centerx; ir.y=self.rect.y+5; surf.blit(self.icon,ir)
-        txt = self.font.render(self.text, True, config.COLORS['text'])
-        #surf.blit(txt, txt.get_rect(center=(self.rect.centerx,self.rect.bottom-12)))
+    @staticmethod
+    def get_shell_commands(icon_fallback):
+        seen = set()
+        apps = []
+        for d in os.environ.get('PATH', '').split(':'):
+            for path in glob.glob(os.path.join(d, '*')):
+                if os.access(path, os.X_OK) and not os.path.isdir(path):
+                    name = os.path.basename(path)
+                    if name in seen:
+                        continue
+                    seen.add(name)
+                    # use the command name as exec, fallback icon
+                    apps.append((name, name, icon_fallback))
+        return sorted(apps, key=lambda x: x[0].lower())
+
+    def __init__(self, name, icon_path, rect, callback):
+        super().__init__(name, rect, callback)
+        # load & scale the icon, or fallback to empty surface
+        try:
+            img = pygame.image.load(icon_path).convert_alpha()
+        except Exception:
+            img = pygame.Surface((self.rect.width - 10, self.rect.height - 30),
+                                 pygame.SRCALPHA)
+        self.icon = pygame.transform.smoothscale(
+            img,
+            (self.rect.width - 10, self.rect.height - 30)
+        )
+
+    def draw(self, surface):
+        # draw background cell
+        bg_color = (config.COLORS['cell_active']
+                    if self.hovered else config.COLORS['cell_bg'])
+        pygame.draw.rect(surface, bg_color, self.rect,
+                         border_radius=config.RADIUS['button'])
+
+        # blit icon
+        ir = self.icon.get_rect()
+        ir.centerx = self.rect.centerx
+        ir.y = self.rect.y + 5
+        surface.blit(self.icon, ir)
+
+        # draw label centered beneath icon
+        txt_surf = self.font.render(self.text, True, config.COLORS['text'])
+        txt_rect = txt_surf.get_rect(
+            center=(
+                self.rect.centerx,
+                self.rect.bottom - txt_surf.get_height() // 2 - 5
+            )
+        )
+        surface.blit(txt_surf, txt_rect)

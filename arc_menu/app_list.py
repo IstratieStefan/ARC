@@ -6,7 +6,7 @@ def load_icon(path):
 apps = [
     {
         "label": "Terminal",
-        "icon": load_icon("assets/app_icons/terminal.png"),
+        "icon": load_icon("../ARC_DE/icons/terminal.png"),
         "command": "alacritty"
     },
     {

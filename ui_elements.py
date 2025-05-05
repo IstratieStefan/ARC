@@ -253,21 +253,20 @@ class AppIcon(Button):
                     if name in seen:
                         continue
                     seen.add(name)
-                    # use the command name as exec, fallback icon
                     apps.append((name, name, icon_fallback))
         return sorted(apps, key=lambda x: x[0].lower())
 
     def __init__(self, name, icon_path, rect, callback):
         super().__init__(name, rect, callback)
-        # load & scale the icon, or fallback to empty surface
         try:
             img = pygame.image.load(icon_path).convert_alpha()
         except Exception:
-            img = pygame.Surface((self.rect.width - 10, self.rect.height - 30),
-                                 pygame.SRCALPHA)
+            img = pygame.Surface((self.rect.width - 15,
+                                  self.rect.height - 15),
+                                  pygame.SRCALPHA)
         self.icon = pygame.transform.smoothscale(
             img,
-            (self.rect.width - 10, self.rect.height - 30)
+            (self.rect.width - 15, self.rect.height - 15)
         )
 
     def draw(self, surface):
@@ -275,20 +274,27 @@ class AppIcon(Button):
         bg_color = (config.COLORS['cell_active']
                     if self.hovered else config.COLORS['cell_bg'])
         pygame.draw.rect(surface, bg_color, self.rect,
-                         border_radius=config.RADIUS['button'])
+                         border_radius=config.RADIUS['app_icon'])
+        border_color = config.COLORS['accent']
 
-        # blit icon
+        # if hovered, draw a cycling-rainbow border
+        if self.hovered:
+            border_color = getattr(config, "ACCENT_COLOR",
+                                   config.COLORS.get("accent", (255, 255, 255)))
+            pygame.draw.rect(surface, border_color, self.rect,
+                             width=5, border_radius=config.RADIUS['app_icon'])
+
+        # blit icon (centered)
         ir = self.icon.get_rect()
         ir.centerx = self.rect.centerx
         ir.y = self.rect.y + 5
         surface.blit(self.icon, ir)
 
-        # draw label centered beneath icon
-        txt_surf = self.font.render(self.text, True, config.COLORS['text'])
-        txt_rect = txt_surf.get_rect(
-            center=(
-                self.rect.centerx,
-                self.rect.bottom - txt_surf.get_height() // 2 - 5
-            )
-        )
-        surface.blit(txt_surf, txt_rect)
+        # draw text only for hovered icon at bottom center of screen
+        if self.hovered:
+            text_surf = self.font.render(self.text, True, config.COLORS['text'])
+            text_rect = text_surf.get_rect()
+            sw, sh = surface.get_size()
+            text_rect.centerx = sw // 2
+            text_rect.centery = sh - (text_surf.get_height() // 2) - 10
+            surface.blit(text_surf, text_rect)

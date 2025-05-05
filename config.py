@@ -12,9 +12,11 @@ TAB_WIDTH = 100
 TAB_HEIGHT = 40
 TAB_MARGIN = 5
 
+ACCENT_COLOR = (38, 114, 255)
+
 # Colors
 COLORS = {
-    'background':      (17, 17, 17),
+    'background':      (20, 20, 20),
     'tab_bg':          (50, 50, 50),
     'tab_active':      (100, 100, 100),
     'button':          (220, 220, 220),
@@ -29,16 +31,16 @@ COLORS = {
     'input_border':    (100, 100, 100),
     'input_text':      (0, 0, 0),
     'input_placeholder': (150, 150, 150),
-    'cell_bg':         (50, 50, 50),
-    'cell_active':     (80, 80, 80),
-    'accent':          ()
+    'cell_bg':         (220, 220, 220),
+    'cell_active':     (200, 200, 200),
+    'accent':          (38, 114, 255),
 }
 
 # Home Launcher
 # Paths
 BASE_DIR     = os.path.dirname(os.path.realpath(__file__))
 BUILTIN_APPS = [
-    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'icons','music.png'),   'exec':'launch_music'   },
+    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','terminal.png'),   'exec':'launch_music'   },
     { 'name':'Music',   'icon':os.path.join(BASE_DIR,'icons','music.png'),   'exec':'launch_music'   },
     { 'name':'Music',   'icon':os.path.join(BASE_DIR,'icons','music.png'),   'exec':'launch_music'   },
     { 'name':'Music',   'icon':os.path.join(BASE_DIR,'icons','music.png'),   'exec':'launch_music'   },
@@ -58,28 +60,53 @@ PACKAGES_DIR = os.path.join(BASE_DIR, 'packages')   # optional installed package
 GRID_COLS       = 4
 GRID_ROWS       = 2
 GRID_MARGIN     = 10
-GRID_OUTER_MARGIN = 20
-CELL_WIDTH      = (SCREEN_WIDTH - GRID_MARGIN*(GRID_COLS+1)) // GRID_COLS
-CELL_HEIGHT     = (SCREEN_WIDTH - GRID_MARGIN*(GRID_COLS+1)) // GRID_COLS
+GRID_PADDING    = 20
+CELL_WIDTH      = (SCREEN_WIDTH - 2 * GRID_PADDING - GRID_MARGIN*(GRID_COLS+1)) // GRID_COLS
+CELL_HEIGHT     = (SCREEN_WIDTH - 2 * GRID_PADDING - GRID_MARGIN*(GRID_COLS+1)) // GRID_COLS
 
 # Top bar
-TOPBAR_HEIGHT   = 30
-TOPBAR_BG       = (20, 20, 20)
-TOPBAR_FG       = (200, 200, 200)
-TOPBAR_ICONS    = [
-    # list of file paths or loaded surfaces for status icons
-    'icons/topbar/apps.png',
-    'icons/topbar/bluetooth.png',
-    'icons/topbar/wifi.png'
+TOPBAR_HEIGHT        = 30
+TOPBAR_BG            = (20, 20, 20)
+TOPBAR_FG            = (200, 200, 200)
+NOTIFICATION_DOT     = (245, 88, 88)
+
+# left-side static icons
+TOPBAR_ICONS         = [
+    'icons/topbar/settings.png',
+    'icons/topbar/search.png',
+    # …add/remove as desired
 ]
 
-# Radii for rounded corners
+# indicator icon paths (must exist)
+TOPBAR_ICON_BATTERY  = 'icons/topbar/apps.png'
+TOPBAR_ICON_WIFI     = 'icons/topbar/wifi.png'
+TOPBAR_ICON_BT       = 'icons/topbar/bluetooth.png'
+TOPBAR_ICON_MOBILE   = 'icons/topbar/cellular.png'
+
+# which elements to show
+TOPBAR_SHOW_CLOCK       = True
+TOPBAR_CLOCK_FORMAT     = "%H:%M" # HH:MM only
+TOPBAR_SHOW_NOTIFICATIONS = True
+
+TOPBAR_SHOW_BATTERY     = True
+TOPBAR_SHOW_WIFI        = True
+TOPBAR_SHOW_BT          = True
+TOPBAR_SHOW_MOBILE      = True
+
+# spacing (pixels)
+TOPBAR_PADDING_LEFT     = 5
+TOPBAR_PADDING_RIGHT    = 5
+TOPBAR_ICON_SPACING     = 5
+TOPBAR_NOTIFICATION_SPACING = 5
+
+# Radius for rounded corners
 RADIUS = {
     'button': 8,
     'tab':    6,
     'warning':6,
     'modal':  6,
     'input':  6,
+    'app_icon': 15,
 }
 
 # Scroll indicator settings

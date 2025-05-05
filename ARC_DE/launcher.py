@@ -43,14 +43,22 @@ def paginate_apps(apps):
 # Build AppIcon objects for a page
 def build_page_icons(app_list):
     icons = []
+    pad = config.GRID_PADDING + 10
     for idx, app in enumerate(app_list):
         row, col = divmod(idx, config.GRID_COLS)
-        x = config.GRID_MARGIN + col * (config.CELL_WIDTH + config.GRID_MARGIN)
-        y = config.TOPBAR_HEIGHT + config.GRID_MARGIN + row * (config.CELL_HEIGHT + config.GRID_MARGIN)
+        x = pad + col * (config.CELL_WIDTH  + config.GRID_MARGIN)
+        y = (config.TOPBAR_HEIGHT +
+             pad +
+             row * (config.CELL_HEIGHT + config.GRID_MARGIN))
         rect = (x, y, config.CELL_WIDTH, config.CELL_HEIGHT)
-        icons.append(AppIcon(app.get('name',''), app.get('icon',''), rect,
-                     lambda c=app.get('exec',''): launch_app(c)))
+        icons.append(AppIcon(
+            app.get('name',''),
+            app.get('icon',''),
+            rect,
+            lambda c=app.get('exec',''): launch_app(c),
+        ))
     return icons
+
 
 # Initialize data
 all_apps = load_apps()

@@ -105,9 +105,9 @@ class TabManager:
         self.update_visible()
         # draw visible tabs
         start_y = config.TAB_MARGIN
-        for tab in self.tabs[self.first_visible:self.first_visible + self.visible_count]:
-            y_offset = start_y + (config.TAB_HEIGHT + config.TAB_MARGIN) * (tab.index - self.first_visible)
-            tab.draw(surface, y_offset, active=(tab.index == self.active))
+        #for tab in self.tabs[self.first_visible:self.first_visible + self.visible_count]:
+         #   y_offset = start_y + (config.TAB_HEIGHT + config.TAB_MARGIN) * (tab.index - self.first_visible)
+          #  tab.draw(surface, y_offset, active=(tab.index == self.active))
 
         n = len(self.tabs)
         r = config.INDICATOR_RADIUS
@@ -238,3 +238,16 @@ class SearchBox:
             cy_top = self.rect.y + (self.rect.height - self.font.get_height())//2
             cy_bot = cy_top + self.font.get_height()
             pygame.draw.line(surface, config.COLORS['input_text'], (cx, cy_top), (cx, cy_bot), 2)
+
+class AppIcon(Button):
+    def __init__(self, name, icon_path, rect, cb):
+        super().__init__(name, rect, cb)
+        try: img=pygame.image.load(icon_path).convert_alpha()
+        except: img=pygame.Surface((rect[2]-10,rect[3]-30),pygame.SRCALPHA)
+        self.icon = pygame.transform.smoothscale(img,(rect[2]-10,rect[3]-30))
+    def draw(self, surf):
+        bg = config.COLORS['cell_active'] if self.hovered else config.COLORS['cell_bg']
+        pygame.draw.rect(surf, bg, self.rect, border_radius=config.RADIUS['button'])
+        ir = self.icon.get_rect(); ir.centerx=self.rect.centerx; ir.y=self.rect.y+5; surf.blit(self.icon,ir)
+        txt = self.font.render(self.text, True, config.COLORS['text'])
+        #surf.blit(txt, txt.get_rect(center=(self.rect.centerx,self.rect.bottom-12)))

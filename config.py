@@ -1,5 +1,7 @@
 # Configuration for UI elements
 
+import os
+
 # Screen settings
 SCREEN_WIDTH = 480
 SCREEN_HEIGHT = 320
@@ -27,8 +29,49 @@ COLORS = {
     'input_border':    (100, 100, 100),
     'input_text':      (0, 0, 0),
     'input_placeholder': (150, 150, 150),
+    'cell_bg':         (50, 50, 50),
+    'cell_active':     (80, 80, 80),
     'accent':          ()
 }
+
+# Home Launcher
+# Paths
+BASE_DIR     = os.path.dirname(os.path.realpath(__file__))
+BUILTIN_APPS = [
+    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'icons','music.png'),   'exec':'launch_music'   },
+    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'icons','music.png'),   'exec':'launch_music'   },
+    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'icons','music.png'),   'exec':'launch_music'   },
+    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'icons','music.png'),   'exec':'launch_music'   },
+    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'icons','music.png'),   'exec':'launch_music'   },
+    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'icons','music.png'),   'exec':'launch_music'   },
+    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'icons','music.png'),   'exec':'launch_music'   },
+    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'icons','music.png'),   'exec':'launch_music'   },
+    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'icons','music.png'),   'exec':'launch_music'   },
+    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'icons','music.png'),   'exec':'launch_music'   },
+    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'icons','music.png'),   'exec':'launch_music'   },
+    { 'name':'Browser', 'icon':os.path.join(BASE_DIR,'icons','music.png'), 'exec':'launch_browser' }
+]
+APPS_DIR     = os.path.join(BASE_DIR, 'apps')       # each subfolder = one app, contains manifest.json + icon.png
+PACKAGES_DIR = os.path.join(BASE_DIR, 'packages')   # optional installed packages
+
+# Grid
+GRID_COLS       = 4
+GRID_ROWS       = 2
+GRID_MARGIN     = 10
+GRID_OUTER_MARGIN = 20
+CELL_WIDTH      = (SCREEN_WIDTH - GRID_MARGIN*(GRID_COLS+1)) // GRID_COLS
+CELL_HEIGHT     = (SCREEN_HEIGHT - GRID_MARGIN*(GRID_ROWS+1) - 30) // GRID_ROWS
+
+# Top bar
+TOPBAR_HEIGHT   = 30
+TOPBAR_BG       = (20, 20, 20)
+TOPBAR_FG       = (200, 200, 200)
+TOPBAR_ICONS    = [
+    # list of file paths or loaded surfaces for status icons
+    'icons/topbar/apps.png',
+    'icons/topbar/bluetooth.png',
+    'icons/topbar/wifi.png'
+]
 
 # Radii for rounded corners
 RADIUS = {

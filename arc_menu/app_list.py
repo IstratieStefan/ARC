@@ -22,22 +22,22 @@ apps = [
     {
         "label": "NFC tools",
         "icon": load_icon("../nfc_tools/nfc.png"),
-        "command": "python3 ../nfc_tools/main.py"
+        "command": "python3 ../nfc_tools/ui_test.py"
     },
     {
         "label": "RF tools",
         "icon": load_icon("../rf_tools/rf.png"),
-        "command": "python3 ../rf_tools/main.py"
+        "command": "python3 ../rf_tools/ui_test.py"
     },
     {
         "label": "IR tools",
         "icon": load_icon("../IR_tools/ir.png"),
-        "command": "python3 ../IR_tools/main.py"
+        "command": "python3 ../IR_tools/ui_test.py"
     },
     {
         "label": "WiFi tools",
         "icon": load_icon("../wifi_tools/wifi.png"),
-        "command": "python3 ../wifi_tools/main.py"
+        "command": "python3 ../wifi_tools/ui_test.py"
     },
     {
         "label": "SMS",
@@ -47,7 +47,7 @@ apps = [
     {
         "label": "Music",
         "icon": load_icon("../music_player/music.png"),
-        "command": "python3 ../music_player/main.py"
+        "command": "python3 ../music_player/ui_test.py"
     },
     {
         "label": "Games",

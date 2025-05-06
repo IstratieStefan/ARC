@@ -44,18 +44,20 @@ COLORS = {
 # Paths
 BASE_DIR     = os.path.dirname(os.path.realpath(__file__))
 BUILTIN_APPS = [
-    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','terminal.png'),   'exec':'launch_music'   },
-    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'icons','music.png'),   'exec':'launch_music'   },
-    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'icons','music.png'),   'exec':'launch_music'   },
-    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'icons','music.png'),   'exec':'launch_music'   },
-    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'icons','music.png'),   'exec':'launch_music'   },
-    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'icons','music.png'),   'exec':'launch_music'   },
-    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'icons','music.png'),   'exec':'launch_music'   },
-    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'icons','music.png'),   'exec':'launch_music'   },
-    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'icons','music.png'),   'exec':'launch_music'   },
-    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'icons','music.png'),   'exec':'launch_music'   },
-    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'icons','music.png'),   'exec':'launch_music'   },
-    { 'name':'Browser', 'icon':os.path.join(BASE_DIR,'icons','music.png'), 'exec':'launch_browser' }
+    { 'name':'Terminal',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','terminal.png'),   'exec':'kitty'   },
+    { 'name':'Phone',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','phone.png'),   'exec':'launch_phone'   },
+    { 'name':'Contacts',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','contacts.png'),   'exec':'launch_contacts'   },
+    { 'name':'Mail',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','mail.png'),   'exec':'launch_mail'   },
+    { 'name':'SMS',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','sms.png'),   'exec':'launch_sms'   },
+    { 'name':'Calendar',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','calendar.png'),   'exec':'launch_calendar'   },
+    { 'name':'RF tools',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','rf.png'),   'exec':'python ../RF_tools/main.py'   },
+    { 'name':'IR tools',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','ir.png'),   'exec':'python ../IR_tools/main.py'   },
+    { 'name':'NFC tools',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','nfc.png'),   'exec':'python ../NFC_tools/main.py'   },
+    { 'name':'Files',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','files.png'),   'exec':'dolphin'   },
+    { 'name':'Text editor',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','editor.png'),   'exec':'vim -r'   },
+    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','music.png'),   'exec':'python ../music_player/main.py'   },
+    { 'name':'Games',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','games.png'),   'exec':'python ../Games/main.py'   },
+    { 'name':'Settings', 'icon':os.path.join(BASE_DIR,'ARC_DE','icons','settings.png'), 'exec':'python ../Settings/main.py' }
 ]
 APPS_DIR     = os.path.join(BASE_DIR, 'apps')       # each subfolder = one app, contains manifest.json + icon.png
 PACKAGES_DIR = os.path.join(BASE_DIR, 'packages')   # optional installed packages
@@ -106,6 +108,7 @@ TOPBAR_NOTIFICATION_SPACING = 5
 # Radius for rounded corners
 RADIUS = {
     'button': 8,
+    'app_button': 20,
     'tab':    6,
     'warning':6,
     'modal':  6,

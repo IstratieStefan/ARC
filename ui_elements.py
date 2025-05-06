@@ -261,12 +261,12 @@ class AppIcon(Button):
         try:
             img = pygame.image.load(icon_path).convert_alpha()
         except Exception:
-            img = pygame.Surface((self.rect.width - 15,
-                                  self.rect.height - 15),
+            img = pygame.Surface((self.rect.width - 25,
+                                  self.rect.height - 25),
                                   pygame.SRCALPHA)
         self.icon = pygame.transform.smoothscale(
             img,
-            (self.rect.width - 15, self.rect.height - 15)
+            (self.rect.width - 25, self.rect.height - 25)
         )
 
     def draw(self, surface):
@@ -297,7 +297,7 @@ class AppIcon(Button):
         # blit icon (centered)
         ir = self.icon.get_rect()
         ir.centerx = self.rect.centerx
-        ir.y = self.rect.y + 5
+        ir.y = self.rect.y + 12
         surface.blit(self.icon, ir)
 
         # draw text only for hovered icon at bottom center of screen

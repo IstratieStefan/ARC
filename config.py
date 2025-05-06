@@ -32,7 +32,7 @@ COLORS = {
     'input_text':      (0, 0, 0),
     'input_placeholder': (150, 150, 150),
     'cell_bg':         (220, 220, 220),
-    'cell_active':     (200, 200, 200),
+    'cell_active':     (240, 240, 240),
     'accent':          (38, 114, 255),
 }
 
@@ -114,7 +114,7 @@ INDICATOR_RADIUS = 4
 INDICATOR_SPACING = 10
 
 # Font settings
-FONT_NAME = 'Arial'
+FONT_NAME = '/assets/fonts/Inter/Inter_18pt-SemiBold.ttf'
 FONT_SIZE = 20
 
 # Warning message duration (milliseconds)

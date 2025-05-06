@@ -8,7 +8,7 @@ class TopBar:
         self.h      = config.TOPBAR_HEIGHT
         self.bg     = config.TOPBAR_BG
         self.fg     = config.TOPBAR_FG
-        self.font   = pygame.font.SysFont('Arial', 16)
+        self.font   = pygame.font.SysFont('Arial', 18)
 
         # load left-side icons
         self.left_icons = []

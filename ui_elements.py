@@ -246,7 +246,7 @@ class AppIcon(Button):
     def get_shell_commands(icon_fallback):
         seen = set()
         apps = []
-        for d in os.environ.get('PATH', '').split(':'):
+        for d in os.environ.get('.PATH', '').split(':'):
             for path in glob.glob(os.path.join(d, '*')):
                 if os.access(path, os.X_OK) and not os.path.isdir(path):
                     name = os.path.basename(path)
@@ -279,10 +279,20 @@ class AppIcon(Button):
 
         # if hovered, draw a cycling-rainbow border
         if self.hovered:
-            border_color = getattr(config, "ACCENT_COLOR",
-                                   config.COLORS.get("accent", (255, 255, 255)))
-            pygame.draw.rect(surface, border_color, self.rect,
-                             width=5, border_radius=config.RADIUS['app_icon'])
+            border_color = getattr(
+                config, "ACCENT_COLOR",
+                config.COLORS.get("accent", (255, 255, 255))
+            )
+            outline_w = 3
+            outer = self.rect.inflate(outline_w * 2, outline_w * 2)
+            outer_radius = config.RADIUS['app_icon'] + outline_w
+            pygame.draw.rect(
+                surface,
+                border_color,
+                outer,
+                width=outline_w,
+                border_radius=outer_radius
+            )
 
         # blit icon (centered)
         ir = self.icon.get_rect()
@@ -292,9 +302,10 @@ class AppIcon(Button):
 
         # draw text only for hovered icon at bottom center of screen
         if self.hovered:
-            text_surf = self.font.render(self.text, True, config.COLORS['text'])
+            hover_font = pygame.font.SysFont('Arial', config.FONT_SIZE + 6)
+            text_surf = hover_font.render(self.text, True, config.COLORS['text'])
             text_rect = text_surf.get_rect()
             sw, sh = surface.get_size()
             text_rect.centerx = sw // 2
-            text_rect.centery = sh - (text_surf.get_height() // 2) - 10
+            text_rect.centery = sh - (text_surf.get_height() // 2) - 15
             surface.blit(text_surf, text_rect)

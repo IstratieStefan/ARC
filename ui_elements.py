@@ -309,3 +309,82 @@ class AppIcon(Button):
             text_rect.centerx = sw // 2
             text_rect.centery = sh - (text_surf.get_height() // 2) - 15
             surface.blit(text_surf, text_rect)
+
+class Slider:
+    def __init__(self, rect, min_val, max_val, init_val, callback=None):
+        """
+        rect      – (x,y,width,height) of the full slider bar
+        min_val   – minimum numeric value
+        max_val   – maximum numeric value
+        init_val  – starting value (will be clamped)
+        callback  – fn(value) called whenever you drag to a new value
+        """
+        self.rect      = pygame.Rect(rect)
+        self.min_val   = min_val
+        self.max_val   = max_val
+        self.callback  = callback
+        # knob parameters
+        self.knob_w    = 12
+        self.knob_h    = self.rect.height + 4
+        # compute initial knob position
+        self.value     = max(min_val, min(max_val, init_val))
+        self._update_knob_x()
+        self.dragging  = False
+
+    def _update_knob_x(self):
+        """Position knob_x center based on current self.value."""
+        pct = (self.value - self.min_val) / (self.max_val - self.min_val)
+        bar_x0 = self.rect.x
+        bar_x1 = self.rect.x + self.rect.width
+        # clamp so knob stays fully in bar
+        self.knob_x = int(bar_x0 + pct * (bar_x1 - bar_x0))
+        self.knob_rect = pygame.Rect(
+            self.knob_x - self.knob_w//2,
+            self.rect.y - (self.knob_h - self.rect.height)//2,
+            self.knob_w,
+            self.knob_h
+        )
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.knob_rect.collidepoint(event.pos):
+                self.dragging = True
+        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            self.dragging = False
+        elif event.type == pygame.MOUSEMOTION and self.dragging:
+            # convert mouse x into value
+            mx = event.pos[0]
+            bar_x0 = self.rect.x
+            bar_x1 = self.rect.x + self.rect.width
+            pct = (mx - bar_x0) / (bar_x1 - bar_x0)
+            pct = max(0.0, min(1.0, pct))
+            new_val = self.min_val + pct * (self.max_val - self.min_val)
+            if new_val != self.value:
+                self.value = new_val
+                self._update_knob_x()
+                if self.callback:
+                    self.callback(self.value)
+
+    def draw(self, surface):
+        # draw bar
+        pygame.draw.rect(surface,
+                         config.COLORS['slider_bg'],
+                         self.rect,
+                         border_radius=config.RADIUS['slider'])
+        # draw fill up to knob
+        filled = pygame.Rect(self.rect.x,
+                             self.rect.y,
+                             self.knob_x - self.rect.x,
+                             self.rect.height)
+        pygame.draw.rect(surface,
+                         config.COLORS['slider_fill'],
+                         filled,
+                         border_radius=config.RADIUS['slider'])
+        # draw knob
+        col = (config.COLORS['slider_active_knob']
+               if self.dragging else
+               config.COLORS['slider_knob'])
+        pygame.draw.rect(surface,
+                         col,
+                         self.knob_rect,
+                         border_radius=config.RADIUS['slider_knob'])

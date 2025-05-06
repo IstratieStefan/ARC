@@ -1,5 +1,6 @@
 import pygame
 import config
+from ui_elements import SearchBox
 from datetime import datetime
 
 

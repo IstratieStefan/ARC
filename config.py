@@ -34,6 +34,10 @@ COLORS = {
     'cell_bg':         (220, 220, 220),
     'cell_active':     (240, 240, 240),
     'accent':          (38, 114, 255),
+    'slider_bg':       ( 50,  50,  50),
+    'slider_fill':     ( 50, 200,  50),
+    'slider_knob':     (200, 200, 200),
+    'slider_active_knob': (255, 255, 255),
 }
 
 # Home Launcher
@@ -78,7 +82,7 @@ TOPBAR_ICONS         = [
 ]
 
 # indicator icon paths (must exist)
-TOPBAR_ICON_BATTERY  = 'icons/topbar/apps.png'
+TOPBAR_ICON_BATTERY  = 'icons/topbar/battery.png'
 TOPBAR_ICON_WIFI     = 'icons/topbar/wifi.png'
 TOPBAR_ICON_BT       = 'icons/topbar/bluetooth.png'
 TOPBAR_ICON_MOBILE   = 'icons/topbar/cellular.png'
@@ -107,7 +111,16 @@ RADIUS = {
     'modal':  6,
     'input':  6,
     'app_icon': 15,
+    'slider': 4,
+    'slider_knob':6,
 }
+
+COLORS['slider_bg']          = (80, 80, 80)
+COLORS['slider_fill']        = (50, 150, 250)
+COLORS['slider_knob']        = (200, 200, 200)
+COLORS['slider_active_knob'] = (255, 255, 255)
+RADIUS['slider']             = 4
+RADIUS['slider_knob']        = 6
 
 # Scroll indicator settings
 INDICATOR_RADIUS = 4

@@ -1,11 +1,23 @@
 import pygame, os, json, subprocess
 import config
-from ui_elements import AppIcon, TabManager
+from ui_elements import AppIcon, TabManager, Slider
+from volume_widget import AudioLevelSlider
 from topbar import TopBar
 
 pygame.init()
 screen = pygame.display.set_mode((config.SCREEN_WIDTH, config.SCREEN_HEIGHT))
 clock = pygame.time.Clock()
+
+def on_volume_change(val):
+    config.VOLUME = int(val)  # or however you use it
+
+volume_slider = Slider(
+    rect=(50, config.SCREEN_HEIGHT-60, 300, 8),
+    min_val=0,
+    max_val=100,
+    init_val=50,
+    callback=on_volume_change
+)
 
 # Helper: discover apps from builtins, apps/, packages/
 def load_apps():
@@ -26,6 +38,9 @@ def load_apps():
                         pass
     scan_dir(config.APPS_DIR)
     scan_dir(config.PACKAGES_DIR)
+
+
+
     return apps
 
 # Launch helper

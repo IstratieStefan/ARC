@@ -4,50 +4,73 @@ import threading
 import subprocess
 import time
 import config
-from ui_elements import ScrollableList
+from ui_elements import ScrollableList, MessageBox
 
-SCREEN_WIDTH  = config.SCREEN_WIDTH
-SCREEN_HEIGHT = config.SCREEN_HEIGHT
-BG_COLOR      = config.COLORS['background']
-TEXT_COLOR    = config.COLORS['text']
-HIGHLIGHT     = config.COLORS['indicator_active']
-FONT_NAME     = config.FONT_NAME
-FONT_SIZE     = config.FONT_SIZE
-LINE_HEIGHT   = FONT_SIZE + 4
-FPS           = config.FPS
-SCAN_DURATION = getattr(config, 'SCAN_DURATION', 8)  # seconds to scan
+# ------------------------------------------------------------------
+# CONFIGURATION
+# ------------------------------------------------------------------
+SCREEN_WIDTH   = config.SCREEN_WIDTH
+SCREEN_HEIGHT  = config.SCREEN_HEIGHT
+BG_COLOR       = config.COLORS['background_light']
+TEXT_COLOR     = config.COLORS['text_light']
+HIGHLIGHT      = config.ACCENT_COLOR
+FONT_NAME      = config.FONT_NAME
+FONT_SIZE      = config.FONT_SIZE
+LINE_HEIGHT    = FONT_SIZE + 10
+FPS            = config.FPS
+SCAN_INTERVAL  = getattr(config, 'BT_SCAN_INTERVAL', 10)  # seconds
 
-
+# ------------------------------------------------------------------
+# SCAN BLUETOOTH DEVICES (using bluetoothctl)
+# ------------------------------------------------------------------
 def scan_bt(devices, device_list, done_flag):
-    try:
-        # start scanning
-        subprocess.run(['bluetoothctl', 'scan', 'on'], check=True, stderr=subprocess.DEVNULL)
-        time.sleep(SCAN_DURATION)
-        subprocess.run(['bluetoothctl', 'scan', 'off'], check=True, stderr=subprocess.DEVNULL)
-        # retrieve discovered devices
-        output = subprocess.check_output(['bluetoothctl', 'devices'], stderr=subprocess.DEVNULL)
-        text = output.decode('utf-8', errors='ignore')
-        found = []
-        for line in text.splitlines():
-            if not line.startswith('Device '):
-                continue
-            parts = line.split(maxsplit=2)
-            if len(parts) == 3:
-                addr = parts[1]
-                name = parts[2]
-                found.append(f"{name} ({addr})")
-        devices[:] = found if found else ['<no devices found>']
-    except Exception:
-        devices[:] = ['<scan failed>']
-    finally:
-        done_flag[0] = True
-        device_list.items = list(devices)
-        device_list.max_offset = max(
-            0,
+    # Ensure adapter is on and agent is ready
+    subprocess.run(['bluetoothctl', 'power', 'on'], check=True)
+    subprocess.run(['bluetoothctl', 'agent', 'on'], stderr=subprocess.DEVNULL)
+    subprocess.run(['bluetoothctl', 'default-agent'], stderr=subprocess.DEVNULL)
+    subprocess.run(['bluetoothctl', 'agent', 'NoInputNoOutput'], check=True)
+    subprocess.run(['bluetoothctl', 'default-agent'], check=True)
+    while not done_flag[0]:
+        try:
+            # start scan
+            res = subprocess.run(['bluetoothctl', 'scan', 'on'],
+                                 capture_output=True, text=True)
+            if res.returncode != 0:
+                print("Error starting scan:", res.stderr)
+                raise RuntimeError("scan-on failed")
+
+            time.sleep(SCAN_INTERVAL)
+
+            subprocess.run(['bluetoothctl', 'scan', 'off'], check=True)
+
+            out = subprocess.check_output(['bluetoothctl', 'devices'],
+                                          stderr=subprocess.STDOUT,
+                                          text=True)
+            # parse 'Device AA:BB:CC:DD:EE:FF Name' lines
+            found = []
+            for line in out.splitlines():
+                parts = line.split(None, 2)
+                if len(parts) == 3 and parts[0] == 'Device':
+                    addr, name = parts[1], parts[2]
+                    found.append(f"{name} ({addr})")
+            devices[:] = found or ['<no devices found>']
+
+        except Exception as e:
+            print("Scan exception:", e)
+            devices[:] = ['<scan failed>']
+
+        # refresh UI
+        device_list.items      = list(devices)
+        device_list.max_offset = max(0,
             len(device_list.items) * LINE_HEIGHT - device_list.rect.height
         )
+        done_flag[0] = True
+        time.sleep(SCAN_INTERVAL)
 
-def main():
+# ------------------------------------------------------------------
+# MAIN BLUETOOTH MENU
+# ------------------------------------------------------------------
+def BluetoothMenu():
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption('Bluetooth Devices')
@@ -57,75 +80,71 @@ def main():
     devices = ['<scanning...>']
     scan_done = [False]
 
-    def on_select(item):
-        # called when a device is clicked
-        addr = item.split()[-1].strip('()')
-        print(f'Selected device: {item} → {addr}')
-        # TODO: implement connect logic here
+    # Create the scrollable list
+    inset    = 10
+    title_h  = FONT_SIZE + inset
+    list_rect = (inset, title_h, SCREEN_WIDTH - 2*inset, SCREEN_HEIGHT - title_h - inset)
 
-    # calculate layout
-    inset = 10
-    title_height = FONT_SIZE + inset
-    list_rect = (
-        inset,
-        title_height,
-        SCREEN_WIDTH - 2 * inset,
-        SCREEN_HEIGHT - title_height - inset
-    )
-
-    device_list = ScrollableList(
+    bluetooth_list = ScrollableList(
         items=devices,
         rect=list_rect,
         font=font,
         line_height=LINE_HEIGHT,
         text_color=TEXT_COLOR,
-        bg_color=config.COLORS.get('cell_bg', (50, 50, 50)),
+        bg_color=BG_COLOR,
         sel_color=HIGHLIGHT,
-        callback=on_select
+        callback=lambda sel: on_connect(sel, bluetooth_list)
     )
 
-    # start the scan in a background thread
-    threading.Thread(
-        target=scan_bt,
-        args=(devices, device_list, scan_done),
-        daemon=True
-    ).start()
+    # Background scan thread
+    threading.Thread(target=scan_bt, args=(devices, bluetooth_list, scan_done), daemon=True).start()
 
-    # main loop
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            device_list.handle_event(event)
+    def do_connect(addr):
+        """
+        Pair, trust, and connect to the Bluetooth device at address `addr`.
+        """
+        try:
+            subprocess.run(['bluetoothctl', 'pair', addr], check=True)
+            subprocess.run(['bluetoothctl', 'trust', addr], check=True)
+            subprocess.run(['bluetoothctl', 'connect', addr], check=True)
+            MessageBox(f"Connected to {addr}", lambda: None, lambda: None).show()
+        except subprocess.CalledProcessError:
+            MessageBox(f"Failed to connect to {addr}", lambda: None, lambda: None).show()
+        finally:
+            bluetooth_list.set_enabled(True)
 
-        device_list.update()
+    def on_connect(selection, list_widget):
+        # Disable list while connecting
+        list_widget.set_enabled(False)
+        # Extract MAC address from selection "Name (ADDR)"
+        addr = selection.split('(')[-1].strip(')')
+        do_connect(addr)
 
+    running = True
+    while running:
+        for evt in pygame.event.get():
+            if evt.type == pygame.QUIT:
+                running = False
+            else:
+                bluetooth_list.handle_event(evt)
+
+        bluetooth_list.update()
+
+        # Draw UI
         screen.fill(BG_COLOR)
+        title = font.render('Bluetooth Devices', True, TEXT_COLOR)
+        screen.blit(title, ((SCREEN_WIDTH - title.get_width())//2, inset//2))
 
-        # draw title
-        title_surf = font.render('Select Bluetooth Device', True, TEXT_COLOR)
-        screen.blit(
-            title_surf,
-            ((SCREEN_WIDTH - title_surf.get_width()) // 2, inset // 2)
-        )
-
-        # draw list
-        device_list.draw(screen)
-
-        # scanning or error hint
+        bluetooth_list.draw(screen)
         if not scan_done[0]:
-            hint = font.render('Scanning for devices...', True, TEXT_COLOR)
-            screen.blit(
-                hint,
-                (
-                    (SCREEN_WIDTH - hint.get_width()) // 2,
-                    SCREEN_HEIGHT - inset - hint.get_height()
-                )
-            )
+            hint = font.render('Scanning Bluetooth...', True, TEXT_COLOR)
+            screen.blit(hint, ((SCREEN_WIDTH - hint.get_width())//2, SCREEN_HEIGHT - inset - hint.get_height()))
 
         pygame.display.flip()
         clock.tick(FPS)
 
-if __name__ == '__main__':
-    main()
+    pygame.quit()
+    sys.exit()
+
+if __name__ == "__main__":
+    BluetoothMenu()

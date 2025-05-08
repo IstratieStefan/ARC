@@ -12,11 +12,12 @@ TAB_WIDTH = 100
 TAB_HEIGHT = 40
 TAB_MARGIN = 5
 
-ACCENT_COLOR = (38, 114, 255)
+ACCENT_COLOR = (204, 99, 36)
 
 # Colors
 COLORS = {
     'background':      (20, 20, 20),
+    'background_light':(240, 240, 240),
     'tab_bg':          (50, 50, 50),
     'tab_active':      (100, 100, 100),
     'button':          (220, 220, 220),
@@ -33,13 +34,17 @@ COLORS = {
     'input_placeholder': (150, 150, 150),
     'cell_bg':         (220, 220, 220),
     'cell_active':     (240, 240, 240),
-    'accent':          (38, 114, 255),
+    'accent':          ACCENT_COLOR,
     'slider_bg':       ( 50,  50,  50),
     'slider_fill':     ( 50, 200,  50),
     'slider_knob':     (200, 200, 200),
     'slider_active_knob': (255, 255, 255),
 }
 
+ICONS = {
+    'wifi_locked':"./ARC_DE/icons/wifi_locked.png",
+    'wifi_unlocked':"./ARC_DE/icons/wifi_unlocked.png",
+}
 # Home Launcher
 # Paths
 BASE_DIR     = os.path.dirname(os.path.realpath(__file__))
@@ -78,17 +83,22 @@ NOTIFICATION_DOT     = (245, 88, 88)
 
 # left-side static icons
 TOPBAR_ICONS         = [
-    'icons/topbar/settings.png',
     'icons/topbar/search.png',
     # …add/remove as desired
 ]
 
 # indicator icon paths (must exist)
 TOPBAR_ICON_BATTERY  = 'icons/topbar/battery.png'
-TOPBAR_ICON_WIFI     = 'icons/topbar/wifi.png'
 TOPBAR_ICON_BT       = 'icons/topbar/bluetooth.png'
 TOPBAR_ICON_MOBILE   = 'icons/topbar/cellular.png'
 
+TOPBAR_WIFI_ICONS = [
+    "icons/topbar/wifi_0.png",
+    "icons/topbar/wifi_1.png",
+    "icons/topbar/wifi_2.png",
+    "icons/topbar/wifi_3.png",
+    "icons/topbar/wifi_4.png",
+]
 # which elements to show
 TOPBAR_SHOW_CLOCK       = True
 TOPBAR_CLOCK_FORMAT     = "%H:%M" # HH:MM only

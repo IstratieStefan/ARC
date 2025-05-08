@@ -388,3 +388,142 @@ class Slider:
                          col,
                          self.knob_rect,
                          border_radius=config.RADIUS['slider_knob'])
+
+import pygame
+
+class ScrollableList:
+    def __init__(self, items, rect, font, line_height,
+                 text_color, bg_color, sel_color, callback=None,
+                 icons=None, icon_size=(24, 24), icon_padding=5):
+        """
+        items       – list of strings
+        rect        – (x,y,w,h) for the list area
+        font        – a pygame.Font instance
+        line_height – pixel height per line (>= font.get_linesize())
+        text_color  – color for normal entries
+        bg_color    – list background color
+        sel_color   – highlight color for borders on selected entry
+        callback    – fn(item_text) on click or Enter
+        icons       – optional list of pygame.Surface objects or None
+        icon_size   – (w, h) to scale each icon
+        icon_padding– space between icon and right edge
+        """
+        self.items          = items
+        self.rect           = pygame.Rect(rect)
+        self.font           = font
+        self.line_h         = line_height
+        self.text_color     = text_color
+        self.bg_color       = bg_color
+        self.sel_color      = sel_color
+        self.callback       = callback
+        self.icons          = icons if icons else [None] * len(items)
+        self.icon_size      = icon_size
+        self.icon_padding   = icon_padding
+
+        # control whether list accepts input
+        self.enabled        = True
+        # internal scroll offset in pixels
+        self.offset_y       = 0
+        # which index is currently under the mouse
+        self.hover_index    = None
+        # which index is selected by keyboard
+        self.selected_index = 0
+
+        # max scroll so last item lines up at bottom
+        self.max_offset = max(0, len(self.items) * self.line_h - self.rect.height)
+
+    def set_enabled(self, enabled: bool):
+        """Enable or disable interaction."""
+        self.enabled = enabled
+        if not enabled:
+            self.hover_index = None
+
+    def _ensure_visible(self):
+        """Adjust offset_y so selected_index is in view."""
+        top = self.selected_index * self.line_h
+        bottom = top + self.line_h
+        if top < self.offset_y:
+            self.offset_y = top
+        elif bottom > self.offset_y + self.rect.height:
+            self.offset_y = bottom - self.rect.height
+        # clamp
+        self.offset_y = max(0, min(self.offset_y, self.max_offset))
+
+    def handle_event(self, event):
+        if not self.enabled:
+            return
+        # Mouse click or wheel
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.rect.collidepoint(event.pos):
+                rel_y = event.pos[1] - self.rect.y + self.offset_y
+                idx = rel_y // self.line_h
+                if 0 <= idx < len(self.items):
+                    self.selected_index = idx
+                    self._ensure_visible()
+                    if self.callback:
+                        self.callback(self.items[idx])
+        elif event.type == pygame.MOUSEWHEEL:
+            self.offset_y = min(
+                max(0, self.offset_y - event.y * self.line_h),
+                self.max_offset
+            )
+
+        # Keyboard navigation
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_DOWN:
+                if self.selected_index < len(self.items) - 1:
+                    self.selected_index += 1
+                    self._ensure_visible()
+            elif event.key == pygame.K_UP:
+                if self.selected_index > 0:
+                    self.selected_index -= 1
+                    self._ensure_visible()
+            elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+                if 0 <= self.selected_index < len(self.items) and self.callback:
+                    self.callback(self.items[self.selected_index])
+
+    def update(self):
+        # update hover state only if enabled
+        if not self.enabled:
+            return
+        mx, my = pygame.mouse.get_pos()
+        if self.rect.collidepoint(mx, my):
+            rel_y = my - self.rect.y + self.offset_y
+            idx = rel_y // self.line_h
+            self.hover_index = idx if 0 <= idx < len(self.items) else None
+        else:
+            self.hover_index = None
+
+    def draw(self, surface):
+        # draw background
+        pygame.draw.rect(surface, self.bg_color, self.rect, border_radius=4)
+        # clip to list area
+        old_clip = surface.get_clip()
+        surface.set_clip(self.rect)
+
+        x, y0 = self.rect.x, self.rect.y
+        text_right = self.rect.x + self.rect.width
+        for i, text in enumerate(self.items):
+            y = y0 + i * self.line_h - self.offset_y
+            # hover highlight fill
+            if self.enabled and self.hover_index == i:
+                pygame.draw.rect(surface, self.sel_color,
+                                 (x, y, self.rect.width, self.line_h), border_radius=4)
+            # render text
+            txt_surf = self.font.render(text, True, self.text_color)
+            surface.blit(
+                txt_surf,
+                (x + 5, y + (self.line_h - txt_surf.get_height()) // 2)
+            )
+            # draw icon if present
+            if i < len(self.icons) and self.icons[i]:
+                icon_surf = pygame.transform.smoothscale(self.icons[i], self.icon_size)
+                ix = text_right - self.icon_size[0] - self.icon_padding
+                iy = y + (self.line_h - self.icon_size[1]) // 2
+                surface.blit(icon_surf, (ix, iy))
+            # draw selection border
+            if i == self.selected_index:
+                border_rect = pygame.Rect(x, y, self.rect.width, self.line_h)
+                pygame.draw.rect(surface, self.sel_color, border_rect, 2, border_radius=4)
+
+        surface.set_clip(old_clip)

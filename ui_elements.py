@@ -389,8 +389,6 @@ class Slider:
                          self.knob_rect,
                          border_radius=config.RADIUS['slider_knob'])
 
-import pygame
-
 class ScrollableList:
     def __init__(self, items, rect, font, line_height,
                  text_color, bg_color, sel_color, callback=None,

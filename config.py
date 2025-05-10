@@ -17,7 +17,7 @@ ACCENT_COLOR = (204, 99, 36)
 # Colors
 COLORS = {
     'background':      (20, 20, 20),
-    'background_light':(240, 240, 240),
+    'background_light':(250, 250, 250),
     'tab_bg':          (50, 50, 50),
     'tab_active':      (100, 100, 100),
     'button':          (220, 220, 220),
@@ -142,6 +142,8 @@ INDICATOR_SPACING = 10
 # Font settings
 FONT_NAME = '/assets/fonts/Inter/Inter_18pt-SemiBold.ttf'
 FONT_SIZE = 20
+
+MUSIC_DIR = '/home/stefan/Music'
 
 # Warning message duration (milliseconds)
 WARNING_DURATION = 2000

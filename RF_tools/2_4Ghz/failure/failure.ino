@@ -1,8 +1,8 @@
 // Hour 5 of trying to make the nrf24l01 work. after many failed attempt, i declare defeat.
 // I have tried everything and have started to question my ability to code, 
-// cried, had a breakdown and considered quitting altogether. I will no longer spend my time in such wastefull ways 
+// cried, had a breakdown and considered quitting altogether. I will no longer spend my time in such wasteful ways
 // and will focus on code that hopefully works. If anyone is willing to try to make it work, it will be greatly appreciated. 
-// Until then, this is a emmision transmission test that does not even build properly
+// Until then, this is a emission transmission test that does not even build properly
 
 // Please increase this time spent counter : 5 hours
 

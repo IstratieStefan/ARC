@@ -50,11 +50,11 @@ ICONS = {
 BASE_DIR     = os.path.dirname(os.path.realpath(__file__))
 BUILTIN_APPS = [
     { 'name':'Terminal',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','terminal.png'),   'exec':'kitty'   },
-    { 'name':'Phone',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','phone.png'),   'exec':'launch_phone'   },
-    { 'name':'Contacts',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','contacts.png'),   'exec':'launch_contacts'   },
-    { 'name':'Mail',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','mail.png'),   'exec':'launch_mail'   },
-    { 'name':'SMS',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','sms.png'),   'exec':'launch_sms'   },
-    { 'name':'Calendar',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','calendar.png'),   'exec':'launch_calendar'   },
+    { 'name':'Phone',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','phone.png'),   'exec':'python ../coming_soon/coming_soon.py'   },
+    { 'name':'Contacts',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','contacts.png'),   'exec':'python ../coming_soon/coming_soon.py'   },
+    { 'name':'Mail',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','mail.png'),   'exec':'python ../coming_soon/coming_soon.py'   },
+    { 'name':'SMS',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','sms.png'),   'exec':'python ../coming_soon/coming_soon.py'   },
+    { 'name':'Calendar',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','calendar.png'),   'exec':'python ../calendar/main.py'   },
     { 'name':'RF tools',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','rf.png'),   'exec':'python ../RF_tools/main.py'   },
     { 'name':'IR tools',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','ir.png'),   'exec':'python ../IR_tools/main.py'   },
     { 'name':'NFC tools',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','nfc.png'),   'exec':'python ../NFC_tools/main.py'   },
@@ -144,6 +144,7 @@ FONT_NAME = '/assets/fonts/Inter/Inter_18pt-SemiBold.ttf'
 FONT_SIZE = 20
 
 MUSIC_DIR = '/home/stefan/Music'
+GAME_JSON = '../Games/games.json'
 
 # Warning message duration (milliseconds)
 WARNING_DURATION = 2000

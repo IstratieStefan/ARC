@@ -1,38 +1,49 @@
 import pygame
 import sys
-import math
+import json
+import subprocess
 import config
 from ui_elements import Button, WarningMessage, TabManager
 
 class GameMenu:
     ITEMS_PER_TAB = 3
 
-    def __init__(self):
+    def __init__(self, games_file= config.GAME_JSON):
+        # Load games from JSON
+        with open(games_file, 'r') as f:
+            self.games = json.load(f)
+
         # state
         self.selected_idx = 0
 
-        # IR tool operations
-        self.types_ir = [
-            "Pokemon",
-            "Doom",
-            "Tetris",
-            "Mario",
-            "Space Invaders",
-        ]
         # buttons
-        self.btns = [
-            Button(t, (0, 0, 400, 60), lambda t=t: self.on_select(t))
-            for t in self.types_ir
-        ]
+        self.btns = []
+        for game in self.games:
+            self.btns.append(
+                Button(
+                    game['name'],
+                    (0, 0, 400, 60),
+                    callback=lambda g=game: self.launch_game(g)
+                )
+            )
+
         # subpage manager
-        tabs = math.ceil(len(self.types_ir) / self.ITEMS_PER_TAB)
+        tabs = (len(self.btns) + self.ITEMS_PER_TAB - 1) // self.ITEMS_PER_TAB
         self.tabmgr = TabManager(["" for _ in range(tabs)])
 
         self.warning = WarningMessage("")
 
-    def on_select(self, selection):
-        self.warning.text = f"Selected Game: {selection}"
+    def launch_game(self, game):
+        # Show warning then execute
+        self.warning.text = f"Launching: {game['name']}"
         self.warning.show()
+        try:
+            # split command for subprocess
+            cmd = game['command'].split()
+            subprocess.Popen(cmd)
+        except Exception as e:
+            self.warning.text = f"Error: {e}"
+            self.warning.show()
 
     def handle_event(self, event):
         if event.type == pygame.QUIT:
@@ -43,11 +54,9 @@ class GameMenu:
         self.tabmgr.handle_event(event)
 
         if event.type == pygame.KEYDOWN:
-            # navigate
             if event.key in (pygame.K_DOWN, pygame.K_UP):
                 step = 1 if event.key == pygame.K_DOWN else -1
                 self.selected_idx = (self.selected_idx + step) % len(self.btns)
-                # update subpage
                 self.tabmgr.active = self.selected_idx // self.ITEMS_PER_TAB
                 return
             if event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
@@ -66,45 +75,45 @@ class GameMenu:
 
     def draw(self, surface):
         surface.fill(config.COLORS['background'])
-        # title: white text
+        # title
         font = pygame.font.SysFont(config.FONT_NAME, 40)
         title_surf = font.render("Game Menu", True, config.COLORS['text'])
-        surface.blit(title_surf, title_surf.get_rect(center=(config.SCREEN_WIDTH//2, 35)))
+        surface.blit(
+            title_surf,
+            title_surf.get_rect(center=(config.SCREEN_WIDTH//2, 35))
+        )
 
-        # draw current page items
+        # draw buttons for current tab
         active_tab = self.tabmgr.active
         start = active_tab * self.ITEMS_PER_TAB
         end = start + self.ITEMS_PER_TAB
         for idx, btn in enumerate(self.btns[start:end]):
             global_idx = start + idx
-            # position
             btn.rect.x = config.SCREEN_WIDTH//2 - btn.rect.width//2
             btn.rect.y = 70 + idx * (btn.rect.height + 10)
-            # background with pill-shaped corners
             pygame.draw.rect(
                 surface,
                 config.COLORS['button'],
                 btn.rect,
                 border_radius=config.RADIUS['app_button']
             )
-            # button text (larger white)
             lbl_font = pygame.font.SysFont(config.FONT_NAME, 30)
             lbl_surf = lbl_font.render(btn.text, True, config.COLORS['text_light'])
-            surface.blit(lbl_surf, lbl_surf.get_rect(center=btn.rect.center))
-            # highlight border on selected
+            surface.blit(
+                lbl_surf,
+                lbl_surf.get_rect(center=btn.rect.center)
+            )
             if global_idx == self.selected_idx:
                 pygame.draw.rect(
                     surface,
                     config.COLORS['accent'],
                     btn.rect.inflate(6, 6),
                     width=4,
-                    border_radius=config.RADIUS['app_button'] + 4
+                    border_radius=config.RADIUS['app_button']+4
                 )
 
-        # draw page indicators
+        # draw page indicators and warnings
         self.tabmgr.draw(surface)
-
-        # draw warning if any
         self.warning.draw(surface)
 
 

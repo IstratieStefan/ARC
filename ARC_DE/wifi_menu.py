@@ -75,11 +75,9 @@ class WifiMenu:
                          daemon=True).start()
 
     def open(self):
-        """Show the Wi-Fi overlay"""
         self.active = True
 
     def close(self):
-        """Hide the Wi-Fi overlay"""
         self.active = False
         self.password_box = None
         self.wifi_list.set_enabled(True)
@@ -178,21 +176,36 @@ class WifiMenu:
             self.wifi_list.update()
 
     def draw(self):
-        self.screen.fill(BG_COLOR)
-        # title
-        title = self.font.render('Wi-Fi Networks', True, TEXT_COLOR)
-        self.screen.blit(
-            title,
-            ((SCREEN_WIDTH - title.get_width())//2, LINE_HEIGHT//2)
-        )
-        # list or password prompt
-        self.wifi_list.draw(self.screen)
         if self.password_box:
-            self.password_box.draw(self.screen)
-        elif not self.scan_done[0]:
-            hint = self.font.render('Scanning Wi-Fi...', True, TEXT_COLOR)
-            self.screen.blit(
-                hint,
-                ((SCREEN_WIDTH - hint.get_width())//2,
-                 SCREEN_HEIGHT - 30)
+            # draw base overlay to a temp surface
+            temp = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+            temp.fill(BG_COLOR)
+            self.wifi_list.draw(temp)
+            # downscale/upscale for blur effect
+            scale = 0.2
+            small = pygame.transform.smoothscale(
+                temp,
+                (int(SCREEN_WIDTH*scale), int(SCREEN_HEIGHT*scale))
             )
+            blurred = pygame.transform.smoothscale(
+                small,
+                (SCREEN_WIDTH, SCREEN_HEIGHT)
+            )
+            self.screen.blit(blurred, (0,0))
+            self.password_box.draw(self.screen)
+        else:
+            # normal full draw
+            self.screen.fill(BG_COLOR)
+            title = self.font.render('Wi-Fi Networks', True, TEXT_COLOR)
+            self.screen.blit(
+                title,
+                ((SCREEN_WIDTH - title.get_width())//2, LINE_HEIGHT//2)
+            )
+            self.wifi_list.draw(self.screen)
+            if not self.scan_done[0]:
+                hint = self.font.render('Scanning Wi-Fi...', True, TEXT_COLOR)
+                self.screen.blit(
+                    hint,
+                    ((SCREEN_WIDTH - hint.get_width())//2,
+                     SCREEN_HEIGHT - 30)
+                )

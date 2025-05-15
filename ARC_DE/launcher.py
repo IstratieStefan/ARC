@@ -108,7 +108,7 @@ while running:
                 else:
                     wifi_menu.open()
 
-        if wifi_menu.active and ev.type == pygame.KEYDOWN and ev.key == pygame.K_ESCAPE:
+        if wifi_menu.active and (not wifi_menu.password_box or not wifi_menu.password_box.active) and ev.type == pygame.KEYDOWN and ev.key == pygame.K_ESCAPE:
             wifi_menu.close()
 
         # If carousel is active, divert all events to it

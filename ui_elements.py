@@ -312,13 +312,6 @@ class AppIcon(Button):
 
 class Slider:
     def __init__(self, rect, min_val, max_val, init_val, callback=None):
-        """
-        rect      – (x,y,width,height) of the full slider bar
-        min_val   – minimum numeric value
-        max_val   – maximum numeric value
-        init_val  – starting value (will be clamped)
-        callback  – fn(value) called whenever you drag to a new value
-        """
         self.rect      = pygame.Rect(rect)
         self.min_val   = min_val
         self.max_val   = max_val

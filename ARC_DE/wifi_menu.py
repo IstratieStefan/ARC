@@ -16,8 +16,8 @@ LINE_HEIGHT   = FONT_SIZE + 10
 FPS           = config.FPS
 SCAN_INTERVAL = getattr(config, 'WIFI_SCAN_INTERVAL', 10)
 
-LOCK_ICON_PATH = "/icons/wifi_locked.png"
-OPEN_ICON_PATH = "/icons/wifi_unlocked.png"
+LOCK_ICON_PATH = "icons/wifi_locked_black.png"
+OPEN_ICON_PATH = "icons/wifi_unlocked_black.png"
 
 
 def load_icon(path, size):
@@ -48,6 +48,11 @@ class WifiMenu:
         self.scan_done = [False]
         self.password_box = None
         self.current_ssid = None
+
+        self.connecting = False  # True while the thread is running
+        self.connect_message = ""  # SSID we’re trying
+        self.connect_error = None  # filled with error text if nmcli failed
+        self._dot_counter = 0  # for the little "...", updated each frame
 
         # setup scrollable list
         inset = 10
@@ -118,19 +123,37 @@ class WifiMenu:
             self.scan_done[0] = True
             time.sleep(SCAN_INTERVAL)
 
+    def _begin_connect(self, ssid, password):
+        """Kick off background nmcli connect."""
+        self.connecting = True
+        self.connect_message = ssid
+        self.connect_error = None
+        self.password_box = None  # hide text field
+        # spawn worker thread
+        threading.Thread(
+            target=self._connect_worker,
+            args=(ssid, password),
+            daemon=True
+        ).start()
+
+
     def on_connect(self, selection):
         ssid = selection.split(' [')[0]
-        sec  = selection.rsplit('] ',1)[-1]
-        is_open = sec.strip().upper() in ('--','NONE','')
+        sec = selection.rsplit('] ', 1)[-1]
+        is_open = sec.strip().upper() in ('--', 'NONE', '')
+
+        # disable UI
         self.wifi_list.set_enabled(False)
+
         if is_open:
-            self._do_connect(ssid)
+            pw = None
+            self._begin_connect(ssid, pw)
         else:
+            # build a SearchBox as before -------------------------------
             self.password_box = SearchBox(
-                rect=(50, SCREEN_HEIGHT//2 - 20,
-                      SCREEN_WIDTH-100, 40),
-                placeholder='Enter WiFi password',
-                callback=lambda pw: self._do_connect(ssid, pw)
+                rect=(50, SCREEN_HEIGHT // 2 - 20, SCREEN_WIDTH - 100, 40),
+                placeholder='Enter Wi-Fi password',
+                callback=lambda pw: self._begin_connect(ssid, pw)
             )
             self.password_box.active = True
 
@@ -159,6 +182,32 @@ class WifiMenu:
             self.wifi_list.set_enabled(True)
             self.password_box = None
 
+    def _connect_worker(self, ssid, password):
+        # disconnect existing (same logic as before) --------------------
+        if self.current_ssid and self.current_ssid != ssid:
+            try:
+                subprocess.run(
+                    ['nmcli', 'connection', 'down', 'id', self.current_ssid],
+                    check=True, stderr=subprocess.DEVNULL
+                )
+            except Exception:
+                pass
+
+        # build nmcli command
+        cmd = ['nmcli', 'device', 'wifi', 'connect', ssid]
+        if password:
+            cmd += ['password', password]
+
+        try:
+            subprocess.run(cmd, check=True, stderr=subprocess.DEVNULL)
+            # success ---------------------------------------------------
+            self.current_ssid = ssid
+        except subprocess.CalledProcessError:
+            self.connect_error = f"Failed to connect to {ssid}"
+        finally:
+            # flag main thread to re-enable UI
+            self.connecting = False
+
     def handle_event(self, evt):
         if self.password_box:
             if evt.type == pygame.KEYDOWN and evt.key == pygame.K_ESCAPE:
@@ -170,6 +219,8 @@ class WifiMenu:
             self.wifi_list.handle_event(evt)
 
     def update(self):
+        if self.connecting:
+            self._dot_counter = (self._dot_counter + 1) % 60  # ~1s loop at 60 fps
         if self.password_box:
             self.password_box.update()
         else:
@@ -177,6 +228,9 @@ class WifiMenu:
 
     def draw(self):
         if self.password_box:
+            if not self.connecting and not self.wifi_list.enabled:
+                self.wifi_list.set_enabled(True)
+
             # draw base overlay to a temp surface
             temp = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
             temp.fill(BG_COLOR)
@@ -209,3 +263,19 @@ class WifiMenu:
                     ((SCREEN_WIDTH - hint.get_width())//2,
                      SCREEN_HEIGHT - 30)
                 )
+        if self.connecting:
+            overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+            overlay.fill((0, 0, 0, 240))
+            self.screen.blit(overlay, (0, 0))
+
+            dots = "." * ((self._dot_counter // 15) + 1)  # 0-15-30-45 frames → 1-4 dots
+            txt = self.font.render(
+                f"Connecting to {self.connect_message}{dots}", True, HIGHLIGHT
+            )
+            self.screen.blit(
+                txt,
+                ((SCREEN_WIDTH - txt.get_width()) // 2, SCREEN_HEIGHT // 2 - txt.get_height())
+            )
+        elif self.connect_error:
+            MessageBox(self.connect_error, lambda: None, lambda: None).show()
+            self.connect_error = None

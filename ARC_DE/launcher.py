@@ -20,28 +20,47 @@ volume_slider = Slider(
     min_val=0, max_val=100, init_val=50, callback=on_volume_change
 )
 
-# Discover apps
+CACHE_PATH = os.path.expanduser(os.path.join('~', '.cache', 'launcher_apps.json'))
+
 def load_apps():
-    apps = []
-    apps.extend(config.BUILTIN_APPS)
-    def scan_dir(directory):
-        if os.path.isdir(directory):
-            for name in os.listdir(directory):
-                d = os.path.join(directory, name)
-                m = os.path.join(d, 'manifest.json')
-                if os.path.isfile(m):
-                    try:
-                        data = json.load(open(m))
-                        icon = os.path.join(d, data.get('icon', 'icon.png'))
-                        data['icon'] = icon
-                        apps.append(data)
-                    except:
-                        pass
-    scan_dir(config.APPS_DIR)
-    scan_dir(config.PACKAGES_DIR)
+    #Try loading from cache
+    if os.path.isfile(CACHE_PATH):
+        try:
+            with open(CACHE_PATH, 'r') as f:
+                return json.load(f)
+        except Exception:
+            pass
+
+    #Otherwise do a fresh scan
+    apps = list(config.BUILTIN_APPS)
+    apps_dir = config.APPS_DIR
+    if os.path.isdir(apps_dir):
+        for entry in os.scandir(apps_dir):
+            if not entry.is_dir():
+                continue
+            manifest = os.path.join(entry.path, 'manifest.json')
+            if not os.path.isfile(manifest):
+                continue
+            try:
+                with open(manifest, 'r') as f:
+                    data = json.load(f)
+            except json.JSONDecodeError:
+                continue
+            icon = os.path.join(entry.path, data.get('icon', 'icon.png'))
+            data['icon'] = icon
+            apps.append(data)
+
+    #Write the result back to cache
+    try:
+        os.makedirs(os.path.dirname(CACHE_PATH), exist_ok=True)
+        with open(CACHE_PATH, 'w') as f:
+            json.dump(apps, f)
+    except Exception:
+        # if we can't write cache (permissions?), just ignore
+        pass
+
     return apps
 
-# Launch helper
 def launch_app(cmd):
     try:
         subprocess.Popen(cmd, shell=True)

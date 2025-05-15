@@ -84,7 +84,6 @@ class SongSelector:
             self.list._ensure_visible()
 
     def draw(self):
-        """Draw titles with horizontal scroll and fixed durations, with selection highlight."""
         surf = self.screen
         x, y0, w, h = self.rect
         # clear background
@@ -101,10 +100,10 @@ class SongSelector:
 
             # Selected highlight (background)
             if self.selected_index == i:
-                pygame.draw.rect(surf, self.sel_color, (x, y, w, self.line_height), border_radius=4)
+                pygame.draw.rect(surf, self.sel_color, (x, y, w, self.line_height), 2, border_radius=4)
             # Hover highlight (border)
             elif self.list.enabled and self.list.hover_index == i:
-                pygame.draw.rect(surf, self.sel_color, (x, y, w, self.line_height), 2, border_radius=4)
+                pygame.draw.rect(surf, self.sel_color, (x, y, w, self.line_height), border_radius=4)
 
             # Duration text (fixed right)
             dur = track['length']
@@ -131,6 +130,3 @@ class SongSelector:
         # restore original clip
         surf.set_clip(old_clip)
 
-# Example usage:
-# selector = SongSelector('songs/', fonts, colors, screen)
-# loop: res = selector.handle_event(ev); selector.update(); selector.draw()

@@ -1,7 +1,6 @@
 import pygame
-import sys
-import threading
 import subprocess
+import threading
 import time
 import config
 from ui_elements import ScrollableList, MessageBox, SearchBox
@@ -20,6 +19,7 @@ SCAN_INTERVAL = getattr(config, 'WIFI_SCAN_INTERVAL', 10)
 LOCK_ICON_PATH = "/icons/wifi_locked.png"
 OPEN_ICON_PATH = "/icons/wifi_unlocked.png"
 
+
 def load_icon(path, size):
     try:
         img = pygame.image.load(path).convert_alpha()
@@ -27,150 +27,172 @@ def load_icon(path, size):
     except Exception:
         return None
 
-# preload icons
-pygame.init()
-ICON_SIZE = (24, 24)
-lock_icon = load_icon(LOCK_ICON_PATH, ICON_SIZE)
-open_icon = load_icon(OPEN_ICON_PATH, ICON_SIZE)
-pygame.quit()
+class WifiMenu:
+    def __init__(self, screen):
+        # dependencies
+        self.screen = screen
+        self.active = False
 
-def scan_wifi(devices, icons, device_list, done_flag):
-    while not done_flag[0]:
-        try:
-            subprocess.run(['nmcli', 'device', 'wifi', 'rescan'], check=True, stderr=subprocess.DEVNULL)
-            output = subprocess.check_output([
-                'nmcli', '-t', '-f', 'SSID,SIGNAL,SECURITY',
-                'device', 'wifi', 'list'
-            ], stderr=subprocess.DEVNULL).decode('utf-8', errors='ignore')
-            found, icon_list = [], []
-            for line in output.splitlines():
-                if not line:
-                    continue
-                ssid, signal, sec = line.split(':', 2)
-                label = f"{ssid or '<hidden>'} [{signal}%] {sec}"
-                found.append(label)
-                icon_list.append(open_icon if sec.strip().upper() in ('--','NONE','') else lock_icon)
-            devices[:] = found or ['<no networks>']
-            icons[:]   = icon_list or [None]
-        except Exception:
-            devices[:] = ['<scan failed>']
-            icons[:]   = [None]
-        device_list.items = list(devices)
-        device_list.icons = list(icons)
-        device_list.max_offset = max(0, len(device_list.items) * LINE_HEIGHT - device_list.rect.height)
-        done_flag[0] = True
-        time.sleep(SCAN_INTERVAL)
+        # preload icons once
+        ICON_SIZE = (24, 24)
+        self.lock_icon = load_icon(LOCK_ICON_PATH, ICON_SIZE)
+        self.open_icon = load_icon(OPEN_ICON_PATH, ICON_SIZE)
 
-def WifiMenu():
-    pygame.init()
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption('WiFi Networks')
-    clock = pygame.time.Clock()
+        # font and timing
+        self.font = pygame.font.SysFont(FONT_NAME, FONT_SIZE)
+        self.clock = pygame.time.Clock()
 
-    font = pygame.font.SysFont(FONT_NAME, FONT_SIZE)
-    networks = ['<scanning...>']
-    icons    = [None]
-    scan_done = [False]
-    password_box = None
-    current_ssid = None
+        # Wi-Fi state
+        self.networks = ['<scanning...>']
+        self.icons    = [None]
+        self.scan_done = [False]
+        self.password_box = None
+        self.current_ssid = None
 
-    def do_connect(ssid, password=None):
-        nonlocal current_ssid, password_box
-        # disconnect existing if different
-        if current_ssid and current_ssid != ssid:
+        # setup scrollable list
+        inset = 10
+        title_h = FONT_SIZE + inset
+        list_rect = (inset, title_h,
+                     SCREEN_WIDTH - 2*inset,
+                     SCREEN_HEIGHT - title_h - inset)
+
+        self.wifi_list = ScrollableList(
+            items=self.networks,
+            rect=list_rect,
+            font=self.font,
+            line_height=LINE_HEIGHT,
+            text_color=TEXT_COLOR,
+            bg_color=BG_COLOR,
+            sel_color=HIGHLIGHT,
+            callback=self.on_connect,
+            icons=self.icons,
+            icon_size=ICON_SIZE,
+            icon_padding=10
+        )
+
+        # start scanning thread
+        threading.Thread(target=self._scan_loop,
+                         daemon=True).start()
+
+    def open(self):
+        """Show the Wi-Fi overlay"""
+        self.active = True
+
+    def close(self):
+        """Hide the Wi-Fi overlay"""
+        self.active = False
+        self.password_box = None
+        self.wifi_list.set_enabled(True)
+
+    def _scan_loop(self):
+        while True:
             try:
-                subprocess.run(['nmcli', 'connection', 'down', 'id', current_ssid], check=True)
+                subprocess.run(['nmcli','device','wifi','rescan'],
+                               check=True, stderr=subprocess.DEVNULL)
+                output = subprocess.check_output([
+                    'nmcli','-t','-f','SSID,SIGNAL,SECURITY',
+                    'device','wifi','list'
+                ], stderr=subprocess.DEVNULL).decode('utf-8', errors='ignore')
+                found, icon_list = [], []
+                for line in output.splitlines():
+                    if not line:
+                        continue
+                    ssid, signal, sec = line.split(':',2)
+                    label = f"{ssid or '<hidden>'} [{signal}%] {sec}"
+                    found.append(label)
+                    icon_list.append(
+                        self.open_icon if sec.strip().upper() in ('--','NONE','')
+                        else self.lock_icon
+                    )
+                self.networks[:] = found or ['<no networks>']
+                self.icons[:]    = icon_list or [None]
+            except Exception:
+                self.networks[:] = ['<scan failed>']
+                self.icons[:]    = [None]
+
+            # update list widget
+            self.wifi_list.items = list(self.networks)
+            self.wifi_list.icons = list(self.icons)
+            self.wifi_list.max_offset = max(
+                0,
+                len(self.wifi_list.items)*LINE_HEIGHT - self.wifi_list.rect.height
+            )
+            self.scan_done[0] = True
+            time.sleep(SCAN_INTERVAL)
+
+    def on_connect(self, selection):
+        ssid = selection.split(' [')[0]
+        sec  = selection.rsplit('] ',1)[-1]
+        is_open = sec.strip().upper() in ('--','NONE','')
+        self.wifi_list.set_enabled(False)
+        if is_open:
+            self._do_connect(ssid)
+        else:
+            self.password_box = SearchBox(
+                rect=(50, SCREEN_HEIGHT//2 - 20,
+                      SCREEN_WIDTH-100, 40),
+                placeholder='Enter WiFi password',
+                callback=lambda pw: self._do_connect(ssid, pw)
+            )
+            self.password_box.active = True
+
+    def _do_connect(self, ssid, password=None):
+        # disconnect existing
+        if self.current_ssid and self.current_ssid != ssid:
+            try:
+                subprocess.run(
+                    ['nmcli','connection','down','id', self.current_ssid],
+                    check=True
+                )
             except Exception:
                 pass
+
         # connect new
-        cmd = ['nmcli', 'device', 'wifi', 'connect', ssid]
+        cmd = ['nmcli','device','wifi','connect', ssid]
         if password:
             cmd += ['password', password]
         try:
             subprocess.run(cmd, check=True, stderr=subprocess.DEVNULL)
             MessageBox(f"Connected to {ssid}", lambda: None, lambda: None).show()
-            current_ssid = ssid
+            self.current_ssid = ssid
         except subprocess.CalledProcessError:
             MessageBox(f"Failed to connect to {ssid}", lambda: None, lambda: None).show()
         finally:
-            wifi_list.set_enabled(True)
-            password_box = None
+            self.wifi_list.set_enabled(True)
+            self.password_box = None
 
-    def attempt_connect(pw):
-        ssid = wifi_list.items[wifi_list.selected_index].split(' [')[0]
-        do_connect(ssid, pw)
-
-    def on_connect(selection):
-        nonlocal password_box
-        ssid = selection.split(' [')[0]
-        sec = selection.rsplit('] ', 1)[-1]
-        is_open = sec.strip().upper() in ('--','NONE','')
-        wifi_list.set_enabled(False)
-        if is_open:
-            do_connect(ssid)
-        else:
-            password_box = SearchBox(
-                rect=(50, SCREEN_HEIGHT//2 - 20, SCREEN_WIDTH - 100, 40),
-                placeholder='Enter WiFi password',
-                callback=attempt_connect
-            )
-            password_box.active = True
-
-    inset = 10
-    title_h = FONT_SIZE + inset
-    list_rect = (inset, title_h, SCREEN_WIDTH - 2*inset, SCREEN_HEIGHT - title_h - inset)
-
-    wifi_list = ScrollableList(
-        items=networks,
-        rect=list_rect,
-        font=font,
-        line_height=LINE_HEIGHT,
-        text_color=TEXT_COLOR,
-        bg_color=BG_COLOR,
-        sel_color=HIGHLIGHT,
-        callback=on_connect,
-        icons=icons,
-        icon_size=ICON_SIZE,
-        icon_padding=10
-    )
-
-    threading.Thread(target=scan_wifi, args=(networks, icons, wifi_list, scan_done), daemon=True).start()
-
-    running = True
-    while running:
-        for evt in pygame.event.get():
-            if evt.type == pygame.QUIT:
-                running = False
-            if password_box and evt.type == pygame.KEYDOWN and evt.key == pygame.K_ESCAPE:
-                password_box = None
-                wifi_list.set_enabled(True)
-            elif password_box:
-                password_box.handle_event(evt)
+    def handle_event(self, evt):
+        if self.password_box:
+            if evt.type == pygame.KEYDOWN and evt.key == pygame.K_ESCAPE:
+                self.password_box = None
+                self.wifi_list.set_enabled(True)
             else:
-                wifi_list.handle_event(evt)
-
-        if password_box:
-            password_box.update()
+                self.password_box.handle_event(evt)
         else:
-            wifi_list.update()
+            self.wifi_list.handle_event(evt)
 
-        screen.fill(BG_COLOR)
-        title = font.render('Wifi Networks', True, TEXT_COLOR)
-        screen.blit(title, ((SCREEN_WIDTH - title.get_width())//2, inset//2))
+    def update(self):
+        if self.password_box:
+            self.password_box.update()
+        else:
+            self.wifi_list.update()
 
-        wifi_list.draw(screen)
-        if password_box:
-            password_box.draw(screen)
-        elif not scan_done[0]:
-            hint = font.render('Scanning WiFi...', True, TEXT_COLOR)
-            screen.blit(hint, ((SCREEN_WIDTH - hint.get_width())//2, SCREEN_HEIGHT - inset - hint.get_height()))
-
-        pygame.display.flip()
-        clock.tick(FPS)
-
-    pygame.quit()
-    sys.exit()
-
-
-if __name__ == "__main__":
-    WifiMenu()
+    def draw(self):
+        self.screen.fill(BG_COLOR)
+        # title
+        title = self.font.render('Wi-Fi Networks', True, TEXT_COLOR)
+        self.screen.blit(
+            title,
+            ((SCREEN_WIDTH - title.get_width())//2, LINE_HEIGHT//2)
+        )
+        # list or password prompt
+        self.wifi_list.draw(self.screen)
+        if self.password_box:
+            self.password_box.draw(self.screen)
+        elif not self.scan_done[0]:
+            hint = self.font.render('Scanning Wi-Fi...', True, TEXT_COLOR)
+            self.screen.blit(
+                hint,
+                ((SCREEN_WIDTH - hint.get_width())//2,
+                 SCREEN_HEIGHT - 30)
+            )

@@ -11,8 +11,6 @@ class TopBar:
         self.bg            = config.TOPBAR_BG
         self.fg            = config.TOPBAR_FG
         self.font          = pygame.font.SysFont('Arial', 18)
-        self.wifi_callback = wifi_callback
-
         # Load left-side icons
         self.left_icons = []
         for path in config.TOPBAR_ICONS:
@@ -31,7 +29,6 @@ class TopBar:
             except:
                 self.wifi_icons.append(pygame.Surface((20,20), pygame.SRCALPHA))
         self.wifi_rect = None
-
         # Load other right-side icons
         self.right_icons = []
         if config.TOPBAR_SHOW_MOBILE:
@@ -41,6 +38,8 @@ class TopBar:
         if config.TOPBAR_SHOW_BATTERY:
             self.right_icons.append(self._load_icon(config.TOPBAR_ICON_BATTERY))
 
+
+
     def _load_icon(self, path):
         try:
             img = pygame.image.load(path).convert_alpha()
@@ -49,11 +48,14 @@ class TopBar:
             return pygame.Surface((20,20), pygame.SRCALPHA)
 
     def handle_event(self, event):
-        # If clicked on WiFi icon, invoke callback
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.wifi_rect and self.wifi_rect.collidepoint(event.pos):
-                if self.wifi_callback:
-                    self.wifi_callback()
+                # directly call on the injected menu
+                if self.wifi_menu.active:
+                    self.wifi_menu.close()
+                else:
+                    self.wifi_menu.open()
+
 
     def get_wifi_strength(self):
         # Return signal percent or None

@@ -50,10 +50,11 @@ ICONS = {
 BASE_DIR     = os.path.dirname(os.path.realpath(__file__))
 BUILTIN_APPS = [
     { 'name':'Terminal',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','terminal.png'),   'exec':'kitty'   },
+    { 'name':'Web browser', 'icon':os.path.join(BASE_DIR,'ARC_DE','icons','browser.png'),   'exec':'python ../web_apps/browser.py'   },
     { 'name':'Phone',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','phone.png'),   'exec':'python ../coming_soon/coming_soon.py'   },
     { 'name':'Contacts',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','contacts.png'),   'exec':'python ../coming_soon/coming_soon.py'   },
     { 'name':'Mail',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','mail.png'),   'exec':'python ../coming_soon/coming_soon.py'   },
-    { 'name':'SMS',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','sms.png'),   'exec':'python ../coming_soon/coming_soon.py'   },
+    { 'name':'Whatsapp',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','sms.png'),   'exec':'python ../web_apps/whatsapp.py'   },
     { 'name':'Calendar',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','calendar.png'),   'exec':'python ../calendar/main.py'   },
     { 'name':'RF tools',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','rf.png'),   'exec':'python ../RF_tools/main.py'   },
     { 'name':'IR tools',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','ir.png'),   'exec':'python ../IR_tools/main.py'   },

@@ -90,16 +90,16 @@ TOPBAR_ICONS         = [
 ]
 
 # indicator icon paths (must exist)
-TOPBAR_ICON_BATTERY  = 'icons/topbar/battery.png'
-TOPBAR_ICON_BT       = 'icons/topbar/bluetooth.png'
-TOPBAR_ICON_MOBILE   = 'icons/topbar/cellular.png'
+TOPBAR_ICON_BATTERY  = '/ARC_DE/icons/topbar/battery.png'
+TOPBAR_ICON_BT       = '/ARC_DE/icons/topbar/bluetooth.png'
+TOPBAR_ICON_MOBILE   = '/ARC_DE/icons/topbar/cellular.png'
 
 TOPBAR_WIFI_ICONS = [
-    "icons/topbar/wifi_0.png",
-    "icons/topbar/wifi_1.png",
-    "icons/topbar/wifi_2.png",
-    "icons/topbar/wifi_3.png",
-    "icons/topbar/wifi_4.png",
+    "/ARC_DE/icons/topbar/wifi_0.png",
+    "/ARC_DE/icons/topbar/wifi_1.png",
+    "/ARC_DE/icons/topbar/wifi_2.png",
+    "/ARC_DE/icons/topbar/wifi_3.png",
+    "/ARC_DE/icons/topbar/wifi_4.png",
 ]
 # which elements to show
 TOPBAR_SHOW_CLOCK       = True

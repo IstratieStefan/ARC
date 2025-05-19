@@ -63,7 +63,8 @@ BUILTIN_APPS = [
     { 'name':'Text editor',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','editor.png'),   'exec':'vim -r'   },
     { 'name':'Music',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','music.png'),   'exec':'python ../music_player/main.py'   },
     { 'name':'Games',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','games.png'),   'exec':'python ../Games/main.py'   },
-    { 'name':'Settings', 'icon':os.path.join(BASE_DIR,'ARC_DE','icons','settings.png'), 'exec':'python ../Settings/main.py' }
+    { 'name':'Settings', 'icon':os.path.join(BASE_DIR,'ARC_DE','icons','settings.png'), 'exec':'python ../Settings/main.py' },
+    { 'name':'ARC connect', 'icon':os.path.join(BASE_DIR,'ARC_DE','icons','arc_connect.png'), 'exec':'python ../ARC_connect/ip.py' }
 ]
 APPS_DIR     = os.path.join(BASE_DIR, 'apps')       # each subfolder = one app, contains manifest.json + icon.png
 PACKAGES_DIR = os.path.join(BASE_DIR, 'packages')   # optional installed packages

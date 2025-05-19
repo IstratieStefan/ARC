@@ -7,4 +7,5 @@ pyqt5
 qtpy
 requests
 pyaudio
-
+qrcode
+pillow

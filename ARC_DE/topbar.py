@@ -2,7 +2,6 @@ import pygame
 import config
 import subprocess
 from datetime import datetime
-from wifi_menu import WifiMenu
 
 class TopBar:
     def __init__(self, wifi_callback=None):

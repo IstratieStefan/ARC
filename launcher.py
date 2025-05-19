@@ -1,10 +1,9 @@
 import pygame, os, json, subprocess
 import config
 from ui_elements import AppIcon, TabManager, Slider
-from volume_widget import AudioLevelSlider
-from topbar import TopBar
-from wifi_menu import WifiMenu
-from app_carousel import AppCarouselMenu
+from ARC_DE.volume_widget import AudioLevelSlider
+from ARC_DE.topbar import TopBar
+from ARC_DE.wifi_menu import WifiMenu
 
 # Main launcher code
 pygame.init()
@@ -93,12 +92,6 @@ pages_icons = [build_page_icons(p) for p in pages]
 tab_names = [f"Page {i+1}" for i in range(len(pages))]
 tab_manager = TabManager(tab_names)
 wifi_menu = WifiMenu(screen)
-carousel = AppCarouselMenu(
-    apps=all_apps,
-    launch_callback=launch_app,
-    screen_size=(config.SCREEN_WIDTH, config.SCREEN_HEIGHT)
-)
-
 current_page = 0
 sel_index = 0
 
@@ -111,13 +104,6 @@ while running:
             running = False
             break
 
-        # Toggle carousel with TAB
-        if ev.type == pygame.KEYDOWN and ev.key == pygame.K_TAB:
-            if carousel.active:
-                carousel.close()
-            else:
-                carousel.open()
-            continue
 
         if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 1:
             if topbar.wifi_rect and topbar.wifi_rect.collidepoint(ev.pos):
@@ -130,10 +116,7 @@ while running:
         if wifi_menu.active and (not wifi_menu.password_box or not wifi_menu.password_box.active) and ev.type == pygame.KEYDOWN and ev.key == pygame.K_ESCAPE:
             wifi_menu.close()
 
-        # If carousel is active, divert all events to it
-        if carousel.active:
-            carousel.handle_event(ev)
-            continue
+
 
         if wifi_menu.active:
             wifi_menu.handle_event(ev)
@@ -175,8 +158,7 @@ while running:
 
     # Draw
     screen.fill(config.COLORS['background'])
-    if carousel.active:
-        carousel.draw(screen)
+
     if wifi_menu.active:
         wifi_menu.update()
         wifi_menu.draw()

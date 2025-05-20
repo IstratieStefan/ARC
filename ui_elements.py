@@ -258,12 +258,17 @@ class AppIcon(Button):
 
     def __init__(self, name, icon_path, rect, callback):
         super().__init__(name, rect, callback)
+        print(f"AppIcon: Attempting to load '{icon_path}' for '{name}'")  # Debug
+        if not os.path.isfile(icon_path):
+            print(f"AppIcon WARNING: File does not exist: {icon_path}")
         try:
             img = pygame.image.load(icon_path).convert_alpha()
-        except Exception:
+        except Exception as e:
+            print(f"AppIcon: Failed to load icon '{icon_path}' for '{name}'. Error: {e}")
             img = pygame.Surface((self.rect.width - 25,
                                   self.rect.height - 25),
                                   pygame.SRCALPHA)
+            img.fill((255, 0, 0))  # Bright red for missing
         self.icon = pygame.transform.smoothscale(
             img,
             (self.rect.width - 25, self.rect.height - 25)
@@ -309,6 +314,7 @@ class AppIcon(Button):
             text_rect.centerx = sw // 2
             text_rect.centery = sh - (text_surf.get_height() // 2) - 15
             surface.blit(text_surf, text_rect)
+
 
 class Slider:
     def __init__(self, rect, min_val, max_val, init_val, callback=None):

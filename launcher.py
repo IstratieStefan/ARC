@@ -131,6 +131,8 @@ while running:
         if ev.type == pygame.KEYDOWN:
             if ev.key == pygame.K_LEFT and sel_index % config.GRID_COLS > 0:
                 sel_index -= 1
+            elif ev.key == pygame.K_q and (ev.mod & pygame.KMOD_CTRL):
+                    running = False
             elif ev.key == pygame.K_RIGHT and sel_index % config.GRID_COLS < config.GRID_COLS-1 \
                  and sel_index+1 < len(current_icons):
                 sel_index += 1

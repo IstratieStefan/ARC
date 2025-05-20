@@ -1,6 +1,7 @@
 # Configuration for UI elements
 
 import os
+BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
 # Screen settings
 SCREEN_WIDTH = 480
@@ -90,9 +91,9 @@ TOPBAR_ICONS         = [
 ]
 
 # indicator icon paths (must exist)
-TOPBAR_ICON_BATTERY  = '/ARC_DE/icons/topbar/battery.png'
-TOPBAR_ICON_BT       = '/ARC_DE/icons/topbar/bluetooth.png'
-TOPBAR_ICON_MOBILE   = '/ARC_DE/icons/topbar/cellular.png'
+TOPBAR_ICON_BATTERY  = os.path.join(BASE_DIR, 'ARC_DE', 'icons', 'topbar', 'battery.png')
+TOPBAR_ICON_BT       = os.path.join(BASE_DIR, 'ARC_DE', 'icons', 'topbar', 'bluetooth.png')
+TOPBAR_ICON_MOBILE   = os.path.join(BASE_DIR, 'ARC_DE', 'icons', 'topbar', 'cellular.png')
 
 TOPBAR_WIFI_ICONS = [
     "/ARC_DE/icons/topbar/wifi_0.png",

@@ -96,11 +96,11 @@ TOPBAR_ICON_BT       = os.path.join(BASE_DIR, 'ARC_DE', 'icons', 'topbar', 'blue
 TOPBAR_ICON_MOBILE   = os.path.join(BASE_DIR, 'ARC_DE', 'icons', 'topbar', 'cellular.png')
 
 TOPBAR_WIFI_ICONS = [
-    "/ARC_DE/icons/topbar/wifi_0.png",
-    "/ARC_DE/icons/topbar/wifi_1.png",
-    "/ARC_DE/icons/topbar/wifi_2.png",
-    "/ARC_DE/icons/topbar/wifi_3.png",
-    "/ARC_DE/icons/topbar/wifi_4.png",
+    os.path.join(BASE_DIR, 'ARC_DE', 'icons', 'topbar', 'wifi_0.png'),
+    os.path.join(BASE_DIR, 'ARC_DE', 'icons', 'topbar', 'wifi_1.png'),
+    os.path.join(BASE_DIR, 'ARC_DE', 'icons', 'topbar', 'wifi_2.png'),
+    os.path.join(BASE_DIR, 'ARC_DE', 'icons', 'topbar', 'wifi_3.png'),
+    os.path.join(BASE_DIR, 'ARC_DE', 'icons', 'topbar', 'wifi_4.png'),
 ]
 # which elements to show
 TOPBAR_SHOW_CLOCK       = True

@@ -173,5 +173,6 @@ while running:
 
     pygame.display.flip()
     clock.tick(config.FPS)
+    print("Current working directory:", os.getcwd())
 
 pygame.quit()

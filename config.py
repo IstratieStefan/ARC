@@ -1,7 +1,6 @@
 # Configuration for UI elements
 
 import os
-BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
 # Screen settings
 SCREEN_WIDTH = 480

@@ -1,4 +1,5 @@
 import pygame, os, json, subprocess
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
 import config
 from ui_elements import AppIcon, TabManager, Slider
 from ARC_DE.volume_widget import AudioLevelSlider

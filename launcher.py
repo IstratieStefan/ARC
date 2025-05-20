@@ -7,7 +7,7 @@ from ARC_DE.wifi_menu import WifiMenu
 
 # Main launcher code
 pygame.init()
-screen = pygame.display.set_mode((config.SCREEN_WIDTH, config.SCREEN_HEIGHT))
+screen = pygame.display.set_mode((config.SCREEN_WIDTH, config.SCREEN_HEIGHT), pygame.FULLSCREEN)
 clock = pygame.time.Clock()
 
 # Volume slider (if you need it)

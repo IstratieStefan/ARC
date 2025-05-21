@@ -55,7 +55,7 @@ BUILTIN_APPS = [
     { 'name':'Contacts',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','contacts.png'),   'exec':'python3 coming_soon.coming_soon'   },
     { 'name':'Mail',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','mail.png'),   'exec':'python3 coming_soon.coming_soon'   },
     { 'name':'Whatsapp',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','sms.png'),   'exec':'python3 ./web_apps/whatsapp.py'   },
-    { 'name':'Calendar',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','calendar.png'),   'exec':'python3 -m calendar.main'   },
+    { 'name':'Calendar',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','calendar.png'),   'exec':'python3 -m calendar_app.main'   },
     { 'name':'RF tools',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','rf.png'),   'exec':'python3 -m RF_tools.main'   },
     { 'name':'IR tools',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','ir.png'),   'exec':'python3 -m IR_tools.main'   },
     { 'name':'NFC tools',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','nfc.png'),   'exec':'python3 -m NFC_tools.main'   },

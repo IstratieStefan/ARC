@@ -55,16 +55,16 @@ BUILTIN_APPS = [
     { 'name':'Contacts',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','contacts.png'),   'exec':'python3 coming_soon.coming_soon'   },
     { 'name':'Mail',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','mail.png'),   'exec':'python3 coming_soon.coming_soon'   },
     { 'name':'Whatsapp',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','sms.png'),   'exec':'python3 ./web_apps/whatsapp.py'   },
-    { 'name':'Calendar',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','calendar.png'),   'exec':'python3 calendar.main'   },
-    { 'name':'RF tools',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','rf.png'),   'exec':'python3 RF_tools.main'   },
-    { 'name':'IR tools',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','ir.png'),   'exec':'python3 IR_tools.main'   },
-    { 'name':'NFC tools',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','nfc.png'),   'exec':'python3 NFC_tools.main'   },
+    { 'name':'Calendar',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','calendar.png'),   'exec':'python3 -m calendar.main'   },
+    { 'name':'RF tools',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','rf.png'),   'exec':'python3 -m RF_tools.main'   },
+    { 'name':'IR tools',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','ir.png'),   'exec':'python3 -m IR_tools.main'   },
+    { 'name':'NFC tools',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','nfc.png'),   'exec':'python3 -m NFC_tools.main'   },
     { 'name':'Files',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','files.png'),   'exec':'dolphin'   },
     { 'name':'Text editor',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','editor.png'),   'exec':'vim -r'   },
-    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','music.png'),   'exec':'python3 music_player.main'   },
+    { 'name':'Music',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','music.png'),   'exec':'python3 -m music_player.main'   },
     { 'name':'Games',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','games.png'),   'exec':'python3 .Games.main'   },
     { 'name':'Settings', 'icon':os.path.join(BASE_DIR,'ARC_DE','icons','settings.png'), 'exec':'python .Settings.main' },
-    { 'name':'ARC connect', 'icon':os.path.join(BASE_DIR,'ARC_DE','icons','arc_connect.png'), 'exec':'python ../ARC_connect/ip.py' }
+    { 'name':'ARC connect', 'icon':os.path.join(BASE_DIR,'ARC_DE','icons','arc_connect.png'), 'exec':'python3 -m ARC_connect.ip' }
 ]
 APPS_DIR     = os.path.join(BASE_DIR, 'apps')       # each subfolder = one app, contains manifest.json + icon.png
 PACKAGES_DIR = os.path.join(BASE_DIR, 'packages')   # optional installed packages

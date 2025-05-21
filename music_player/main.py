@@ -4,10 +4,10 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import math
 import config
-from menu import MainMenu
-from song_selector import SongSelector
-from album_selector import AlbumSelector
-from player import PlayerScreen
+from music_player.menu import MainMenu
+from music_player.song_selector import SongSelector
+from music_player.album_selector import AlbumSelector
+from music_player.player import PlayerScreen
 
 
 def main():

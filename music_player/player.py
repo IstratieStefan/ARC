@@ -1,5 +1,4 @@
 import pygame
-import math
 import io
 import config
 import time
@@ -10,8 +9,8 @@ from mutagen.id3 import ID3
 
 class PlayerScreen:
     ICON_SIZE = 36
-    SCROLL_SPEED = 50  # pixels per second
-    SCROLL_PAUSE = 1.0  # seconds to pause at each end
+    SCROLL_SPEED = 50
+    SCROLL_PAUSE = 1.0
 
     def __init__(self, tracks, current_idx, fonts, colors, screen):
         self.tracks     = tracks  # list of dicts with 'file', 'title', 'length'
@@ -25,13 +24,28 @@ class PlayerScreen:
         if not pygame.mixer.get_init():
             pygame.mixer.init()
 
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        ASSETS_DIR = os.path.join(BASE_DIR, "assets", "fonts", "controlls")
+
         # Load control icons
         base = "assets/fonts/controlls/"
-        self.ic_prev  = pygame.transform.smoothscale(pygame.image.load(base+"previous.png"), (self.ICON_SIZE, self.ICON_SIZE))
-        self.ic_play  = pygame.transform.smoothscale(pygame.image.load(base+"play.png"),     (self.ICON_SIZE, self.ICON_SIZE))
-        self.ic_pause = pygame.transform.smoothscale(pygame.image.load(base+"pause.png"),    (self.ICON_SIZE, self.ICON_SIZE))
-        self.ic_next  = pygame.transform.smoothscale(pygame.image.load(base+"next.png"),     (self.ICON_SIZE, self.ICON_SIZE))
-
+        self.ic_prev = pygame.transform.smoothscale(
+            pygame.image.load(os.path.join(ASSETS_DIR, "previous.png")),
+            (self.ICON_SIZE, self.ICON_SIZE)
+        )
+        # Do the same for play.png, pause.png, next.png
+        self.ic_play = pygame.transform.smoothscale(
+            pygame.image.load(os.path.join(ASSETS_DIR, "play.png")),
+            (self.ICON_SIZE, self.ICON_SIZE)
+        )
+        self.ic_pause = pygame.transform.smoothscale(
+            pygame.image.load(os.path.join(ASSETS_DIR, "pause.png")),
+            (self.ICON_SIZE, self.ICON_SIZE)
+        )
+        self.ic_next = pygame.transform.smoothscale(
+            pygame.image.load(os.path.join(ASSETS_DIR, "next.png")),
+            (self.ICON_SIZE, self.ICON_SIZE)
+        )
         # Scroll state
         self.title_offset = 0.0
         self.artist_offset = 0.0

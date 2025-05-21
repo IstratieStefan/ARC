@@ -158,6 +158,7 @@ while running:
         tab_manager.handle_event(ev)
         for icon in current_icons:
             icon.handle_event(ev)
+            pygame.display.iconify()
 
     # Draw
     screen.fill(config.COLORS['background'])

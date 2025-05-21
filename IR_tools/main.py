@@ -1,6 +1,8 @@
 import pygame
 import sys
 import math
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import config
 from ui_elements import Button, WarningMessage, TabManager
 

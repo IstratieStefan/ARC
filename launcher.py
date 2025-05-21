@@ -158,6 +158,7 @@ while running:
             elif ev.key in (pygame.K_RETURN, pygame.K_KP_ENTER) and current_icons:
                 idx = current_page * config.GRID_COLS * config.GRID_ROWS + sel_index
                 launch_app(all_apps[idx].get('exec',''))
+                pygame.display.iconify()
 
         # Pass through to UI elements
         tab_manager.handle_event(ev)

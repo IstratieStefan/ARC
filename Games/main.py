@@ -52,6 +52,7 @@ class GameMenu:
             pygame.quit()
             sys.exit()
 
+
         # allow clicking on TabManager
         self.tabmgr.handle_event(event)
 
@@ -64,6 +65,8 @@ class GameMenu:
             if event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
                 self.btns[self.selected_idx].callback()
                 return
+            elif event.key == pygame.K_ESCAPE:
+                pygame.quit()
 
         # mouse interactions
         for i, btn in enumerate(self.btns):

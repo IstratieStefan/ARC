@@ -20,6 +20,8 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            elif event.key == pygame.K_ESCAPE:
+                running = False
 
         screen.fill((0, 0, 0))
         screen.blit(text_surface, text_rect)

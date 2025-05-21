@@ -5,6 +5,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import calendar
 import config
 from datetime import datetime
+from ui_elements import *
 
 pygame.init()
 
@@ -125,6 +126,8 @@ def main():
                     prev_month()
                 elif event.key == pygame.K_RIGHT:
                     next_month()
+                elif event.key == pygame.K_ESCAPE:
+                    running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if LEFT_ARROW_RECT.collidepoint(event.pos):
                     prev_month()

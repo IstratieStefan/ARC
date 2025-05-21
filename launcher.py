@@ -1,4 +1,7 @@
 import pygame, os, json, subprocess
+
+import ui_elements
+
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 import config
 from ui_elements import AppIcon, TabManager, Slider
@@ -10,6 +13,7 @@ from ARC_DE.wifi_menu import WifiMenu
 pygame.init()
 screen = pygame.display.set_mode((config.SCREEN_WIDTH, config.SCREEN_HEIGHT), pygame.FULLSCREEN)
 clock = pygame.time.Clock()
+pygame.display.set_caption('ARC Launcher')
 
 # Volume slider (if you need it)
 def on_volume_change(val):
@@ -134,6 +138,7 @@ while running:
                 sel_index -= 1
             elif ev.key == pygame.K_q and (ev.mod & pygame.KMOD_CTRL):
                     running = False
+                    pygame.quit()
             elif ev.key == pygame.K_RIGHT and sel_index % config.GRID_COLS < config.GRID_COLS-1 \
                  and sel_index+1 < len(current_icons):
                 sel_index += 1
@@ -153,7 +158,6 @@ while running:
             elif ev.key in (pygame.K_RETURN, pygame.K_KP_ENTER) and current_icons:
                 idx = current_page * config.GRID_COLS * config.GRID_ROWS + sel_index
                 launch_app(all_apps[idx].get('exec',''))
-                pygame.display.iconify()
 
         # Pass through to UI elements
         tab_manager.handle_event(ev)

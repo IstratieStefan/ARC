@@ -13,7 +13,7 @@ from player import PlayerScreen
 def main():
     # Initialize Pygame
     pygame.init()
-    screen = pygame.display.set_mode((480, 320))
+    screen = pygame.display.set_mode((480, 320), pygame.FULLSCREEN)
     pygame.display.set_caption("Arc Music Player")
     clock = pygame.time.Clock()
     pygame.font.init()

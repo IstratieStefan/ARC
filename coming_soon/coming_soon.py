@@ -7,7 +7,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 pygame.init()
 
 WIDTH, HEIGHT = 480, 320
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+screen = pygame.display.set_mode((WIDTH, HEIGHT),pygame.FULLSCREEN)
 pygame.display.set_caption('Coming Soon')
 
 font = pygame.font.Font(None, 74)

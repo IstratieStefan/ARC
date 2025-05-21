@@ -19,7 +19,7 @@ ACCENT = config.ACCENT_COLOR
 GRAY = (200, 200, 200)
 
 # Set up the display
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
 pygame.display.set_caption('Calendar App')
 clock = pygame.time.Clock()
 

@@ -44,7 +44,7 @@ def make_qr_code(data, size=160):
 
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
     pygame.display.set_caption("IP Address & QR Code")
 
     font = pygame.font.SysFont(None, 36)

@@ -112,7 +112,7 @@ class IRMenu:
 
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((config.SCREEN_WIDTH, config.SCREEN_HEIGHT))
+    screen = pygame.display.set_mode((config.SCREEN_WIDTH, config.SCREEN_HEIGHT), pygame.FULLSCREEN)
     pygame.display.set_caption("IR Tools Menu")
     clock = pygame.time.Clock()
 

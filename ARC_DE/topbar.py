@@ -2,16 +2,18 @@ import pygame
 import config
 import subprocess
 import threading
+import time
 from datetime import datetime
 
-
 class TopBar:
-    def __init__(self, wifi_menu=None, bt_menu=None):
+    def __init__(self, wifi_menu=None, bt_menu=None, wifi_poller=None, bt_poller=None):
         self.h = config.TOPBAR_HEIGHT
         self.bg = config.TOPBAR_BG
         self.fg = config.TOPBAR_FG
         self.font = pygame.font.SysFont('Arial', 18)
 
+        self.wifi_poller = wifi_poller
+        self.bt_poller = bt_poller
         # Load left-side icons
         self.left_icons = []
         for path in config.TOPBAR_ICONS:
@@ -63,50 +65,6 @@ class TopBar:
         except:
             return pygame.Surface((20, 20), pygame.SRCALPHA)
 
-    def get_wifi_strength(self):
-        try:
-            out = subprocess.check_output([
-                'nmcli', '-t', '-f', 'ACTIVE,SIGNAL',
-                'device', 'wifi', 'list'
-            ], stderr=subprocess.DEVNULL).decode()
-            for line in out.splitlines():
-                parts = line.split(':')
-                if parts[0] == 'yes' and len(parts) >= 2:
-                    return int(parts[1])
-        except:
-            pass
-        return None
-
-    def get_bt_status(self):
-        """
-          0 - Bluetooth OFF
-          1 - Bluetooth ON, not connected
-          2 - Bluetooth ON, at least one device connected
-        """
-        try:
-            out = subprocess.check_output(['bluetoothctl', 'show'], stderr=subprocess.DEVNULL, text=True)
-            powered = False
-            for line in out.splitlines():
-                if line.strip().startswith("Powered:"):
-                    powered = "yes" in line
-                    break
-            if not powered:
-                return 0  # OFF
-
-            out = subprocess.check_output(['bluetoothctl', 'devices'], stderr=subprocess.DEVNULL, text=True)
-            for line in out.splitlines():
-                parts = line.split()
-                if len(parts) >= 2:
-                    addr = parts[1]
-                    info = subprocess.check_output(['bluetoothctl', 'info', addr], stderr=subprocess.DEVNULL, text=True)
-                    for il in info.splitlines():
-                        if il.strip().startswith("Connected:") and "yes" in il:
-                            return 2  # CONNECTED
-
-            return 1  # ON, but not connected
-
-        except Exception:
-            return 0  # If any error, treat as OFF
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -153,11 +111,14 @@ class TopBar:
         rx = w - config.TOPBAR_PADDING_RIGHT
         icons = []
         if config.TOPBAR_SHOW_WIFI and self.wifi_icons:
-            strength = self.get_wifi_strength() or 0
+            strength = self.wifi_poller.get() if self.wifi_poller else 0
+            if strength is None:
+                strength = 0
             idx = min(len(self.wifi_icons) - 1, strength * len(self.wifi_icons) // 101)
             icons.append(('wifi', self.wifi_icons[idx]))
         if config.TOPBAR_SHOW_BT and self.bt_icons:
-            bt_status = self.get_bt_status()  # 0=off, 1=on, 2=connected
+            bt_status = self.bt_poller.get() if self.bt_poller else 0
+            bt_status = bt_status or 0  # Make sure it's always 0, 1, or 2
             bt_icon = self.bt_icons[min(bt_status, 2)]
             icons.append(('bt', bt_icon))
         for ico in self.right_icons:

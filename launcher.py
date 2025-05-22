@@ -8,6 +8,9 @@ from ARC_DE.volume_widget import AudioLevelSlider
 from ARC_DE.topbar import TopBar
 from ARC_DE.wifi_menu import WifiMenu
 from ARC_DE.bluetooth_menu import BluetoothMenu
+from ARC_DE.status_poller import StatusPoller
+from ARC_DE.arc_status import get_wifi_strength, get_bt_status
+
 
 # Main launcher code
 pygame.init()
@@ -100,8 +103,11 @@ wifi_menu = WifiMenu(screen)
 bt_menu = BluetoothMenu()
 current_page = 0
 sel_index = 0
-
-topbar = TopBar(wifi_menu=wifi_menu, bt_menu=bt_menu)
+wifi_poller = StatusPoller(get_wifi_strength, interval=2)
+bt_poller = StatusPoller(get_bt_status, interval=2)
+wifi_poller.start()
+bt_poller.start()
+topbar = TopBar(wifi_menu=wifi_menu, bt_menu=bt_menu, wifi_poller=wifi_poller, bt_poller=bt_poller)
 
 running = True
 while running:
@@ -109,7 +115,6 @@ while running:
         if ev.type == pygame.QUIT:
             running = False
             break
-
 
         if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 1:
             if topbar.wifi_rect and topbar.wifi_rect.collidepoint(ev.pos):
@@ -123,13 +128,8 @@ while running:
                 else:
                     bt_menu.open()
 
-
-
-
         if wifi_menu.active and (not wifi_menu.password_box or not wifi_menu.password_box.active) and ev.type == pygame.KEYDOWN and ev.key == pygame.K_ESCAPE:
             wifi_menu.close()
-
-
 
         if wifi_menu.active:
             wifi_menu.handle_event(ev)
@@ -194,6 +194,6 @@ while running:
             icon.draw(screen)
 
     pygame.display.flip()
-    clock.tick(config.FPS)
+    clock.tick(30)
 
 pygame.quit()

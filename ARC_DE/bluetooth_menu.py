@@ -61,6 +61,45 @@ class BluetoothMenu:
             time.sleep(self.SCAN_INTERVAL)
         self.scanning = False
 
+    def get_wifi_strength(self):
+        try:
+            out = subprocess.check_output([
+                'nmcli', '-t', '-f', 'ACTIVE,SIGNAL',
+                'device', 'wifi', 'list'
+            ], stderr=subprocess.DEVNULL).decode()
+            for line in out.splitlines():
+                parts = line.split(':')
+                if parts[0] == 'yes' and len(parts) >= 2:
+                    return int(parts[1])
+        except:
+            pass
+        return 0
+
+    def get_bt_status(self):
+        try:
+            out = subprocess.check_output(['bluetoothctl', 'show'], stderr=subprocess.DEVNULL, text=True)
+            powered = False
+            for line in out.splitlines():
+                if line.strip().startswith("Powered:"):
+                    powered = "yes" in line
+                    break
+            if not powered:
+                return 0  # OFF
+
+            out = subprocess.check_output(['bluetoothctl', 'devices'], stderr=subprocess.DEVNULL, text=True)
+            for line in out.splitlines():
+                parts = line.split()
+                if len(parts) >= 2:
+                    addr = parts[1]
+                    info = subprocess.check_output(['bluetoothctl', 'info', addr], stderr=subprocess.DEVNULL, text=True)
+                    for il in info.splitlines():
+                        if il.strip().startswith("Connected:") and "yes" in il:
+                            return 2  # CONNECTED
+
+            return 1  # ON, but not connected
+        except Exception:
+            return 0  # If any error, treat as OFF
+
     def scan_bt_devices(self):
         try:
             subprocess.run(['bluetoothctl', 'power', 'on'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

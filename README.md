@@ -1,7 +1,81 @@
-# ARC
-ARC - All in one Remote Console
+# ARC – All-in-one Remote Console
+
+## 🚀 What is ARC?
+
+**ARC (All-in-one Remote Console)** is a portable, open-source, modular toolkit for makers, hackers, engineers, and anyone passionate about wireless technologies.  
+Built around a Raspberry Pi Zero 2 W, ARC brings together NFC, RF, LoRa, GSM, and a full-featured Linux terminal in a single handheld device, complete with a touchscreen, physical keyboard, and battery power.
+
+> **Think of ARC as the Swiss Army knife for wireless tech:** scan NFC tags, analyze RF signals, communicate over LoRa or GSM, and launch custom apps, all from your pocket.
+
+---
+
+## 🎯 Key Features
+
+- **Multi-protocol support:**  
+  Interact with and test a huge range of wireless protocols:  
+  - **NFC** (read/write/emulate cards)  
+  - **RF** (analyze and transmit common signals)  
+  - **LoRa** (long-range IoT comms)  
+  - **GSM** (SMS, calls, and data via SIM800L)
+
+- **Touchscreen GUI + Full QWERTY Keyboard:**  
+  Easy-to-use interface designed for both touchscreen and physical input.
+
+- **Modular software architecture:**  
+  Each function (NFC, RF, LoRa, etc.) is its own app, launchable from a custom Python launcher.
+
+- **Portable and battery-powered:**  
+  Designed for fieldwork and everyday portability—no need for a laptop or separate adapters.
+
+- **Fully open-source:**  
+  Hardware designs, schematics, and all source code are open and customizable.
+
+---
+
+## 🛠️ Technical Overview
+
+- **Core:**  
+  - Raspberry Pi Zero 2 W running Debian 11 Lite (32-bit)
+  - Custom PCB with 6-layer design for stability
+
+- **Display:**  
+  - 3.5" SPI TFT, controlled by `fbcp-ili9341` driver  
+  - Touchscreen input
+
+- **User Input:**  
+  - Full QWERTY tactile keyboard (RP2040/Pico microcontroller as USB HID)
+
+- **Wireless modules:**  
+  - **NFC:** PN532 (UART/I2C/SPI)  
+  - **RF:** CC1101/NRF24 (SPI)  
+  - **LoRa:** SX1276 (SPI)  
+  - **GSM:** SIM800L (UART)
+
+- **Software architecture:**  
+  - Linux + Xorg (X11) for GUI
+  - NetworkManager (Wi-Fi), Bluez (Bluetooth)
+  - Custom launcher and apps written in Python using Pygame
+  - Modular structure: new apps and protocols can be added easily
+
+- **Audio:**  
+  - I2S audio output (for beeps, music, or voice)
+
+- **Power:**  
+  - Li-ion phone battery (with charge and protection circuit, battery gauge)
+
+---
+
+## 🖼️ Screenshots
 
 
-**ARC (All-in-one Remote Console)** is a compact, Linux-powered handheld device designed for hackers, developers, and field engineers. It combines a Raspberry Pi Zero 2 W with a custom-designed PCB that integrates GSM (SIM800L), LoRa (SX1276), Wi-Fi tools, infrared (IR), NFC (PN532), and a full QWERTY keyboard controlled by a Waveshare RP2040 Pico Mini. ARC features a 3.5" color display, I2S Hi-Fi audio with both speaker and 3.5mm jack (auto-switched via headphone detection), a vibration motor for haptic feedback, an RGB notification LED, and a fuel gauge (MAX17048) for precise battery monitoring. 
-All power is managed through a USB-C charge circuit (TP4056 with protection) and a soft power sleep system that mimics smartphone behavior. The device also exposes GPIO headers for debugging or sensor expansion and supports UART, SPI, and I2C. ARC includes tools for RF testing, phone control, LoRa messaging, NFC reading/writing, and IR signal learning. Its custom-built ARC Desktop Environment includes a modular app launcher with touch and keyboard support, a system bar with indicators, and apps like terminal, SMS/call manager, LoRa chat, NFC tools, and hardware I/O control. Designed for both offline operation and full extensibility, ARC is a true all-in-one remote console — portable, hackable, and ready for the field.
-  
+
+---
+
+## 💡 Why ARC?
+
+- **All-in-one:** Replace a bag of dongles, adapters, and dev boards with a single device.
+- **Open and hackable:** Both hardware and software are easy to modify, expand, and contribute to.
+- **Ready for the field:** Compact, battery-powered, and rugged—built to go anywhere.
+- **Perfect for:** Security researchers, makers, IoT developers, educators, or anyone who works with modern wireless tech.
+
+

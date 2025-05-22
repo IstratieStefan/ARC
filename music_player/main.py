@@ -59,6 +59,11 @@ def main():
                 pygame.quit()
                 sys.exit()
 
+            if ev.type == pygame.KEYDOWN:
+                if state == "MENU" and ev.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
+
             # Handle input based on current state
             if state == 'MENU':
                 res = menu.handle_event(ev)
@@ -86,9 +91,10 @@ def main():
                     # You can pass album index or data to SongSelector if needed
                     state = 'SONGS'
 
-
             elif state == 'PLAYER' and player:
                 res = player.handle_event(ev)
+                if res == 'BACK':
+                    state = 'MENU'
                 player.update()  # now valid
 
         # Update logic

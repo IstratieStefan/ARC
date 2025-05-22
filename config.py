@@ -5,7 +5,7 @@ import os
 # Screen settings
 SCREEN_WIDTH = 480
 SCREEN_HEIGHT = 320
-FPS = 60
+FPS = 30
 
 # Tab settings
 TAB_WIDTH = 100

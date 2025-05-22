@@ -149,7 +149,7 @@ FONT_NAME = './assets/fonts/Inter/Inter_18pt-SemiBold.ttf'
 FONT_SIZE = 20
 
 MUSIC_DIR = '/home/stefan/Music'
-GAME_JSON = '../Games/games.json'
+GAME_JSON = os.path.join(BASE_DIR, 'Games', 'games.json')
 
 # Warning message duration (milliseconds)
 WARNING_DURATION = 2000

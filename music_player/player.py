@@ -13,7 +13,7 @@ class PlayerScreen:
     SCROLL_PAUSE = 1.0
 
     def __init__(self, tracks, current_idx, fonts, colors, screen):
-        self.tracks     = tracks  # list of dicts with 'file', 'title', 'length'
+        self.tracks     = tracks
         self.screen     = screen
         self.font_title = fonts[0]
         self.font_item  = fonts[1]

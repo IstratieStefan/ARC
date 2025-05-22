@@ -85,13 +85,11 @@ NOTIFICATION_DOT     = (245, 88, 88)
 
 # left-side static icons
 TOPBAR_ICONS         = [
-    'icons/topbar/search.png',
     # …add/remove as desired
 ]
 
 # indicator icon paths (must exist)
 TOPBAR_ICON_BATTERY  = os.path.join(BASE_DIR, 'ARC_DE', 'icons', 'topbar', 'battery.png')
-TOPBAR_ICON_BT       = os.path.join(BASE_DIR, 'ARC_DE', 'icons', 'topbar', 'bluetooth.png')
 TOPBAR_ICON_MOBILE   = os.path.join(BASE_DIR, 'ARC_DE', 'icons', 'topbar', 'cellular.png')
 
 TOPBAR_WIFI_ICONS = [
@@ -101,6 +99,11 @@ TOPBAR_WIFI_ICONS = [
     os.path.join(BASE_DIR, 'ARC_DE', 'icons', 'topbar', 'wifi_3.png'),
     os.path.join(BASE_DIR, 'ARC_DE', 'icons', 'topbar', 'wifi_4.png'),
 ]
+
+TOPBAR_ICON_BT_ON = os.path.join(BASE_DIR, 'ARC_DE', 'icons', 'topbar', 'bluetooth_on.png')
+TOPBAR_ICON_BT_OFF = os.path.join(BASE_DIR, 'ARC_DE', 'icons', 'topbar', 'bluetooth_off.png')
+TOPBAR_ICON_BT_CONNECTED = os.path.join(BASE_DIR, 'ARC_DE', 'icons', 'topbar', 'bluetooth_connected.png')
+
 # which elements to show
 TOPBAR_SHOW_CLOCK       = True
 TOPBAR_CLOCK_FORMAT     = "%H:%M" # HH:MM only

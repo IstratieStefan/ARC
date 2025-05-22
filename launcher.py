@@ -1,13 +1,13 @@
 import pygame, os, json, subprocess
 from ARC_DE.loading_screen import show_loading_screen
 import ui_elements
-
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 import config
 from ui_elements import AppIcon, TabManager, Slider
 from ARC_DE.volume_widget import AudioLevelSlider
 from ARC_DE.topbar import TopBar
 from ARC_DE.wifi_menu import WifiMenu
+from ARC_DE.bluetooth_menu import BluetoothMenu
 
 # Main launcher code
 pygame.init()
@@ -97,10 +97,11 @@ pages_icons = [build_page_icons(p) for p in pages]
 tab_names = [f"Page {i+1}" for i in range(len(pages))]
 tab_manager = TabManager(tab_names)
 wifi_menu = WifiMenu(screen)
+bt_menu = BluetoothMenu()
 current_page = 0
 sel_index = 0
 
-topbar = TopBar()
+topbar = TopBar(wifi_menu=wifi_menu, bt_menu=bt_menu)
 
 running = True
 while running:
@@ -112,11 +113,18 @@ while running:
 
         if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 1:
             if topbar.wifi_rect and topbar.wifi_rect.collidepoint(ev.pos):
-                # directly call on the injected menu
                 if wifi_menu.active:
                     wifi_menu.close()
                 else:
                     wifi_menu.open()
+            if topbar.bt_rect and topbar.bt_rect.collidepoint(ev.pos):
+                if bt_menu.active:
+                    bt_menu.close()
+                else:
+                    bt_menu.open()
+
+
+
 
         if wifi_menu.active and (not wifi_menu.password_box or not wifi_menu.password_box.active) and ev.type == pygame.KEYDOWN and ev.key == pygame.K_ESCAPE:
             wifi_menu.close()
@@ -125,6 +133,10 @@ while running:
 
         if wifi_menu.active:
             wifi_menu.handle_event(ev)
+            continue
+
+        if bt_menu.active:
+            bt_menu.handle_event(ev)
             continue
 
 
@@ -172,6 +184,9 @@ while running:
     if wifi_menu.active:
         wifi_menu.update()
         wifi_menu.draw()
+    if bt_menu.active:
+        bt_menu.update()
+        bt_menu.draw(screen)
     else:
         topbar.draw(screen)
         tab_manager.draw(screen)

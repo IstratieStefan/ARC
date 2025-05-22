@@ -171,7 +171,6 @@ while running:
                 idx = current_page * config.GRID_COLS * config.GRID_ROWS + sel_index
                 show_loading_screen(screen, message="Starting app...", duration=1.0)
                 launch_app(all_apps[idx].get('exec',''))
-                pygame.display.iconify()
 
         # Pass through to UI elements
         tab_manager.handle_event(ev)

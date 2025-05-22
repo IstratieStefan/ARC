@@ -1,6 +1,7 @@
 import pygame
 import config
 import subprocess
+import threading
 from datetime import datetime
 
 
@@ -78,7 +79,6 @@ class TopBar:
 
     def get_bt_status(self):
         """
-        Returns:
           0 - Bluetooth OFF
           1 - Bluetooth ON, not connected
           2 - Bluetooth ON, at least one device connected
@@ -105,7 +105,7 @@ class TopBar:
 
             return 1  # ON, but not connected
 
-        except Exception as e:
+        except Exception:
             return 0  # If any error, treat as OFF
 
     def handle_event(self, event):

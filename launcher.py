@@ -184,7 +184,7 @@ while running:
     if wifi_menu.active:
         wifi_menu.update()
         wifi_menu.draw()
-    if bt_menu.active:
+    elif bt_menu.active:
         bt_menu.update()
         bt_menu.draw(screen)
     else:

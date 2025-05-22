@@ -14,7 +14,7 @@ from ARC_DE.arc_status import get_wifi_strength, get_bt_status
 
 # Main launcher code
 pygame.init()
-screen = pygame.display.set_mode((config.SCREEN_WIDTH, config.SCREEN_HEIGHT))
+screen = pygame.display.set_mode((config.SCREEN_WIDTH, config.SCREEN_HEIGHT), pygame.FULLSCREEN)
 clock = pygame.time.Clock()
 pygame.display.set_caption('ARC Launcher')
 

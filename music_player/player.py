@@ -227,9 +227,9 @@ class PlayerScreen:
         pos = pygame.mixer.music.get_pos() / 1000.0
         ln = self.tracks[self.current]['length']
         frac = min(pos / ln if ln > 0 else 0, 1)
-        bar = pygame.Rect(48, 272, 384, 8)
+        bar = pygame.Rect(48, 250, 384, 8)
         pygame.draw.rect(s, (200, 200, 200), bar, border_radius=4)
         pygame.draw.rect(s, self.C_ACCENT, (bar.x, bar.y, int(bar.w * frac), bar.h), border_radius=4)
         # Draw time text
         times = f"{int(pos//60)}:{int(pos%60):02d}/{int(ln//60)}:{int(ln%60):02d}"
-        s.blit(self.font_small.render(times, True, self.C_TEXT), (48, 284))
+        s.blit(self.font_small.render(times, True, self.C_TEXT), (48, 262))

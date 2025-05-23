@@ -64,8 +64,8 @@ BUILTIN_APPS = [
     { 'name':'Files',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','files.png'),   'exec':'pcmanfm'   },
     { 'name':'Text editor',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','editor.png'),   'exec':'vim -r'   },
     { 'name':'Music',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','music.png'),   'exec':'python3 -m music_player.main'   },
-    { 'name':'Games',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','games.png'),   'exec':'python3 .Games.main'   },
-    { 'name':'Settings', 'icon':os.path.join(BASE_DIR,'ARC_DE','icons','settings.png'), 'exec':'python .Settings.main' },
+    { 'name':'Games',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','games.png'),   'exec':'python3 -m Games.main'   },
+    { 'name':'Settings', 'icon':os.path.join(BASE_DIR,'ARC_DE','icons','settings.png'), 'exec':'python -m Settings.main' },
     { 'name':'ARC connect', 'icon':os.path.join(BASE_DIR,'ARC_DE','icons','arc_connect.png'), 'exec':'python3 -m ARC_connect.ip' }
 ]
 APPS_DIR     = os.path.join(BASE_DIR, 'apps')       # each subfolder = one app, contains manifest.json + icon.png

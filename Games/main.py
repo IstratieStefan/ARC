@@ -44,7 +44,6 @@ class GameMenu:
             cmd = game['command'].split()
             subprocess.Popen(cmd)
             pygame.quit()
-            sys.exit()
         except Exception as e:
             self.warning.text = f"Error: {e}"
             self.warning.show()
@@ -69,7 +68,6 @@ class GameMenu:
                 return
             elif event.key == pygame.K_ESCAPE:
                 pygame.quit()
-                sys.exit()
 
         # mouse interactions
         for i, btn in enumerate(self.btns):

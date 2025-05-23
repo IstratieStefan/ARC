@@ -1,5 +1,5 @@
 [
-  {"name": "Pokemon Emerald", "command": "mgba /home/stefan/Games/PokemonEmerald.gba"},
+  {"name": "Pokemon Emerald", "command": "mgba --frameskip=1 /home/stefan/Games/PokemonEmerald.gba"},
   {"name": "DOOM", "command": "mgba /home/stefan/Games/Doom.gba"},
   {"name": "Tetris", "command": "mgba /home/stefan/Games/Tetris.gba"},
   {"name": "Super Mario Advanced", "command": "mgba /home/stefan/Games/SuperMarioAdvanced.gba"}

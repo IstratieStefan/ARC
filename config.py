@@ -59,6 +59,7 @@ BUILTIN_APPS = [
     { 'name':'RF tools',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','rf.png'),   'exec':'python3 -m RF_tools.main'   },
     { 'name':'IR tools',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','ir.png'),   'exec':'python3 -m IR_tools.main'   },
     { 'name':'NFC tools',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','nfc.png'),   'exec':'python3 -m NFC_tools.main'   },
+    { 'name':'WiFi tools',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','wifi_tools.png'),   'exec':'python3 -m WIFI_tools.main'   },
     { 'name':'Files',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','files.png'),   'exec':'pcmanfm'   },
     { 'name':'Text editor',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','editor.png'),   'exec':'vim -r'   },
     { 'name':'Music',   'icon':os.path.join(BASE_DIR,'ARC_DE','icons','music.png'),   'exec':'python3 -m music_player.main'   },

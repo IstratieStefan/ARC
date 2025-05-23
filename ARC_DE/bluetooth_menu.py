@@ -175,3 +175,23 @@ class BluetoothMenu:
 
         # Draw device list
         self.device_list.draw(surface)
+
+if __name__ == "__main__":
+    pygame.init()
+    screen = pygame.display.set_mode((BluetoothMenu.WIDTH, BluetoothMenu.HEIGHT))
+    clock = pygame.time.Clock()
+    bt_menu = BluetoothMenu()
+    bt_menu.open()
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            bt_menu.handle_event(event)
+
+        screen.fill((0, 0, 0))
+        bt_menu.update()
+        bt_menu.draw(screen)
+        pygame.display.flip()
+        clock.tick(60)

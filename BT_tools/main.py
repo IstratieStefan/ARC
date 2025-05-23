@@ -368,7 +368,148 @@ class BTSavedMenu:
         hint_surf = hint_font.render(hints, True, config.COLORS['text'])
         surface.blit(hint_surf, (10, config.SCREEN_HEIGHT-30))
 
-# --- Bluetooth Main Menu ---
+class BTConnectMenu:
+    def __init__(self):
+        self.info = "Turn Bluetooth on/off and connect to devices."
+        self.status = self.get_bt_status()
+        self.devices = []
+        self.selected_idx = 0
+        self.last_action = ""
+        self.scanning = False
+
+    def get_bt_status(self):
+        try:
+            out = subprocess.check_output(
+                ['bluetoothctl', 'show'], text=True, stderr=subprocess.DEVNULL
+            )
+            for line in out.splitlines():
+                if "Powered:" in line:
+                    return "On" if "yes" in line else "Off"
+        except Exception:
+            return "Unknown"
+
+    def set_bt_power(self, enable):
+        cmd = ['bluetoothctl', 'power', 'on' if enable else 'off']
+        try:
+            subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            self.status = self.get_bt_status()
+            self.last_action = f"Bluetooth turned {'on' if enable else 'off'}."
+        except Exception as e:
+            self.last_action = f"Failed to change power: {e}"
+
+    def scan_devices(self):
+        self.scanning = True
+        self.info = "Scanning..."
+        try:
+            subprocess.run("timeout 5s bluetoothctl scan on", shell=True,
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            out = subprocess.check_output(
+                "bluetoothctl devices", shell=True, text=True
+            )
+            devices = []
+            for line in out.strip().split('\n'):
+                if line.strip():
+                    parts = line.split(' ', 2)
+                    if len(parts) >= 3:
+                        addr, name = parts[1], parts[2]
+                        devices.append({'addr': addr, 'name': name})
+            self.devices = devices
+            self.info = f"Found {len(self.devices)} devices." if devices else "No devices found."
+            self.selected_idx = 0
+        except Exception as e:
+            self.info = f"Scan failed: {e}"
+            self.devices = []
+        self.scanning = False
+
+    def connect_device(self, addr):
+        self.last_action = f"Connecting to {addr}..."
+        try:
+            subprocess.run(
+                ['bluetoothctl', 'pair', addr],
+                check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            )
+            subprocess.run(
+                ['bluetoothctl', 'trust', addr],
+                check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            )
+            subprocess.run(
+                ['bluetoothctl', 'connect', addr],
+                check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            )
+            self.last_action = f"Connected to {addr}."
+        except Exception as e:
+            self.last_action = f"Connect failed: {e}"
+
+    def disconnect_device(self, addr):
+        self.last_action = f"Disconnecting {addr}..."
+        try:
+            subprocess.run(
+                ['bluetoothctl', 'disconnect', addr],
+                check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            )
+            self.last_action = f"Disconnected {addr}."
+        except Exception as e:
+            self.last_action = f"Disconnect failed: {e}"
+
+    def handle_event(self, event):
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                return 'back'
+            elif event.key == pygame.K_r and not self.scanning:
+                threading.Thread(target=self.scan_devices).start()
+            elif event.key == pygame.K_DOWN and self.devices:
+                self.selected_idx = (self.selected_idx + 1) % len(self.devices)
+            elif event.key == pygame.K_UP and self.devices:
+                self.selected_idx = (self.selected_idx - 1) % len(self.devices)
+            elif event.key == pygame.K_c and self.devices:
+                addr = self.devices[self.selected_idx]['addr']
+                threading.Thread(target=self.connect_device, args=(addr,)).start()
+            elif event.key == pygame.K_d and self.devices:
+                addr = self.devices[self.selected_idx]['addr']
+                threading.Thread(target=self.disconnect_device, args=(addr,)).start()
+            elif event.key == pygame.K_o:
+                self.set_bt_power(True)
+            elif event.key == pygame.K_f:
+                self.set_bt_power(False)
+        return None
+
+    def update(self):
+        self.status = self.get_bt_status()
+
+    def draw(self, surface):
+        surface.fill(config.COLORS['background'])
+        font = pygame.font.SysFont(config.FONT_NAME, 40)
+        surf = font.render("Bluetooth Connect", True, config.COLORS['accent'])
+        surface.blit(surf, surf.get_rect(center=(config.SCREEN_WIDTH//2, 40)))
+        status_font = pygame.font.SysFont(config.FONT_NAME, 24)
+        stat_surf = status_font.render(f"Bluetooth: {self.status}", True, config.COLORS['text'])
+        surface.blit(stat_surf, (40, 90))
+
+        info_font = pygame.font.SysFont(config.FONT_NAME, 22)
+        info_surf = info_font.render(self.info, True, config.COLORS['text'])
+        surface.blit(info_surf, (40, 130))
+
+        # List devices
+        y = 180
+        dev_font = pygame.font.SysFont(config.FONT_NAME, 22)
+        for i, dev in enumerate(self.devices):
+            s = f"{dev['name']}  |  {dev['addr']}"
+            color = config.COLORS['accent'] if i == self.selected_idx else config.COLORS['text']
+            surf = dev_font.render(s, True, color)
+            rect = surf.get_rect(center=(config.SCREEN_WIDTH//2, y + i*32))
+            surface.blit(surf, rect)
+
+        # Last action
+        if self.last_action:
+            act_font = pygame.font.SysFont(config.FONT_NAME, 18)
+            act_surf = act_font.render(self.last_action, True, config.COLORS['accent'])
+            surface.blit(act_surf, (40, config.SCREEN_HEIGHT-80))
+
+        # Instructions
+        hint_font = pygame.font.SysFont(config.FONT_NAME, 18)
+        hints = "O = power on  |  F = power off  |  R = scan  |  C = connect  |  D = disconnect  |  UP/DOWN = select  |  ESC = back"
+        hint_surf = hint_font.render(hints, True, config.COLORS['text'])
+        surface.blit(hint_surf, (10, config.SCREEN_HEIGHT-30))
 
 class BluetoothMenu:
     ITEMS_PER_TAB = 3
@@ -377,6 +518,7 @@ class BluetoothMenu:
         self.selected_idx = 0
         self.active_page = None
         self.types_bt = [
+            "Connect Menu",
             "Scan Devices",
             "Device Info",
             "Pair Spoof",
@@ -391,6 +533,7 @@ class BluetoothMenu:
         self.tabmgr = TabManager(["" for _ in range(tabs)])
         self.warning = WarningMessage("")
         self.pages = [
+            BTConnectMenu(),
             BTScanMenu(),
             BTInfoMenu(),
             BTSpoofMenu(),

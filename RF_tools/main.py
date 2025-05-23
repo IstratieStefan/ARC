@@ -68,7 +68,6 @@ class RFMenu:
             pygame.quit()
             sys.exit()
 
-        # page 1 & 2: allow clicking on TabManager indicators
         if self.page == 1:
             self.tabmgr_1.handle_event(event)
         elif self.page == 2:
@@ -79,6 +78,9 @@ class RFMenu:
             if event.key == pygame.K_ESCAPE and self.page != 0:
                 self.set_page(0)
                 return
+            elif event.key == pygame.K_ESCAPE and self.page is 0:
+                pygame.quit()
+                sys.exit()
 
             # up/down moves within current page block
             if event.key in (pygame.K_DOWN, pygame.K_UP):
@@ -101,8 +103,6 @@ class RFMenu:
         # mouse buttons on items
         for i, btn in enumerate(self._current_buttons_list()):
             btn.handle_event(event)
-            if btn.hovered:
-                self.selected_idx = i
 
     def update(self):
         self.warning.update()

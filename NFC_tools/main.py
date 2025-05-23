@@ -30,7 +30,7 @@ class NFCMenu:
         self.types_nfc = [
             ("Scan Tag", "scan"),
             ("Read Tag", "read"),
-            ("Write", "write https://github.com/IstratieStefan/ARC"),
+            ("Write", "write x"),
             ("Authenticate Sector", "auth"),
             ("P2P Exchange", "p2p"),
             ("List Tag Types", "list")
@@ -89,7 +89,7 @@ class NFCMenu:
             self.warning.show()
 
     def handle_event(self, event):
-        if event.type == pygame.QUIT:
+        if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
             pygame.quit()
             sys.exit()
 
@@ -144,9 +144,6 @@ class NFCMenu:
 
             for i, btn in enumerate(self.btns):
                 btn.handle_event(event)
-                if btn.hovered:
-                    self.selected_idx = i
-                    self.tabmgr.active = i // self.ITEMS_PER_TAB
 
     def check_response(self):
         response = self.serial.read_all().decode(errors='ignore').strip()

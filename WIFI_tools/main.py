@@ -16,6 +16,8 @@ class ScanMenu:
         self.networks = []
         self.scanning = False
         self.selected_idx = 0
+        self.scroll_offset = 0
+        self.MAX_VISIBLE = 5  # Adjust for your screen/resolution
         self.info = "Press R to scan for WiFi networks."
         self.last_error = ""
 
@@ -24,13 +26,18 @@ class ScanMenu:
         self.info = "Scanning..."
         self.last_error = ""
         try:
-            # This uses wlan0; change to your interface if different!
-            output = subprocess.check_output(['sudo', 'iwlist', 'wlan0', 'scan'], stderr=subprocess.STDOUT, text=True)
+            # Change 'wlan0' to your actual interface if needed
+            output = subprocess.check_output(
+                ['sudo', 'iwlist', 'wlan0', 'scan'],
+                stderr=subprocess.STDOUT, text=True)
             self.networks = self.parse_scan(output)
             if self.networks:
                 self.info = f"Found {len(self.networks)} networks."
             else:
                 self.info = "No networks found."
+            # Reset selection and scroll after scan
+            self.selected_idx = 0
+            self.scroll_offset = 0
         except subprocess.CalledProcessError as e:
             self.info = "Scan failed."
             self.last_error = str(e)
@@ -64,8 +71,20 @@ class ScanMenu:
                 self.scan_networks()
             elif event.key == pygame.K_DOWN and self.networks:
                 self.selected_idx = (self.selected_idx + 1) % len(self.networks)
+                # Scroll down if selection is below visible window
+                if self.selected_idx - self.scroll_offset >= self.MAX_VISIBLE:
+                    self.scroll_offset += 1
+                # Wrap around resets scroll
+                if self.selected_idx == 0:
+                    self.scroll_offset = 0
             elif event.key == pygame.K_UP and self.networks:
                 self.selected_idx = (self.selected_idx - 1) % len(self.networks)
+                # Scroll up if selection is above visible window
+                if self.selected_idx < self.scroll_offset:
+                    self.scroll_offset = self.selected_idx
+                # Wrap around scroll to last page
+                if self.selected_idx == len(self.networks) - 1:
+                    self.scroll_offset = max(0, len(self.networks) - self.MAX_VISIBLE)
         return None
 
     def update(self):
@@ -81,26 +100,44 @@ class ScanMenu:
         info_surf = info_font.render(self.info, True, config.COLORS['text'])
         surface.blit(info_surf, info_surf.get_rect(center=(config.SCREEN_WIDTH//2, 90)))
 
-        # Show networks
+        # Draw visible networks only
         y = 140
         net_font = pygame.font.SysFont(config.FONT_NAME, 22)
-        for i, net in enumerate(self.networks):
-            s = f"{net['ssid']}  |  {net['bssid']}  |  Signal: {net['signal']} dBm" if net['signal'] else f"{net['ssid']}  |  {net['bssid']}"
-            color = config.COLORS['accent'] if i == self.selected_idx else config.COLORS['text_light']
+        visible_networks = self.networks[self.scroll_offset:self.scroll_offset + self.MAX_VISIBLE]
+        for i, net in enumerate(visible_networks):
+            idx = i + self.scroll_offset
+            s = f"{net['ssid']}  |  {net['bssid']}  |  Signal: {net['signal']} dBm" if net['signal'] is not None else f"{net['ssid']}  |  {net['bssid']}"
+            color = config.COLORS['accent'] if idx == self.selected_idx else config.COLORS['text']
             surf = net_font.render(s, True, color)
             rect = surf.get_rect(center=(config.SCREEN_WIDTH//2, y + i*32))
             surface.blit(surf, rect)
+
+        # Scroll indicators
+        arrow_font = pygame.font.SysFont(config.FONT_NAME, 24)
+        if self.scroll_offset > 0:
+            up_surf = arrow_font.render("^", True, config.COLORS['text'])
+            surface.blit(up_surf, (config.SCREEN_WIDTH//2, y - 28))
+        if self.scroll_offset + self.MAX_VISIBLE < len(self.networks):
+            down_surf = arrow_font.render("v", True, config.COLORS['text'])
+            surface.blit(down_surf, (config.SCREEN_WIDTH//2, y + self.MAX_VISIBLE * 32))
+
+        # Error display with background
         if self.last_error:
             err_font = pygame.font.SysFont(config.FONT_NAME, 20)
             err_surf = err_font.render(self.last_error, True, (255, 80, 80))
-            surface.blit(err_surf, (10, config.SCREEN_HEIGHT-60))
+            err_pos = (10, config.SCREEN_HEIGHT-60)
+            err_rect = err_surf.get_rect(topleft=err_pos)
+            bg_color = (60, 0, 0)
+            padding = 6
+            bg_rect = err_rect.inflate(padding, padding)
+            pygame.draw.rect(surface, bg_color, bg_rect, border_radius=6)
+            surface.blit(err_surf, err_pos)
 
         # Instructions
         hint_font = pygame.font.SysFont(config.FONT_NAME, 18)
         hints = "UP/DOWN = select  |  R = rescan  |  ESC = back"
         hint_surf = hint_font.render(hints, True, config.COLORS['text'])
         surface.blit(hint_surf, (10, config.SCREEN_HEIGHT-30))
-
 class HandshakeMenu:
     def __init__(self):
         self.info = "Select network and press ENTER to capture handshake."

@@ -27,36 +27,30 @@ class PlayerScreen:
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
         ASSETS_DIR = os.path.join(BASE_DIR, "controlls")
 
-        # Load control icons
-        base = "controlls/"
+        # Load and cache control icons only once
         self.ic_prev = pygame.transform.smoothscale(
-            pygame.image.load(os.path.join(ASSETS_DIR, "previous.png")),
-            (self.ICON_SIZE, self.ICON_SIZE)
-        )
-        # Do the same for play.png, pause.png, next.png
+            pygame.image.load(os.path.join(ASSETS_DIR, "previous.png")), (self.ICON_SIZE, self.ICON_SIZE)
+        ).convert_alpha()
         self.ic_play = pygame.transform.smoothscale(
-            pygame.image.load(os.path.join(ASSETS_DIR, "play.png")),
-            (self.ICON_SIZE, self.ICON_SIZE)
-        )
+            pygame.image.load(os.path.join(ASSETS_DIR, "play.png")), (self.ICON_SIZE, self.ICON_SIZE)
+        ).convert_alpha()
         self.ic_pause = pygame.transform.smoothscale(
-            pygame.image.load(os.path.join(ASSETS_DIR, "pause.png")),
-            (self.ICON_SIZE, self.ICON_SIZE)
-        )
+            pygame.image.load(os.path.join(ASSETS_DIR, "pause.png")), (self.ICON_SIZE, self.ICON_SIZE)
+        ).convert_alpha()
         self.ic_next = pygame.transform.smoothscale(
-            pygame.image.load(os.path.join(ASSETS_DIR, "next.png")),
-            (self.ICON_SIZE, self.ICON_SIZE)
-        )
-        # Scroll state
+            pygame.image.load(os.path.join(ASSETS_DIR, "next.png")), (self.ICON_SIZE, self.ICON_SIZE)
+        ).convert_alpha()
+
+        # Playback state & UI scroll state
         self.title_offset = 0.0
         self.artist_offset = 0.0
         self.scroll_direction = 1
         self.last_scroll_time = time.time()
         self.scroll_paused_until = 0
-
-        # Playback state
         self.playing = False
         self.art     = None
         self.artist  = None
+        self.album_art_ready = None
 
         # Load initial track
         self.load_track(current_idx)
@@ -86,6 +80,8 @@ class PlayerScreen:
         # Extract album art and artist from ID3 tags
         self.art = None
         self.artist = None
+        self.album_art_ready = None  # Reset cached ready-to-blit surface
+
         try:
             id3 = ID3(path)
             # Album art (APIC)
@@ -98,6 +94,20 @@ class PlayerScreen:
                 self.artist = id3['TPE1'].text[0]
         except Exception:
             pass
+
+        # Pre-render album art with rounded corners, only if art exists
+        BORDER_RADIUS = 8
+        art_size = (192, 192)
+        if self.art:
+            try:
+                img_scaled = pygame.transform.smoothscale(self.art, art_size).convert_alpha()
+                mask = pygame.Surface(art_size, pygame.SRCALPHA)
+                pygame.draw.rect(mask, (255,255,255,255), mask.get_rect(), border_radius=BORDER_RADIUS)
+                img_scaled.blit(mask, (0,0), special_flags=pygame.BLEND_RGBA_MIN)
+                self.album_art_ready = img_scaled
+            except Exception as e:
+                print(f"Failed to render rounded album art: {e}")
+                self.album_art_ready = None
 
     def prev_track(self):
         new_idx = (self.current - 1) % len(self.tracks)
@@ -127,16 +137,12 @@ class PlayerScreen:
         elif ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 1:
             x, y = ev.pos
             w, h = self.screen.get_size()
-            art_r = pygame.Rect(48, 64, 192, 192)
-            gap = 20
-            total_w = 3*self.ICON_SIZE + 2*gap
-            start_x = art_r.right + ((w - art_r.right) - total_w)//2
-            # Y position below art and text
-            text_height = self.font_title.get_height() + (self.font_item.get_height() if self.artist else 0) + 8
-            cy = art_r.bottom + 10 + text_height + self.ICON_SIZE//2
-            prev_r = pygame.Rect(start_x, cy - self.ICON_SIZE//2, self.ICON_SIZE, self.ICON_SIZE)
-            play_r = pygame.Rect(start_x + self.ICON_SIZE + gap, cy - self.ICON_SIZE//2, self.ICON_SIZE, self.ICON_SIZE)
-            next_r = pygame.Rect(start_x + 2*(self.ICON_SIZE + gap), cy - self.ICON_SIZE//2, self.ICON_SIZE, self.ICON_SIZE)
+            # Controls are at fixed position above progress bar
+            start_x = 265
+            cy = config.SCREEN_HEIGHT - 130
+            prev_r = pygame.Rect(start_x, cy, self.ICON_SIZE, self.ICON_SIZE)
+            play_r = pygame.Rect(start_x + self.ICON_SIZE + 20, cy, self.ICON_SIZE, self.ICON_SIZE)
+            next_r = pygame.Rect(start_x + 2*(self.ICON_SIZE + 20), cy, self.ICON_SIZE, self.ICON_SIZE)
             if prev_r.collidepoint(x, y):
                 self.prev_track()
             elif play_r.collidepoint(x, y):
@@ -149,9 +155,8 @@ class PlayerScreen:
         now = time.time()
         dt = now - self.last_scroll_time
         self.last_scroll_time = now
-        # Compute max scroll width
         w, _ = self.screen.get_size()
-        art_r = pygame.Rect(48, 64, 192, 192)
+        art_r = pygame.Rect(30, 40, 192, 192)
         max_w = w - art_r.right - 20
         # Title scroll
         title = self.tracks[self.current]['title']
@@ -188,13 +193,8 @@ class PlayerScreen:
         art_r = pygame.Rect(30, 40, 192, 192)
         BORDER_RADIUS = 8
         pygame.draw.rect(s, (200, 200, 200), art_r, border_radius=BORDER_RADIUS)
-        if self.art:
-            # Create a mask surface with alpha for rounded corners
-            mask = pygame.Surface(art_r.size, pygame.SRCALPHA)
-            pygame.draw.rect(mask, (255, 255, 255, 255), mask.get_rect(), border_radius=BORDER_RADIUS)
-            album_surf = pygame.transform.smoothscale(self.art, art_r.size).convert_alpha()
-            album_surf.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
-            s.blit(album_surf, art_r)
+        if self.album_art_ready:
+            s.blit(self.album_art_ready, art_r)
         pygame.draw.rect(s, (10, 10, 10), art_r, width=2, border_radius=BORDER_RADIUS)
         # Draw title
         x0 = art_r.right + 20
@@ -214,9 +214,8 @@ class PlayerScreen:
             y += art_surf.get_height() + 8
         else:
             y += 8
-        # Draw controls
+        # Draw controls (positioned above progress bar)
         gap = 20
-        total_w = 3 * self.ICON_SIZE + 2 * gap
         start_x = 265
         cy = config.SCREEN_HEIGHT - 130
         s.blit(self.ic_prev, (start_x, cy))
@@ -231,5 +230,5 @@ class PlayerScreen:
         pygame.draw.rect(s, (200, 200, 200), bar, border_radius=4)
         pygame.draw.rect(s, self.C_ACCENT, (bar.x, bar.y, int(bar.w * frac), bar.h), border_radius=4)
         # Draw time text
-        times = f"{int(pos//60)}:{int(pos%60):02d}/{int(ln//60)}:{int(ln%60):02d}"
+        times = f"{int(pos//60)}:{int(pos%60):02d}/{int(ln//60)}:{int(ln//60):02d}"
         s.blit(self.font_small.render(times, True, self.C_TEXT), (48, 262))

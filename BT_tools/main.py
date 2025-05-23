@@ -369,19 +369,21 @@ class BTSavedMenu:
         surface.blit(hint_surf, (10, config.SCREEN_HEIGHT-30))
 
 class BTConnectMenu:
+    MAX_VISIBLE = 7  # Number of devices visible at once
+
     def __init__(self):
-        self.info = "Turn Bluetooth on/off and connect to devices."
+        self.info = "O/F: On/Off | R: Scan | C: Connect | D: Disconnect | P: Pair | U: Unpair"
         self.status = self.get_bt_status()
         self.devices = []
         self.selected_idx = 0
         self.last_action = ""
         self.scanning = False
+        self.scroll_offset = 0
+        self.refresh_thread = None
 
     def get_bt_status(self):
         try:
-            out = subprocess.check_output(
-                ['bluetoothctl', 'show'], text=True, stderr=subprocess.DEVNULL
-            )
+            out = subprocess.check_output(['bluetoothctl', 'show'], text=True, stderr=subprocess.DEVNULL)
             for line in out.splitlines():
                 if "Powered:" in line:
                     return "On" if "yes" in line else "Off"
@@ -399,57 +401,90 @@ class BTConnectMenu:
 
     def scan_devices(self):
         self.scanning = True
-        self.info = "Scanning..."
+        self.info = "Scanning for devices..."
         try:
             subprocess.run("timeout 5s bluetoothctl scan on", shell=True,
                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            out = subprocess.check_output(
-                "bluetoothctl devices", shell=True, text=True
-            )
+            out = subprocess.check_output("bluetoothctl devices", shell=True, text=True)
             devices = []
             for line in out.strip().split('\n'):
                 if line.strip():
                     parts = line.split(' ', 2)
                     if len(parts) >= 3:
                         addr, name = parts[1], parts[2]
-                        devices.append({'addr': addr, 'name': name})
+                        connected = self.is_connected(addr)
+                        paired = self.is_paired(addr)
+                        devices.append({'addr': addr, 'name': name, 'connected': connected, 'paired': paired})
             self.devices = devices
             self.info = f"Found {len(self.devices)} devices." if devices else "No devices found."
             self.selected_idx = 0
+            self.scroll_offset = 0
         except Exception as e:
             self.info = f"Scan failed: {e}"
             self.devices = []
         self.scanning = False
 
+    def is_connected(self, addr):
+        try:
+            out = subprocess.check_output(f"bluetoothctl info {addr}", shell=True, text=True)
+            for line in out.splitlines():
+                if "Connected:" in line:
+                    return "yes" in line
+        except Exception:
+            pass
+        return False
+
+    def is_paired(self, addr):
+        try:
+            out = subprocess.check_output(f"bluetoothctl info {addr}", shell=True, text=True)
+            for line in out.splitlines():
+                if "Paired:" in line:
+                    return "yes" in line
+        except Exception:
+            pass
+        return False
+
+    def pair_device(self, addr):
+        self.last_action = f"Pairing with {addr}..."
+        try:
+            subprocess.run(['bluetoothctl', 'pair', addr], check=True,
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            subprocess.run(['bluetoothctl', 'trust', addr], check=True,
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            self.last_action = f"Paired and trusted {addr}."
+        except subprocess.CalledProcessError as e:
+            self.last_action = f"Pair failed: {e.stderr.strip() or e.stdout.strip()}"
+        self.scan_devices()  # Update list
+
+    def unpair_device(self, addr):
+        self.last_action = f"Unpairing {addr}..."
+        try:
+            subprocess.run(['bluetoothctl', 'remove', addr], check=True,
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            self.last_action = f"Removed {addr}."
+        except subprocess.CalledProcessError as e:
+            self.last_action = f"Remove failed: {e.stderr.strip() or e.stdout.strip()}"
+        self.scan_devices()  # Update list
+
     def connect_device(self, addr):
         self.last_action = f"Connecting to {addr}..."
         try:
-            subprocess.run(
-                ['bluetoothctl', 'pair', addr],
-                check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-            )
-            subprocess.run(
-                ['bluetoothctl', 'trust', addr],
-                check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-            )
-            subprocess.run(
-                ['bluetoothctl', 'connect', addr],
-                check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-            )
+            subprocess.run(['bluetoothctl', 'connect', addr], check=True,
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             self.last_action = f"Connected to {addr}."
-        except Exception as e:
-            self.last_action = f"Connect failed: {e}"
+        except subprocess.CalledProcessError as e:
+            self.last_action = f"Connect failed: {e.stderr.strip() or e.stdout.strip()}"
+        self.scan_devices()  # Update list
 
     def disconnect_device(self, addr):
         self.last_action = f"Disconnecting {addr}..."
         try:
-            subprocess.run(
-                ['bluetoothctl', 'disconnect', addr],
-                check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-            )
+            subprocess.run(['bluetoothctl', 'disconnect', addr], check=True,
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             self.last_action = f"Disconnected {addr}."
-        except Exception as e:
-            self.last_action = f"Disconnect failed: {e}"
+        except subprocess.CalledProcessError as e:
+            self.last_action = f"Disconnect failed: {e.stderr.strip() or e.stdout.strip()}"
+        self.scan_devices()  # Update list
 
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
@@ -458,9 +493,13 @@ class BTConnectMenu:
             elif event.key == pygame.K_r and not self.scanning:
                 threading.Thread(target=self.scan_devices).start()
             elif event.key == pygame.K_DOWN and self.devices:
-                self.selected_idx = (self.selected_idx + 1) % len(self.devices)
+                self.selected_idx = min(self.selected_idx + 1, len(self.devices) - 1)
+                if self.selected_idx - self.scroll_offset >= self.MAX_VISIBLE:
+                    self.scroll_offset += 1
             elif event.key == pygame.K_UP and self.devices:
-                self.selected_idx = (self.selected_idx - 1) % len(self.devices)
+                self.selected_idx = max(self.selected_idx - 1, 0)
+                if self.selected_idx < self.scroll_offset:
+                    self.scroll_offset = self.selected_idx
             elif event.key == pygame.K_c and self.devices:
                 addr = self.devices[self.selected_idx]['addr']
                 threading.Thread(target=self.connect_device, args=(addr,)).start()
@@ -468,9 +507,15 @@ class BTConnectMenu:
                 addr = self.devices[self.selected_idx]['addr']
                 threading.Thread(target=self.disconnect_device, args=(addr,)).start()
             elif event.key == pygame.K_o:
-                self.set_bt_power(True)
+                threading.Thread(target=self.set_bt_power, args=(True,)).start()
             elif event.key == pygame.K_f:
-                self.set_bt_power(False)
+                threading.Thread(target=self.set_bt_power, args=(False,)).start()
+            elif event.key == pygame.K_p and self.devices:
+                addr = self.devices[self.selected_idx]['addr']
+                threading.Thread(target=self.pair_device, args=(addr,)).start()
+            elif event.key == pygame.K_u and self.devices:
+                addr = self.devices[self.selected_idx]['addr']
+                threading.Thread(target=self.unpair_device, args=(addr,)).start()
         return None
 
     def update(self):
@@ -480,36 +525,47 @@ class BTConnectMenu:
         surface.fill(config.COLORS['background'])
         font = pygame.font.SysFont(config.FONT_NAME, 40)
         surf = font.render("Bluetooth Connect", True, config.COLORS['accent'])
-        surface.blit(surf, surf.get_rect(center=(config.SCREEN_WIDTH//2, 40)))
+        surface.blit(surf, surf.get_rect(center=(config.SCREEN_WIDTH // 2, 40)))
         status_font = pygame.font.SysFont(config.FONT_NAME, 24)
         stat_surf = status_font.render(f"Bluetooth: {self.status}", True, config.COLORS['text'])
         surface.blit(stat_surf, (40, 90))
-
         info_font = pygame.font.SysFont(config.FONT_NAME, 22)
         info_surf = info_font.render(self.info, True, config.COLORS['text'])
         surface.blit(info_surf, (40, 130))
 
-        # List devices
+        # Scrollable device list
         y = 180
         dev_font = pygame.font.SysFont(config.FONT_NAME, 22)
-        for i, dev in enumerate(self.devices):
-            s = f"{dev['name']}  |  {dev['addr']}"
-            color = config.COLORS['accent'] if i == self.selected_idx else config.COLORS['text']
+        visible_devices = self.devices[self.scroll_offset:self.scroll_offset + self.MAX_VISIBLE]
+        for i, dev in enumerate(visible_devices):
+            idx = i + self.scroll_offset
+            connected = "✓" if dev.get('connected') else ""
+            paired = "[Paired]" if dev.get('paired') else ""
+            s = f"{dev['name']} {paired} {connected}  |  {dev['addr']}"
+            color = config.COLORS['accent'] if idx == self.selected_idx else config.COLORS['text']
             surf = dev_font.render(s, True, color)
-            rect = surf.get_rect(center=(config.SCREEN_WIDTH//2, y + i*32))
+            rect = surf.get_rect(center=(config.SCREEN_WIDTH // 2, y + i * 32))
             surface.blit(surf, rect)
+        # Scroll indicators
+        arrow_font = pygame.font.SysFont(config.FONT_NAME, 24)
+        if self.scroll_offset > 0:
+            up_surf = arrow_font.render("^", True, config.COLORS['text'])
+            surface.blit(up_surf, (config.SCREEN_WIDTH // 2, y - 28))
+        if self.scroll_offset + self.MAX_VISIBLE < len(self.devices):
+            down_surf = arrow_font.render("v", True, config.COLORS['text'])
+            surface.blit(down_surf, (config.SCREEN_WIDTH // 2, y + self.MAX_VISIBLE * 32))
 
         # Last action
         if self.last_action:
             act_font = pygame.font.SysFont(config.FONT_NAME, 18)
             act_surf = act_font.render(self.last_action, True, config.COLORS['accent'])
-            surface.blit(act_surf, (40, config.SCREEN_HEIGHT-80))
+            surface.blit(act_surf, (40, config.SCREEN_HEIGHT - 80))
 
         # Instructions
         hint_font = pygame.font.SysFont(config.FONT_NAME, 18)
-        hints = "O = power on  |  F = power off  |  R = scan  |  C = connect  |  D = disconnect  |  UP/DOWN = select  |  ESC = back"
+        hints = "O/F: On/Off | R: Scan | C: Connect | D: Disconnect | P: Pair | U: Unpair"
         hint_surf = hint_font.render(hints, True, config.COLORS['text'])
-        surface.blit(hint_surf, (10, config.SCREEN_HEIGHT-30))
+        surface.blit(hint_surf, (10, config.SCREEN_HEIGHT - 30))
 
 class BluetoothMenu:
     ITEMS_PER_TAB = 3

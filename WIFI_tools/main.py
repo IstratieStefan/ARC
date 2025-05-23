@@ -451,13 +451,6 @@ class DeauthMenu:
         hint_surf = hint_font.render(hints, True, config.COLORS['text_light'])
         surface.blit(hint_surf, (10, config.SCREEN_HEIGHT-30))
 
-
-import pygame
-import subprocess
-import threading
-import os
-import config
-
 class CrackMenu:
     def __init__(self):
         self.info = "Select handshake file and press ENTER to crack."
@@ -572,71 +565,101 @@ class CrackMenu:
 
 class MonitorMenu:
     def __init__(self):
-        self.info = "Enable/disable monitor mode here."
+        self.info = "Enable/disable monitor mode. Select interface, ENTER to toggle."
+        self.ifaces = self.list_wifi_ifaces()
+        self.selected = 0
         self.status = ""
-        self.iface = self.get_wifi_iface()
-        self.in_monitor = False
-        self.busy = False
         self.last_error = ""
+        self.busy = False
         self.update_status()
 
-    def get_wifi_iface(self):
-        # Detect first non-loopback, non-ethernet wireless interface
+    def list_wifi_ifaces(self):
+        # Use 'iw dev' to find all wifi interfaces
         try:
             out = subprocess.check_output(["iw", "dev"], text=True)
+            ifaces = []
             for line in out.splitlines():
                 if "Interface" in line:
                     iface = line.split()[-1]
-                    return iface
+                    ifaces.append(iface)
+            return ifaces
         except Exception as e:
-            self.last_error = f"Error finding interface: {e}"
-        return None
+            self.last_error = f"Error listing interfaces: {e}"
+            return []
 
-    def check_monitor(self):
-        if not self.iface:
-            return False
+    def iface_mode(self, iface):
         try:
-            out = subprocess.check_output(["iw", "dev", self.iface, "info"], text=True)
-            return "type monitor" in out
+            out = subprocess.check_output(["iw", "dev", iface, "info"], text=True)
+            if "type monitor" in out:
+                return "monitor"
+            elif "type managed" in out:
+                return "managed"
+            else:
+                return "unknown"
         except Exception:
-            return False
+            return "unknown"
 
     def update_status(self):
-        if not self.iface:
-            self.status = "No WiFi interface found!"
-            self.in_monitor = False
+        if not self.ifaces:
+            self.status = "No WiFi interfaces found!"
             return
-        self.in_monitor = self.check_monitor()
-        mode = "monitor" if self.in_monitor else "managed"
-        self.status = f"{self.iface}: {mode} mode"
+        status = []
+        for i, iface in enumerate(self.ifaces):
+            mode = self.iface_mode(iface)
+            prefix = ">" if i == self.selected else " "
+            status.append(f"{prefix} {iface}: {mode}")
+        self.status = "  ".join(status)
 
-    def set_mode(self, enable_monitor):
-        if not self.iface or self.busy:
+    def set_mode(self, iface, to_monitor):
+        if self.busy:
             return
         self.busy = True
-        t = threading.Thread(target=self._set_mode, args=(enable_monitor,))
+        t = threading.Thread(target=self._set_mode, args=(iface, to_monitor))
         t.start()
 
-    def _set_mode(self, enable_monitor):
+    def _set_mode(self, iface, to_monitor):
         try:
-            if enable_monitor:
-                cmd = ["sudo", "airmon-ng", "start", self.iface]
-            else:
-                cmd = ["sudo", "airmon-ng", "stop", self.iface]
-            subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            # Always kill conflicting processes first
+            if to_monitor:
+                subprocess.run(["sudo", "airmon-ng", "check", "kill"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            # Try airmon-ng first (will work for most USB adapters)
+            cmd = ["sudo", "airmon-ng", "start" if to_monitor else "stop", iface]
+            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            # airmon-ng might change interface name; rescan interfaces
+            self.ifaces = self.list_wifi_ifaces()
+            # For built-in Pi WiFi, try manual mode switch if needed
+            mode = self.iface_mode(iface)
+            if to_monitor and mode != "monitor":
+                subprocess.run(["sudo", "ip", "link", "set", iface, "down"])
+                subprocess.run(["sudo", "iw", iface, "set", "monitor", "control"])
+                subprocess.run(["sudo", "ip", "link", "set", iface, "up"])
+            elif not to_monitor and mode == "monitor":
+                subprocess.run(["sudo", "ip", "link", "set", iface, "down"])
+                subprocess.run(["sudo", "iw", iface, "set", "type", "managed"])
+                subprocess.run(["sudo", "ip", "link", "set", iface, "up"])
+            self.last_error = ""
         except Exception as e:
             self.last_error = f"Error: {e}"
-        self.update_status()
         self.busy = False
+        self.update_status()
 
     def handle_event(self, event):
+        if self.busy:
+            return
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 return 'back'
-            elif event.key == pygame.K_RETURN:
-                if not self.busy:
-                    # Toggle monitor mode
-                    self.set_mode(not self.in_monitor)
+            elif event.key == pygame.K_DOWN and self.ifaces:
+                self.selected = (self.selected + 1) % len(self.ifaces)
+                self.update_status()
+            elif event.key == pygame.K_UP and self.ifaces:
+                self.selected = (self.selected - 1) % len(self.ifaces)
+                self.update_status()
+            elif event.key == pygame.K_RETURN and self.ifaces:
+                iface = self.ifaces[self.selected]
+                mode = self.iface_mode(iface)
+                self.set_mode(iface, to_monitor=(mode != "monitor"))
         return None
 
     def update(self):
@@ -652,23 +675,31 @@ class MonitorMenu:
         info_surf = info_font.render(self.info, True, config.COLORS['text'])
         surface.blit(info_surf, (40, 85))
 
+        # Show all interfaces and their modes
         status_font = pygame.font.SysFont(config.FONT_NAME, 26)
-        status_surf = status_font.render(self.status, True, config.COLORS['accent'])
-        surface.blit(status_surf, (40, 135))
+        y = 135
+        for i, iface in enumerate(self.ifaces):
+            mode = self.iface_mode(iface)
+            prefix = ">" if i == self.selected else " "
+            color = config.COLORS['accent'] if i == self.selected else config.COLORS['text_light']
+            surf = status_font.render(f"{prefix} {iface}: {mode}", True, color)
+            surface.blit(surf, (40, y + i*32))
 
+        # Error
         if self.last_error:
             err_font = pygame.font.SysFont(config.FONT_NAME, 22)
             err_surf = err_font.render(self.last_error, True, (255, 60, 60))
-            surface.blit(err_surf, (40, 175))
+            surface.blit(err_surf, (40, y + len(self.ifaces)*32 + 10))
 
-        # Show action hint
+        # Action hint
         hint_font = pygame.font.SysFont(config.FONT_NAME, 20)
         if self.busy:
             hint = "Working, please wait..."
         else:
-            hint = "ENTER = toggle monitor mode | ESC = back"
+            hint = "UP/DOWN = select  |  ENTER = toggle mode  |  ESC = back"
         hint_surf = hint_font.render(hint, True, config.COLORS['text_light'])
         surface.blit(hint_surf, (10, config.SCREEN_HEIGHT-30))
+
 
 class SavedMenu:
     def __init__(self):

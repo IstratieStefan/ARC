@@ -150,7 +150,7 @@ def main():
             player.draw()
 
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(30)
 
 
 if __name__ == '__main__':

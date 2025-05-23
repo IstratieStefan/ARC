@@ -71,9 +71,7 @@ class GameMenu:
         # mouse interactions
         for i, btn in enumerate(self.btns):
             btn.handle_event(event)
-            if btn.hovered:
-                self.selected_idx = i
-                self.tabmgr.active = i // self.ITEMS_PER_TAB
+
 
     def update(self):
         self.warning.update()

@@ -101,12 +101,16 @@ tab_names = [f"Page {i+1}" for i in range(len(pages))]
 tab_manager = TabManager(tab_names)
 wifi_menu = WifiMenu(screen)
 bt_menu = BluetoothMenu()
+bt_menu.active = False
 current_page = 0
 sel_index = 0
+
+# Top bar icon pollers
 wifi_poller = StatusPoller(get_wifi_strength, interval=2)
 bt_poller = StatusPoller(get_bt_status, interval=2)
 wifi_poller.start()
 bt_poller.start()
+
 topbar = TopBar(wifi_menu=wifi_menu, bt_menu=bt_menu, wifi_poller=wifi_poller, bt_poller=bt_poller)
 
 running = True
@@ -122,14 +126,23 @@ while running:
                     wifi_menu.close()
                 else:
                     wifi_menu.open()
-            if topbar.bt_rect and topbar.bt_rect.collidepoint(ev.pos):
-                if bt_menu.active:
+            elif topbar.bt_rect and topbar.bt_rect.collidepoint(ev.pos):
+                print(bt_menu.active)
+                if bt_menu.active is True:
+                    bt_menu = False
                     bt_menu.close()
-                else:
+                elif bt_menu.active is False:
+                    bt_menu.active = True
                     bt_menu.open()
 
-        if wifi_menu.active and (not wifi_menu.password_box or not wifi_menu.password_box.active) and ev.type == pygame.KEYDOWN and ev.key == pygame.K_ESCAPE:
+        if (wifi_menu.active and
+            (not wifi_menu.password_box or not wifi_menu.password_box.active)
+            and ev.type == pygame.KEYDOWN
+            and ev.key == pygame.K_ESCAPE):
             wifi_menu.close()
+
+        if bt_menu.active and ev.type == pygame.KEYDOWN and ev.key == pygame.K_ESCAPE:
+            bt_menu.close()
 
         if wifi_menu.active:
             wifi_menu.handle_event(ev)
@@ -185,7 +198,7 @@ while running:
         wifi_menu.draw()
     elif bt_menu.active:
         bt_menu.update()
-        bt_menu.draw(screen)
+        bt_menu.draw()
     else:
         topbar.draw(screen)
         tab_manager.draw(screen)

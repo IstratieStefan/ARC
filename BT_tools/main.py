@@ -9,8 +9,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import config
 from ui_elements import Button, WarningMessage, TabManager
 
-# --- Bluetooth Submenus ---
-
 class BTScanMenu:
     def __init__(self):
         self.info = "Press R to scan for Bluetooth devices."
@@ -102,6 +100,7 @@ class BTInfoMenu:
         self.selected_idx = 0
         self.scanning = False
         self.last_error = ""
+        self.page = 'list'   # 'list' or 'info'
         self.refresh_devices()
 
     def refresh_devices(self):
@@ -129,16 +128,25 @@ class BTInfoMenu:
             self.result = f"Failed: {e}"
 
     def handle_event(self, event):
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                return 'back'
-            elif event.key == pygame.K_DOWN and self.devices:
-                self.selected_idx = (self.selected_idx + 1) % len(self.devices)
-            elif event.key == pygame.K_UP and self.devices:
-                self.selected_idx = (self.selected_idx - 1) % len(self.devices)
-            elif event.key == pygame.K_RETURN and self.devices:
-                addr = self.devices[self.selected_idx]['addr']
-                threading.Thread(target=self.query_info, args=(addr,)).start()
+        if self.page == 'list':
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return 'back'
+                elif event.key == pygame.K_DOWN and self.devices:
+                    self.selected_idx = (self.selected_idx + 1) % len(self.devices)
+                elif event.key == pygame.K_UP and self.devices:
+                    self.selected_idx = (self.selected_idx - 1) % len(self.devices)
+                elif event.key == pygame.K_RETURN and self.devices:
+                    addr = self.devices[self.selected_idx]['addr']
+                    self.selected_addr = addr
+                    self.result = "Querying info..."
+                    self.page = 'info'
+                    threading.Thread(target=self.query_info, args=(addr,)).start()
+        elif self.page == 'info':
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    self.page = 'list'
+                    self.result = ""
         return None
 
     def update(self):
@@ -147,32 +155,43 @@ class BTInfoMenu:
     def draw(self, surface):
         surface.fill(config.COLORS['background'])
         font = pygame.font.SysFont(config.FONT_NAME, 40)
-        surf = font.render("Device Info", True, config.COLORS['accent'])
-        surface.blit(surf, surf.get_rect(center=(config.SCREEN_WIDTH//2, 40)))
-        info_font = pygame.font.SysFont(config.FONT_NAME, 24)
-        info_surf = info_font.render(self.info, True, config.COLORS['text'])
-        surface.blit(info_surf, info_surf.get_rect(center=(config.SCREEN_WIDTH//2, 90)))
-        # List devices
-        y = 140
-        dev_font = pygame.font.SysFont(config.FONT_NAME, 22)
-        for i, dev in enumerate(self.devices):
-            s = f"{dev['name']}  |  {dev['addr']}"
-            color = config.COLORS['accent'] if i == self.selected_idx else config.COLORS['text']
-            surf = dev_font.render(s, True, color)
-            rect = surf.get_rect(center=(config.SCREEN_WIDTH//2, y + i*32))
-            surface.blit(surf, rect)
-        # Show result
-        if self.result:
+        if self.page == 'list':
+            surf = font.render("Device Info", True, config.COLORS['accent'])
+            surface.blit(surf, surf.get_rect(center=(config.SCREEN_WIDTH//2, 40)))
+            info_font = pygame.font.SysFont(config.FONT_NAME, 24)
+            info_surf = info_font.render(self.info, True, config.COLORS['text'])
+            surface.blit(info_surf, info_surf.get_rect(center=(config.SCREEN_WIDTH//2, 90)))
+            # List devices
+            y = 140
+            dev_font = pygame.font.SysFont(config.FONT_NAME, 22)
+            for i, dev in enumerate(self.devices):
+                s = f"{dev['name']}  |  {dev['addr']}"
+                color = config.COLORS['accent'] if i == self.selected_idx else config.COLORS['text']
+                surf = dev_font.render(s, True, color)
+                rect = surf.get_rect(center=(config.SCREEN_WIDTH//2, y + i*32))
+                surface.blit(surf, rect)
+            # Instructions
+            hint_font = pygame.font.SysFont(config.FONT_NAME, 18)
+            hints = "UP/DOWN = select  |  ENTER = info  |  ESC = back"
+            hint_surf = hint_font.render(hints, True, config.COLORS['text'])
+            surface.blit(hint_surf, (10, config.SCREEN_HEIGHT-30))
+        elif self.page == 'info':
+            surf = font.render("Device Details", True, config.COLORS['accent'])
+            surface.blit(surf, surf.get_rect(center=(config.SCREEN_WIDTH//2, 40)))
+            info_font = pygame.font.SysFont(config.FONT_NAME, 22)
+            addr_line = info_font.render(self.selected_addr, True, config.COLORS['text'])
+            surface.blit(addr_line, (40, 90))
+            # Show result
             res_font = pygame.font.SysFont(config.FONT_NAME, 18)
             lines = self.result.splitlines()
             for i, line in enumerate(lines):
                 res_surf = res_font.render(line, True, config.COLORS['text'])
-                surface.blit(res_surf, (40, config.SCREEN_HEIGHT - 100 + i*22))
-        # Instructions
-        hint_font = pygame.font.SysFont(config.FONT_NAME, 18)
-        hints = "UP/DOWN = select  |  ENTER = info  |  ESC = back"
-        hint_surf = hint_font.render(hints, True, config.COLORS['text'])
-        surface.blit(hint_surf, (10, config.SCREEN_HEIGHT-30))
+                surface.blit(res_surf, (40, 130 + i*22))
+            # Instructions
+            hint_font = pygame.font.SysFont(config.FONT_NAME, 18)
+            hints = "ESC = back"
+            hint_surf = hint_font.render(hints, True, config.COLORS['text'])
+            surface.blit(hint_surf, (10, config.SCREEN_HEIGHT-30))
 
 class BTSpoofMenu:
     def __init__(self):

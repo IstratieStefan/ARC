@@ -74,7 +74,6 @@ class TopBar:
                 elif self.wifi_menu:
                     self.wifi_menu.open()
             if self.bt_rect and self.bt_rect.collidepoint(event.pos):
-                print("bluetooth icon clicked")
                 if self.bt_menu and self.bt_menu.active:
                     self.bt_menu.close()
                 elif self.bt_menu:

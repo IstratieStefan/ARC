@@ -6,8 +6,9 @@ import config
 from ui_elements import ScrollableList, MessageBox
 
 class BluetoothMenu:
-    WIDTH = 480
-    HEIGHT = 320
+    WIDTH = config.SCREEN_WIDTH
+    HEIGHT = config.SCREEN_HEIGHT
+    screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
     BG_COLOR = config.COLORS.get('popup_bg', (36, 42, 48))
     TEXT_COLOR = config.COLORS.get('popup_fg', (240, 240, 240))
     HIGHLIGHT = config.ACCENT_COLOR
@@ -17,7 +18,7 @@ class BluetoothMenu:
     SCAN_INTERVAL = getattr(config, 'BT_SCAN_INTERVAL', 8)  # seconds
 
     def __init__(self):
-        self.active = False
+        self.active = True
         self.rect = pygame.Rect(0, config.TOPBAR_HEIGHT, self.WIDTH, self.HEIGHT - config.TOPBAR_HEIGHT)
         self.font = pygame.font.SysFont(self.FONT_NAME, self.FONT_SIZE)
         self.devices = ['<scanning...>']
@@ -154,7 +155,8 @@ class BluetoothMenu:
     def update(self):
         pass  # For future expansion
 
-    def draw(self, surface):
+    def draw(self):
+        surface = self.screen
         if not self.active:
             return
         # Draw background
@@ -178,7 +180,7 @@ class BluetoothMenu:
 
 if __name__ == "__main__":
     pygame.init()
-    screen = pygame.display.set_mode((BluetoothMenu.WIDTH, BluetoothMenu.HEIGHT))
+
     clock = pygame.time.Clock()
     bt_menu = BluetoothMenu()
     bt_menu.open()
@@ -190,8 +192,8 @@ if __name__ == "__main__":
                 exit()
             bt_menu.handle_event(event)
 
-        screen.fill((0, 0, 0))
+        BluetoothMenu.screen.fill((0, 0, 0))
         bt_menu.update()
-        bt_menu.draw(screen)
+        bt_menu.draw()
         pygame.display.flip()
         clock.tick(60)

@@ -3,20 +3,41 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import pygame
 from mutagen.mp3 import MP3
+from mutagen.easyid3 import EasyID3
 from ui_elements import ScrollableList
+
+def scan_music_dir(music_dir):
+    """Scans a directory for MP3s, returning a list of dicts with all tags."""
+    tracks = []
+    for fn in sorted(os.listdir(music_dir)):
+        if fn.lower().endswith('.mp3'):
+            path = os.path.join(music_dir, fn)
+            try:
+                audio = MP3(path, ID3=EasyID3)
+                duration = audio.info.length
+                title = audio.get('title', [os.path.splitext(fn)[0]])[0]
+                album = audio.get('album', ['Unknown'])[0]
+                artist = audio.get('artist', ['Unknown'])[0]
+            except Exception:
+                duration = 0
+                title = os.path.splitext(fn)[0]
+                album = 'Unknown'
+                artist = 'Unknown'
+            tracks.append({
+                'title': title,
+                'file': path,
+                'length': duration,
+                'album': album,
+                'artist': artist
+            })
+    return tracks
 
 class SongSelector:
     def __init__(self, music_dir, fonts, colors, screen,
-                 rect=(16, 16, 448, 288), line_height=40):
+                 rect=(16, 16, 448, 288), line_height=40, tracks=None):
         """
-        A scrollable song list UI using ScrollableList with separate title scroll and fixed duration.
-
-        music_dir   – folder containing .mp3 files
-        fonts       – tuple of pygame.Fonts; use fonts[1] for list items
-        colors      – tuple where colors[2]=text, [3]=accent, [4]=scroll bg
-        screen      – pygame display Surface
-        rect        – (x,y,width,height) for list area (smaller margins)
-        line_height – pixel height per line
+        If tracks is provided, uses those, else scans music_dir.
+        Each track must be a dict with 'title', 'file', 'length', 'album', 'artist'.
         """
         self.screen = screen
         self.font = fonts[1]
@@ -28,24 +49,18 @@ class SongSelector:
         self.rect = pygame.Rect(rect)
         self.line_height = line_height
 
-        # Load track metadata into list of dicts
-        self.tracks = []
-        for fn in sorted(os.listdir(music_dir)):
-            if fn.lower().endswith('.mp3'):
-                path = os.path.join(music_dir, fn)
-                try:
-                    duration = MP3(path).info.length
-                except Exception:
-                    duration = 0
-                title = os.path.splitext(fn)[0]
-                self.tracks.append({'title': title, 'file': path, 'length': duration})
+        # Always get tracks as list-of-dicts with full metadata
+        if tracks is not None:
+            self.tracks = tracks
+        else:
+            self.tracks = scan_music_dir(music_dir)
 
         # Prepare display strings (only titles; durations drawn manually)
-        items = [t['title'] for t in self.tracks]
+        self.items = [t['title'] for t in self.tracks]
 
         # Create scrollable list
         self.list = ScrollableList(
-            items=items,
+            items=self.items,
             rect=rect,
             font=self.font,
             line_height=self.line_height,
@@ -54,7 +69,6 @@ class SongSelector:
             sel_color=self.sel_color,
             callback=self.on_select
         )
-        # Track selected index for highlighting
         self.selected_index = None
 
     def on_select(self, item):
@@ -62,12 +76,7 @@ class SongSelector:
         self.selected_index = idx
 
     def handle_event(self, ev):
-        """
-        Forward to ScrollableList; allow keyboard navigation, Enter to play, Escape to back.
-        """
-        # Handle scrolling and clicking
         self.list.handle_event(ev)
-        # Keyboard navigation: sync selected_index with list's cursor
         if ev.type == pygame.KEYDOWN:
             if ev.key in (pygame.K_DOWN, pygame.K_UP):
                 self.selected_index = self.list.selected_index
@@ -78,9 +87,7 @@ class SongSelector:
         return None
 
     def update(self):
-        """Update hover/scroll states."""
         self.list.update()
-        # Optionally keep selection within visible range
         if self.selected_index is not None:
             self.list.selected_index = self.selected_index
             self.list._ensure_visible()
@@ -88,18 +95,13 @@ class SongSelector:
     def draw(self):
         surf = self.screen
         x, y0, w, h = self.rect
-        # clear background
-        surf.fill((255, 255, 255))
-        # clip to list area
         old_clip = surf.get_clip()
         surf.set_clip(self.rect)
 
-        # Draw each item
         for i, track in enumerate(self.tracks):
             y = y0 + i * self.line_height - self.list.offset_y
             if y + self.line_height < y0 or y > y0 + h:
                 continue
-
             # Selected highlight (background)
             if self.selected_index == i:
                 pygame.draw.rect(surf, self.sel_color, (x, y, w, self.line_height), 2, border_radius=4)
@@ -119,16 +121,12 @@ class SongSelector:
             title = track['title']
             title_surf = self.font.render(title, True, self.text_color)
             max_title_w = w - dw - 15
-            # Set clip for title region
             surf.set_clip(pygame.Rect(x + 5, y, max_title_w, self.line_height))
             if title_surf.get_width() > max_title_w:
                 offset_x = -(pygame.time.get_ticks() // 150 % (title_surf.get_width() + 20))
             else:
                 offset_x = 0
             surf.blit(title_surf, (x + 5 + offset_x, y + (self.line_height - title_surf.get_height()) // 2))
-            # Restore clip for subsequent items
             surf.set_clip(self.rect)
 
-        # restore original clip
         surf.set_clip(old_clip)
-

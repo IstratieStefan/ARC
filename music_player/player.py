@@ -25,10 +25,10 @@ class PlayerScreen:
             pygame.mixer.init()
 
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-        ASSETS_DIR = os.path.join(BASE_DIR, "assets", "fonts", "controlls")
+        ASSETS_DIR = os.path.join(BASE_DIR, "controlls")
 
         # Load control icons
-        base = "assets/fonts/controlls/"
+        base = "controlls/"
         self.ic_prev = pygame.transform.smoothscale(
             pygame.image.load(os.path.join(ASSETS_DIR, "previous.png")),
             (self.ICON_SIZE, self.ICON_SIZE)
@@ -186,12 +186,16 @@ class PlayerScreen:
         s.fill(self.C_BG)
         # Draw album art
         art_r = pygame.Rect(30, 40, 192, 192)
+        BORDER_RADIUS = 8
+        pygame.draw.rect(s, (200, 200, 200), art_r, border_radius=BORDER_RADIUS)
         if self.art:
-            art_s = pygame.transform.scale(self.art, art_r.size)
-            s.blit(art_s, art_r)
-        else:
-            pygame.draw.rect(s, (200, 200, 200), art_r, border_radius=8)
-        pygame.draw.rect(s, (0, 0, 0), art_r, width=2, border_radius=8)
+            # Create a mask surface with alpha for rounded corners
+            mask = pygame.Surface(art_r.size, pygame.SRCALPHA)
+            pygame.draw.rect(mask, (255, 255, 255, 255), mask.get_rect(), border_radius=BORDER_RADIUS)
+            album_surf = pygame.transform.smoothscale(self.art, art_r.size).convert_alpha()
+            album_surf.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+            s.blit(album_surf, art_r)
+        pygame.draw.rect(s, (10, 10, 10), art_r, width=2, border_radius=BORDER_RADIUS)
         # Draw title
         x0 = art_r.right + 20
         y = art_r.y
@@ -213,12 +217,12 @@ class PlayerScreen:
         # Draw controls
         gap = 20
         total_w = 3 * self.ICON_SIZE + 2 * gap
-        start_x = art_r.right + ((w - art_r.right) - total_w) // 2
-        cy = y + self.ICON_SIZE // 2
-        s.blit(self.ic_prev,  (start_x, cy - self.ICON_SIZE // 2))
+        start_x = 265
+        cy = config.SCREEN_HEIGHT - 130
+        s.blit(self.ic_prev, (start_x, cy))
         icon = self.ic_pause if self.playing else self.ic_play
-        s.blit(icon,           (start_x + self.ICON_SIZE + gap, cy - self.ICON_SIZE // 2))
-        s.blit(self.ic_next,   (start_x + 2 * (self.ICON_SIZE + gap), cy - self.ICON_SIZE // 2))
+        s.blit(icon, (start_x + self.ICON_SIZE + gap, cy))
+        s.blit(self.ic_next, (start_x + 2 * (self.ICON_SIZE + gap), cy))
         # Draw progress bar
         pos = pygame.mixer.music.get_pos() / 1000.0
         ln = self.tracks[self.current]['length']

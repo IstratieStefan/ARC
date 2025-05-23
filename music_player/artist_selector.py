@@ -1,17 +1,12 @@
 import pygame
-import os
-import sys
-from mutagen.mp3 import MP3
-from mutagen.easyid3 import EasyID3
 from ui_elements import ScrollableList
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-class AlbumSelector:
+class ArtistSelector:
     def __init__(self, tracks, fonts, colors, screen,
                  rect=(16, 16, 448, 288), line_height=40):
         """
-        Group the provided tracks by album tag and build the scrollable album list.
-        tracks    – list of dicts, as loaded by SongSelector
+        Group the provided tracks by artist tag and build the scrollable artist list.
+        tracks    – list of dicts, as loaded by scan_music_dir or SongSelector
         """
         self.screen = screen
         self.font = fonts[1]
@@ -21,18 +16,19 @@ class AlbumSelector:
         self.rect = pygame.Rect(rect)
         self.line_height = line_height
 
-        self.albums = {}  # album_name -> list of tracks
+        # Group tracks by artist metadata
+        self.artists = {}  # artist_name -> list of tracks
         for t in tracks:
-            album = t.get('album', 'Unknown Album')
-            if not album:
-                album = "Unknown Album"
-            if album not in self.albums:
-                self.albums[album] = []
-            self.albums[album].append(t)
+            artist = t.get('artist', 'Unknown Artist')
+            if not artist:
+                artist = "Unknown Artist"
+            if artist not in self.artists:
+                self.artists[artist] = []
+            self.artists[artist].append(t)
 
-        self.album_names = sorted(self.albums.keys())
+        self.artist_names = sorted(self.artists.keys())
         self.list = ScrollableList(
-            items=self.album_names,
+            items=self.artist_names,
             rect=rect,
             font=self.font,
             line_height=self.line_height,
@@ -43,8 +39,8 @@ class AlbumSelector:
         )
         self.selected_index = None
 
-    def on_select(self, album_name):
-        idx = self.list.items.index(album_name)
+    def on_select(self, artist_name):
+        idx = self.list.items.index(artist_name)
         self.selected_index = idx
 
     def handle_event(self, ev):
@@ -53,9 +49,9 @@ class AlbumSelector:
             if ev.key in (pygame.K_DOWN, pygame.K_UP):
                 self.selected_index = self.list.selected_index
             elif ev.key == pygame.K_RETURN and self.selected_index is not None:
-                selected_album = self.album_names[self.selected_index]
-                tracks = self.albums[selected_album]
-                return ('SELECT_ALBUM', tracks)
+                selected_artist = self.artist_names[self.selected_index]
+                tracks = self.artists[selected_artist]
+                return ('SELECT_ARTIST', tracks)
             elif ev.key == pygame.K_ESCAPE:
                 return 'BACK'
         return None
@@ -72,7 +68,7 @@ class AlbumSelector:
         surf.fill((255, 255, 255))
         old_clip = surf.get_clip()
         surf.set_clip(self.rect)
-        for i, name in enumerate(self.album_names):
+        for i, name in enumerate(self.artist_names):
             y = y0 + i * self.line_height - self.list.offset_y
             if y + self.line_height < y0 or y > y0 + h:
                 continue
@@ -81,11 +77,11 @@ class AlbumSelector:
                 pygame.draw.rect(surf, self.sel_color, (x, y, w, self.line_height), 2, border_radius=4)
             elif self.list.enabled and self.list.hover_index == i:
                 pygame.draw.rect(surf, self.sel_color, (x, y, w, self.line_height), border_radius=4)
-            # Album name
-            album_surf = self.font.render(name, True, self.text_color)
-            surf.blit(album_surf, (x + 8, y + (self.line_height - album_surf.get_height()) // 2))
+            # Artist name
+            artist_surf = self.font.render(name, True, self.text_color)
+            surf.blit(artist_surf, (x + 8, y + (self.line_height - artist_surf.get_height()) // 2))
             # Number of songs
-            num_songs = len(self.albums[name])
+            num_songs = len(self.artists[name])
             num_surf = self.font.render(str(num_songs), True, self.text_color)
             surf.blit(num_surf, (x + w - 40, y + (self.line_height - num_surf.get_height()) // 2))
         surf.set_clip(old_clip)

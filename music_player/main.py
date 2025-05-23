@@ -5,9 +5,10 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import math
 import config
 from music_player.menu import MainMenu
-from music_player.song_selector import SongSelector
-from music_player.album_selector import AlbumSelector
+from music_player.song_selector import SongSelector, scan_music_dir
+from music_player.album_selector import *
 from music_player.player import PlayerScreen
+from music_player.artist_selector import ArtistSelector
 
 
 def main():
@@ -40,7 +41,10 @@ def main():
     # State machine
     state = 'MENU'
     menu = MainMenu(fonts, colors, screen)
-    songs = SongSelector(config.MUSIC_DIR, fonts, colors, screen)
+    all_tracks = scan_music_dir(config.MUSIC_DIR)
+    songs = SongSelector(None, fonts, colors, screen, tracks=all_tracks)  # all songs
+    album_sel = AlbumSelector(all_tracks, fonts, colors, screen)
+    artist_sel = ArtistSelector(all_tracks, fonts, colors, screen)
 
     # Build simple album grouping (5 songs per album)
     albums_data = []
@@ -49,9 +53,10 @@ def main():
             'name': f"Album {i//5+1}",
             'songs': songs.tracks[i:i+5]
         })
-    album_sel = AlbumSelector(albums_data, fonts, colors, screen)
-    player = None
 
+
+    player = None
+    album_songs_selector = None
     # Main loop
     while True:
         for ev in pygame.event.get():
@@ -71,6 +76,8 @@ def main():
                     state = 'SONGS'
                 elif res == 'Albums':
                     state = 'ALBUMS'
+                elif res == 'Artists':
+                    state = 'ARTISTS'
                 elif res == 'Now Playing' and player:
                     state = 'PLAYER'
 
@@ -83,13 +90,33 @@ def main():
                     player = PlayerScreen(songs.tracks, idx, fonts, colors, screen)
                     state = 'PLAYER'
 
+            elif state == 'ARTISTS':
+                res = artist_sel.handle_event(ev)
+                if res == 'BACK':
+                    state = 'MENU'
+                elif isinstance(res, tuple) and res[0] == 'SELECT_ARTIST':
+                    artist_tracks = res[1]
+                    songs = SongSelector(None, fonts, colors, screen, tracks=artist_tracks)
+                    state = 'SONGS'
+
             elif state == 'ALBUMS':
                 res = album_sel.handle_event(ev)
                 if res == 'BACK':
                     state = 'MENU'
                 elif isinstance(res, tuple) and res[0] == 'SELECT_ALBUM':
-                    # You can pass album index or data to SongSelector if needed
+                    album_tracks = res[1]
+                    songs = SongSelector(None, fonts, colors, screen, tracks=album_tracks)  # Only these tracks
                     state = 'SONGS'
+
+
+            elif state == 'ALBUM_SONGS':
+                res = album_songs_selector.handle_event(ev)
+                if res == 'BACK':
+                    state = 'ALBUMS'
+                elif isinstance(res, tuple) and res[0] == 'PLAY_SONG':
+                    idx = res[1]
+                    player = PlayerScreen(album_songs_selector.tracks, idx, fonts, colors, screen)
+                    state = 'PLAYER'
 
             elif state == 'PLAYER' and player:
                 res = player.handle_event(ev)
@@ -102,6 +129,8 @@ def main():
             songs.update()
         elif state == 'ALBUMS':
             album_sel.update()
+        elif state == 'ARTISTS':
+            artist_sel.update()
         elif state == 'PLAYER' and player:
             player.update()
 
@@ -113,6 +142,10 @@ def main():
             songs.draw()
         elif state == 'ALBUMS':
             album_sel.draw()
+        elif state == 'ALBUM_SONGS' and album_songs_selector:
+            album_songs_selector.draw()
+        elif state == 'ARTISTS':
+            artist_sel.draw()
         elif state == 'PLAYER' and player:
             player.draw()
 

@@ -5,7 +5,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from ui_elements import ScrollableList
 
 class MainMenu:
-    OPTIONS = ["Songs", "Albums", "Now Playing"]
+    OPTIONS = ["Songs", "Albums", "Artists", "Now Playing"]
 
     def __init__(self, fonts, colors, screen):
         self.screen = screen

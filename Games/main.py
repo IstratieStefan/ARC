@@ -30,7 +30,7 @@ class GameMenu:
             )
 
         # subpage manager
-        tabs = (len(self.btns) + self.ITEMS_PER_TAB - 1) // self.ITEMS_PER_TABx
+        tabs = (len(self.btns) + self.ITEMS_PER_TAB - 1) // self.ITEMS_PER_TAB
         self.tabmgr = TabManager(["" for _ in range(tabs)])
 
         self.warning = WarningMessage("")

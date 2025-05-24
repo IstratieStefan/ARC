@@ -2,19 +2,21 @@ import pygame
 import subprocess
 import threading
 import time
-import config
+from config import config
 from ui_elements import ScrollableList, MessageBox, SearchBox
 
-SCREEN_WIDTH  = config.SCREEN_WIDTH
-SCREEN_HEIGHT = config.SCREEN_HEIGHT
-BG_COLOR      = config.COLORS['background_light']
-TEXT_COLOR    = config.COLORS['text_light']
-HIGHLIGHT     = config.ACCENT_COLOR
-FONT_NAME     = config.FONT_NAME
-FONT_SIZE     = config.FONT_SIZE
+SCREEN_WIDTH  = config.screen.width
+SCREEN_HEIGHT = config.screen.height
+BG_COLOR      = tuple(config.colors.background_light)
+TEXT_COLOR    = tuple(config.colors.text_light)
+HIGHLIGHT     = tuple(config.accent_color)
+FONT_NAME     = config.font.name
+FONT_SIZE     = config.font.size
 LINE_HEIGHT   = FONT_SIZE + 10
-FPS           = config.FPS
-SCAN_INTERVAL = getattr(config, 'WIFI_SCAN_INTERVAL', 10)
+FPS           = config.screen.fps
+SCAN_INTERVAL = getattr(config, "wifi_scan_interval", 10)
+LOCK_ICON_PATH = config.icons.wifi_locked
+OPEN_ICON_PATH = config.icons.wifi_unlocked
 
 LOCK_ICON_PATH = "icons/wifi_locked_black.png"
 OPEN_ICON_PATH = "icons/wifi_unlocked_black.png"

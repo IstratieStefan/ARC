@@ -1,6 +1,6 @@
 import pygame
 import io
-import config
+from config import config
 import time
 import sys
 import os
@@ -20,28 +20,19 @@ class PlayerScreen:
         self.font_small = fonts[2]
         self.C_BG, self.C_TEXT, self.C_ACCENT = colors[0], colors[2], colors[3]
 
-        # Initialize mixer
+        # Initialize mixer if needed
         if not pygame.mixer.get_init():
             pygame.mixer.init()
 
+        # Load control icons
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
         ASSETS_DIR = os.path.join(BASE_DIR, "controlls")
+        self.ic_prev  = self.load_icon(os.path.join(ASSETS_DIR, "previous.png"))
+        self.ic_play  = self.load_icon(os.path.join(ASSETS_DIR, "play.png"))
+        self.ic_pause = self.load_icon(os.path.join(ASSETS_DIR, "pause.png"))
+        self.ic_next  = self.load_icon(os.path.join(ASSETS_DIR, "next.png"))
 
-        # Load and cache control icons only once
-        self.ic_prev = pygame.transform.smoothscale(
-            pygame.image.load(os.path.join(ASSETS_DIR, "previous.png")), (self.ICON_SIZE, self.ICON_SIZE)
-        ).convert_alpha()
-        self.ic_play = pygame.transform.smoothscale(
-            pygame.image.load(os.path.join(ASSETS_DIR, "play.png")), (self.ICON_SIZE, self.ICON_SIZE)
-        ).convert_alpha()
-        self.ic_pause = pygame.transform.smoothscale(
-            pygame.image.load(os.path.join(ASSETS_DIR, "pause.png")), (self.ICON_SIZE, self.ICON_SIZE)
-        ).convert_alpha()
-        self.ic_next = pygame.transform.smoothscale(
-            pygame.image.load(os.path.join(ASSETS_DIR, "next.png")), (self.ICON_SIZE, self.ICON_SIZE)
-        ).convert_alpha()
-
-        # Playback state & UI scroll state
+        # Playback & UI state
         self.title_offset = 0.0
         self.artist_offset = 0.0
         self.scroll_direction = 1
@@ -52,8 +43,19 @@ class PlayerScreen:
         self.artist  = None
         self.album_art_ready = None
 
-        # Load initial track
+        # Track index
+        self.current = None
         self.load_track(current_idx)
+
+    def load_icon(self, path):
+        try:
+            return pygame.transform.smoothscale(
+                pygame.image.load(path), (self.ICON_SIZE, self.ICON_SIZE)
+            ).convert_alpha()
+        except Exception:
+            surf = pygame.Surface((self.ICON_SIZE, self.ICON_SIZE), pygame.SRCALPHA)
+            surf.fill((255, 0, 0, 160))
+            return surf
 
     def update(self):
         self.update_scroll()
@@ -70,26 +72,22 @@ class PlayerScreen:
             print(f"Error loading track {path}: {e}")
             self.playing = False
 
-        # Reset scroll offsets
         self.title_offset = 0.0
         self.artist_offset = 0.0
         self.scroll_direction = 1
         self.last_scroll_time = time.time()
         self.scroll_paused_until = 0
 
-        # Extract album art and artist from ID3 tags
         self.art = None
         self.artist = None
-        self.album_art_ready = None  # Reset cached ready-to-blit surface
-
+        self.album_art_ready = None
+        # Extract ID3 tags
         try:
             id3 = ID3(path)
-            # Album art (APIC)
             for tag in id3.getall("APIC"):
                 img = pygame.image.load(io.BytesIO(tag.data))
                 self.art = img
                 break
-            # Artist (TPE1)
             if 'TPE1' in id3:
                 self.artist = id3['TPE1'].text[0]
         except Exception:
@@ -136,10 +134,8 @@ class PlayerScreen:
                 return 'BACK'
         elif ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 1:
             x, y = ev.pos
-            w, h = self.screen.get_size()
-            # Controls are at fixed position above progress bar
             start_x = 265
-            cy = config.SCREEN_HEIGHT - 130
+            cy = config.screen.height - 130
             prev_r = pygame.Rect(start_x, cy, self.ICON_SIZE, self.ICON_SIZE)
             play_r = pygame.Rect(start_x + self.ICON_SIZE + 20, cy, self.ICON_SIZE, self.ICON_SIZE)
             next_r = pygame.Rect(start_x + 2*(self.ICON_SIZE + 20), cy, self.ICON_SIZE, self.ICON_SIZE)
@@ -158,7 +154,6 @@ class PlayerScreen:
         w, _ = self.screen.get_size()
         art_r = pygame.Rect(30, 40, 192, 192)
         max_w = w - art_r.right - 20
-        # Title scroll
         title = self.tracks[self.current]['title']
         tw = self.font_title.size(title)[0]
         if tw > max_w and now >= self.scroll_paused_until:
@@ -171,7 +166,6 @@ class PlayerScreen:
                 self.title_offset = 0
                 self.scroll_direction *= -1
                 self.scroll_paused_until = now + self.SCROLL_PAUSE
-        # Artist scroll
         if self.artist:
             aw = self.font_item.size(self.artist)[0]
             if aw > max_w and now >= self.scroll_paused_until:
@@ -217,18 +211,25 @@ class PlayerScreen:
         # Draw controls (positioned above progress bar)
         gap = 20
         start_x = 265
-        cy = config.SCREEN_HEIGHT - 130
+        cy = config.screen.height - 130
         s.blit(self.ic_prev, (start_x, cy))
         icon = self.ic_pause if self.playing else self.ic_play
         s.blit(icon, (start_x + self.ICON_SIZE + gap, cy))
         s.blit(self.ic_next, (start_x + 2 * (self.ICON_SIZE + gap), cy))
         # Draw progress bar
         pos = pygame.mixer.music.get_pos() / 1000.0
-        ln = self.tracks[self.current]['length']
+        try:
+            ln = float(self.tracks[self.current].get('length', 0))
+        except Exception:
+            ln = 0
         frac = min(pos / ln if ln > 0 else 0, 1)
         bar = pygame.Rect(48, 250, 384, 8)
         pygame.draw.rect(s, (200, 200, 200), bar, border_radius=4)
         pygame.draw.rect(s, self.C_ACCENT, (bar.x, bar.y, int(bar.w * frac), bar.h), border_radius=4)
         # Draw time text
-        times = f"{int(pos//60)}:{int(pos%60):02d}/{int(ln//60)}:{int(ln//60):02d}"
+        def fmt_time(secs):
+            m = int(secs // 60)
+            s_ = int(secs % 60)
+            return f"{m}:{s_:02d}"
+        times = f"{fmt_time(pos)}/{fmt_time(ln)}"
         s.blit(self.font_small.render(times, True, self.C_TEXT), (48, 262))

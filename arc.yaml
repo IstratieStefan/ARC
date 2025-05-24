@@ -1,0 +1,163 @@
+screen:
+  width: 480
+  height: 320
+  fps: 30
+
+tab:
+  width: 100
+  height: 40
+  margin: 5
+
+accent_color: [204, 99, 36]
+
+colors:
+  background: [20, 20, 20]
+  background_light: [250, 250, 250]
+  tab_bg: [50, 50, 50]
+  tab_active: [100, 100, 100]
+  button: [220, 220, 220]
+  button_hover: [100, 160, 210]
+  text_light: [5, 5, 5]
+  text: [220, 220, 220]
+  warning_bg: [200, 50, 50]
+  warning_text: [255, 255, 255]
+  indicator: [180, 180, 180]
+  indicator_active: [255, 255, 255]
+  input_bg: [255, 255, 255]
+  input_border: [100, 100, 100]
+  input_text: [0, 0, 0]
+  input_placeholder: [150, 150, 150]
+  cell_bg: [220, 220, 220]
+  cell_active: [240, 240, 240]
+  accent: [204, 99, 36]
+  slider_bg: [80, 80, 80]
+  slider_fill: [50, 150, 250]
+  slider_knob: [200, 200, 200]
+  slider_active_knob: [255, 255, 255]
+
+icons:
+  wifi_locked: ./ARC_DE/icons/wifi_locked.png
+  wifi_unlocked: ./ARC_DE/icons/wifi_unlocked.png
+
+builtin_apps:
+  - name: Terminal
+    icon: ./ARC_DE/icons/terminal.png
+    exec: "kitty --directory=~"
+  - name: Web browser
+    icon: ./ARC_DE/icons/browser.png
+    exec: "python3 ./web_apps/browser.py"
+  - name: Phone
+    icon: ./ARC_DE/icons/phone.png
+    exec: "python3 coming_soon.coming_soon"
+  - name: Contacts
+    icon: ./ARC_DE/icons/contacts.png
+    exec: "python3 coming_soon.coming_soon"
+  - name: Mail
+    icon: ./ARC_DE/icons/mail.png
+    exec: "python3 coming_soon.coming_soon"
+  - name: Whatsapp
+    icon: ./ARC_DE/icons/sms.png
+    exec: "python3 ./web_apps/whatsapp.py"
+  - name: Calendar
+    icon: ./ARC_DE/icons/calendar.png
+    exec: "python3 -m calendar_app.main"
+  - name: RF tools
+    icon: ./ARC_DE/icons/rf.png
+    exec: "python3 -m RF_tools.main"
+  - name: IR tools
+    icon: ./ARC_DE/icons/ir.png
+    exec: "python3 -m IR_tools.main"
+  - name: NFC tools
+    icon: ./ARC_DE/icons/nfc.png
+    exec: "python3 -m NFC_tools.main"
+  - name: WiFi tools
+    icon: ./ARC_DE/icons/wifi_tools.png
+    exec: "python3 -m WIFI_tools.main"
+  - name: Bluetooth tools
+    icon: ./ARC_DE/icons/bluetooth_tools.png
+    exec: "python3 -m BT_tools.main"
+  - name: Files
+    icon: ./ARC_DE/icons/files.png
+    exec: "pcmanfm"
+  - name: Text editor
+    icon: ./ARC_DE/icons/editor.png
+    exec: "vim -r"
+  - name: Music
+    icon: ./ARC_DE/icons/music.png
+    exec: "python3 -m music_player.main"
+  - name: Games
+    icon: ./ARC_DE/icons/games.png
+    exec: "python3 -m Games.main"
+  - name: Settings
+    icon: ./ARC_DE/icons/settings.png
+    exec: "python -m Settings.main"
+  - name: ARC connect
+    icon: ./ARC_DE/icons/arc_connect.png
+    exec: "python3 -m ARC_connect.ip"
+
+apps_dir: ./apps
+packages_dir: ./packages
+
+grid:
+  cols: 4
+  rows: 2
+  margin: 10
+  padding: 30
+  x_offset: 23
+
+cell:
+  width: 80  # (you may want to compute this in Python based on grid, etc.)
+  height: 80
+
+topbar:
+  height: 30
+  bg: [20, 20, 20]
+  fg: [200, 200, 200]
+  notification_dot: [245, 88, 88]
+  icons: []
+  icon_battery: ./ARC_DE/icons/topbar/battery.png
+  icon_mobile: ./ARC_DE/icons/topbar/cellular.png
+  wifi_icons:
+    - ./ARC_DE/icons/topbar/wifi_0.png
+    - ./ARC_DE/icons/topbar/wifi_1.png
+    - ./ARC_DE/icons/topbar/wifi_2.png
+    - ./ARC_DE/icons/topbar/wifi_3.png
+    - ./ARC_DE/icons/topbar/wifi_4.png
+  icon_bt_on: ./ARC_DE/icons/topbar/bluetooth_on.png
+  icon_bt_off: ./ARC_DE/icons/topbar/bluetooth_off.png
+  icon_bt_connected: ./ARC_DE/icons/topbar/bluetooth_connected.png
+  show_clock: true
+  clock_format: "%H:%M"
+  show_notifications: true
+  show_battery: true
+  show_wifi: true
+  show_bt: true
+  show_mobile: true
+  padding_left: 5
+  padding_right: 5
+  icon_spacing: 5
+  notification_spacing: 5
+
+radius:
+  button: 8
+  app_button: 20
+  tab: 6
+  warning: 6
+  modal: 6
+  input: 6
+  app_icon: 15
+  slider: 4
+  slider_knob: 6
+
+indicator:
+  radius: 4
+  spacing: 10
+
+font:
+  name: ./assets/fonts/Inter/Inter_18pt-SemiBold.ttf
+  size: 20
+
+music_dir: ~/Music
+game_json: ./Games/games.json
+
+warning_duration: 2000

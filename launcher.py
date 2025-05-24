@@ -2,7 +2,7 @@ import pygame, os, json, subprocess
 from ARC_DE.loading_screen import show_loading_screen
 import ui_elements
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
-import config
+from config import config
 from ui_elements import AppIcon, TabManager, Slider
 from ARC_DE.volume_widget import AudioLevelSlider
 from ARC_DE.topbar import TopBar
@@ -13,15 +13,19 @@ from ARC_DE.arc_status import get_wifi_strength, get_bt_status
 
 # Main launcher code
 pygame.init()
-screen = pygame.display.set_mode((config.SCREEN_WIDTH, config.SCREEN_HEIGHT), pygame.FULLSCREEN)
+screen = pygame.display.set_mode(
+    (config.screen.width, config.screen.height),
+    pygame.FULLSCREEN
+)
 clock = pygame.time.Clock()
 pygame.display.set_caption('ARC Launcher')
 
 def on_volume_change(val):
-    config.VOLUME = int(val)
+    # Set volume somewhere if needed; this is not in your config anymore
+    pass
 
 volume_slider = Slider(
-    rect=(50, config.SCREEN_HEIGHT - 60, 300, 8),
+    rect=(50, config.screen.height - 60, 300, 8),
     min_val=0, max_val=100, init_val=50, callback=on_volume_change
 )
 
@@ -34,8 +38,9 @@ def load_apps():
                 return json.load(f)
         except Exception:
             pass
-    apps = list(config.BUILTIN_APPS)
-    apps_dir = config.APPS_DIR
+    # Use the list from YAML
+    apps = list(config.builtin_apps)
+    apps_dir = config.apps_dir
     if os.path.isdir(apps_dir):
         for entry in os.scandir(apps_dir):
             if not entry.is_dir():
@@ -66,17 +71,17 @@ def launch_app(cmd):
         print('Launch failed', cmd, e)
 
 def paginate_apps(apps):
-    per_page = config.GRID_COLS * config.GRID_ROWS
+    per_page = config.grid.cols * config.grid.rows
     return [apps[i:i+per_page] for i in range(0, len(apps), per_page)]
 
 def build_page_icons(app_list):
     icons = []
-    pad = config.GRID_PADDING + 10
+    pad = config.grid.padding + 10
     for idx, app in enumerate(app_list):
-        row, col = divmod(idx, config.GRID_COLS)
-        x = pad + col * (config.CELL_WIDTH + config.GRID_MARGIN)
-        y = config.TOPBAR_HEIGHT + pad + row * (config.CELL_HEIGHT + config.GRID_MARGIN)
-        rect = (x, y, config.CELL_WIDTH, config.CELL_HEIGHT)
+        row, col = divmod(idx, config.grid.cols)
+        x = config.grid.x_offset + pad + col * (config.cell.width + config.grid.margin)
+        y = config.topbar.height + pad + row * (config.cell.height + config.grid.margin)
+        rect = (x, y, config.cell.width, config.cell.height)
         icons.append(AppIcon(
             app.get('name',''), app.get('icon',''), rect,
             lambda c=app.get('exec',''): launch_app(c)
@@ -96,6 +101,7 @@ current_page = 0
 sel_index = 0
 
 # Top bar icon pollers with change detection
+import time
 class ChangeDetectingPoller(StatusPoller):
     def __init__(self, func, interval=2):
         super().__init__(func, interval)
@@ -176,34 +182,34 @@ while running:
         sel_index = max(0, min(sel_index, len(current_icons)-1))
 
         if ev.type == pygame.KEYDOWN:
-            if ev.key == pygame.K_LEFT and sel_index % config.GRID_COLS > 0:
+            if ev.key == pygame.K_LEFT and sel_index % config.grid.cols > 0:
                 sel_index -= 1
                 need_redraw = True
             elif ev.key == pygame.K_q and (ev.mod & pygame.KMOD_CTRL):
                 running = False
                 pygame.quit()
                 break
-            elif ev.key == pygame.K_RIGHT and sel_index % config.GRID_COLS < config.GRID_COLS-1 \
+            elif ev.key == pygame.K_RIGHT and sel_index % config.grid.cols < config.grid.cols-1 \
                  and sel_index+1 < len(current_icons):
                 sel_index += 1
                 need_redraw = True
             elif ev.key == pygame.K_UP:
-                if sel_index // config.GRID_COLS > 0:
-                    sel_index -= config.GRID_COLS
+                if sel_index // config.grid.cols > 0:
+                    sel_index -= config.grid.cols
                 else:
                     tab_manager.active = max(0, current_page-1)
                     sel_index = 0
                 need_redraw = True
             elif ev.key == pygame.K_DOWN:
-                if sel_index // config.GRID_COLS < config.GRID_ROWS-1 \
-                   and sel_index+config.GRID_COLS < len(current_icons):
-                    sel_index += config.GRID_COLS
+                if sel_index // config.grid.cols < config.grid.rows-1 \
+                   and sel_index+config.grid.cols < len(current_icons):
+                    sel_index += config.grid.cols
                 else:
                     tab_manager.active = min(len(pages)-1, current_page+1)
                     sel_index = 0
                 need_redraw = True
             elif ev.key in (pygame.K_RETURN, pygame.K_KP_ENTER) and current_icons:
-                idx = current_page * config.GRID_COLS * config.GRID_ROWS + sel_index
+                idx = current_page * config.grid.cols * config.grid.rows + sel_index
                 show_loading_screen(screen, message="Starting app...", duration=1.0)
                 launch_app(all_apps[idx].get('exec',''))
                 need_redraw = True
@@ -215,7 +221,7 @@ while running:
 
     # --- Only redraw if necessary ---
     if need_redraw:
-        screen.fill(config.COLORS['background'])
+        screen.fill(config.colors.background)
         if wifi_menu.active:
             wifi_menu.update()
             wifi_menu.draw()

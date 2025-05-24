@@ -6,9 +6,26 @@ import os
 import threading
 import time
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import config
+from config import config
 from ui_elements import Button, WarningMessage, TabManager
 
+# --- Helper functions for YAML config style ---
+def c(name, default=None):
+    return getattr(config.colors, name, default or (200, 200, 200))
+
+def r(name, default=12):
+    return getattr(config.radius, name, default)
+
+def fnt(size=None):
+    return pygame.font.SysFont(getattr(config.font, "name", "Arial"), size or getattr(config.font, "size", 18))
+
+def s(name, default=480):
+    return getattr(config.screen, name, default)
+
+def fps():
+    return getattr(config, "fps", 30)
+
+# --- BTScanMenu ---
 class BTScanMenu:
     def __init__(self):
         self.info = "Press R to scan for Bluetooth devices."
@@ -22,9 +39,7 @@ class BTScanMenu:
         self.info = "Scanning..."
         self.devices = []
         try:
-            # Uses bluetoothctl scan (works on most Linux distros)
-            scan_cmd = "timeout 6s bluetoothctl scan on"
-            subprocess.run(scan_cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run("timeout 6s bluetoothctl scan on", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             out = subprocess.check_output("bluetoothctl devices", shell=True, text=True)
             devices = []
             for line in out.strip().split('\n'):
@@ -58,39 +73,37 @@ class BTScanMenu:
         pass
 
     def draw(self, surface):
-        surface.fill(config.COLORS['background'])
-        font = pygame.font.SysFont(config.FONT_NAME, 40)
-        surf = font.render("Scan Bluetooth", True, config.COLORS['accent'])
-        surface.blit(surf, surf.get_rect(center=(config.SCREEN_WIDTH//2, 40)))
-        info_font = pygame.font.SysFont(config.FONT_NAME, 24)
-        info_surf = info_font.render(self.info, True, config.COLORS['text'])
-        surface.blit(info_surf, info_surf.get_rect(center=(config.SCREEN_WIDTH//2, 90)))
-        # List devices
+        surface.fill(c('background'))
+        font = fnt(40)
+        surf = font.render("Scan Bluetooth", True, c('accent'))
+        surface.blit(surf, surf.get_rect(center=(s("width")//2, 40)))
+        info_font = fnt(24)
+        info_surf = info_font.render(self.info, True, c('text'))
+        surface.blit(info_surf, info_surf.get_rect(center=(s("width")//2, 90)))
         y = 140
-        dev_font = pygame.font.SysFont(config.FONT_NAME, 22)
+        dev_font = fnt(22)
         for i, dev in enumerate(self.devices):
-            s = f"{dev['name']}  |  {dev['addr']}"
-            color = config.COLORS['accent'] if i == self.selected_idx else config.COLORS['text']
-            surf = dev_font.render(s, True, color)
-            rect = surf.get_rect(center=(config.SCREEN_WIDTH//2, y + i*32))
+            s_txt = f"{dev['name']}  |  {dev['addr']}"
+            color = c('accent') if i == self.selected_idx else c('text')
+            surf = dev_font.render(s_txt, True, color)
+            rect = surf.get_rect(center=(s("width")//2, y + i*32))
             surface.blit(surf, rect)
-        # Error message
         if self.last_error:
-            err_font = pygame.font.SysFont(config.FONT_NAME, 20)
+            err_font = fnt(20)
             err_surf = err_font.render(self.last_error, True, (255, 80, 80))
-            err_pos = (10, config.SCREEN_HEIGHT-60)
+            err_pos = (10, s("height")-60)
             err_rect = err_surf.get_rect(topleft=err_pos)
             bg_color = (60, 0, 0)
             padding = 6
             bg_rect = err_rect.inflate(padding, padding)
             pygame.draw.rect(surface, bg_color, bg_rect, border_radius=6)
             surface.blit(err_surf, err_pos)
-        # Instructions
-        hint_font = pygame.font.SysFont(config.FONT_NAME, 18)
+        hint_font = fnt(18)
         hints = "UP/DOWN = select  |  R = rescan  |  ESC = back"
-        hint_surf = hint_font.render(hints, True, config.COLORS['text'])
-        surface.blit(hint_surf, (10, config.SCREEN_HEIGHT-30))
+        hint_surf = hint_font.render(hints, True, c('text'))
+        surface.blit(hint_surf, (10, s("height")-30))
 
+# --- BTInfoMenu ---
 class BTInfoMenu:
     def __init__(self):
         self.info = "Press ENTER to query info about a device."
@@ -100,7 +113,7 @@ class BTInfoMenu:
         self.selected_idx = 0
         self.scanning = False
         self.last_error = ""
-        self.page = 'list'   # 'list' or 'info'
+        self.page = 'list'
         self.refresh_devices()
 
     def refresh_devices(self):
@@ -153,46 +166,43 @@ class BTInfoMenu:
         pass
 
     def draw(self, surface):
-        surface.fill(config.COLORS['background'])
-        font = pygame.font.SysFont(config.FONT_NAME, 40)
+        surface.fill(c('background'))
+        font = fnt(40)
         if self.page == 'list':
-            surf = font.render("Device Info", True, config.COLORS['accent'])
-            surface.blit(surf, surf.get_rect(center=(config.SCREEN_WIDTH//2, 40)))
-            info_font = pygame.font.SysFont(config.FONT_NAME, 24)
-            info_surf = info_font.render(self.info, True, config.COLORS['text'])
-            surface.blit(info_surf, info_surf.get_rect(center=(config.SCREEN_WIDTH//2, 90)))
-            # List devices
+            surf = font.render("Device Info", True, c('accent'))
+            surface.blit(surf, surf.get_rect(center=(s("width")//2, 40)))
+            info_font = fnt(24)
+            info_surf = info_font.render(self.info, True, c('text'))
+            surface.blit(info_surf, info_surf.get_rect(center=(s("width")//2, 90)))
             y = 140
-            dev_font = pygame.font.SysFont(config.FONT_NAME, 22)
+            dev_font = fnt(22)
             for i, dev in enumerate(self.devices):
-                s = f"{dev['name']}  |  {dev['addr']}"
-                color = config.COLORS['accent'] if i == self.selected_idx else config.COLORS['text']
-                surf = dev_font.render(s, True, color)
-                rect = surf.get_rect(center=(config.SCREEN_WIDTH//2, y + i*32))
+                s_txt = f"{dev['name']}  |  {dev['addr']}"
+                color = c('accent') if i == self.selected_idx else c('text')
+                surf = dev_font.render(s_txt, True, color)
+                rect = surf.get_rect(center=(s("width")//2, y + i*32))
                 surface.blit(surf, rect)
-            # Instructions
-            hint_font = pygame.font.SysFont(config.FONT_NAME, 18)
+            hint_font = fnt(18)
             hints = "UP/DOWN = select  |  ENTER = info  |  ESC = back"
-            hint_surf = hint_font.render(hints, True, config.COLORS['text'])
-            surface.blit(hint_surf, (10, config.SCREEN_HEIGHT-30))
+            hint_surf = hint_font.render(hints, True, c('text'))
+            surface.blit(hint_surf, (10, s("height")-30))
         elif self.page == 'info':
-            surf = font.render("Device Details", True, config.COLORS['accent'])
-            surface.blit(surf, surf.get_rect(center=(config.SCREEN_WIDTH//2, 40)))
-            info_font = pygame.font.SysFont(config.FONT_NAME, 22)
-            addr_line = info_font.render(self.selected_addr, True, config.COLORS['text'])
+            surf = font.render("Device Details", True, c('accent'))
+            surface.blit(surf, surf.get_rect(center=(s("width")//2, 40)))
+            info_font = fnt(22)
+            addr_line = info_font.render(self.selected_addr, True, c('text'))
             surface.blit(addr_line, (40, 90))
-            # Show result
-            res_font = pygame.font.SysFont(config.FONT_NAME, 18)
+            res_font = fnt(18)
             lines = self.result.splitlines()
             for i, line in enumerate(lines):
-                res_surf = res_font.render(line, True, config.COLORS['text'])
+                res_surf = res_font.render(line, True, c('text'))
                 surface.blit(res_surf, (40, 130 + i*22))
-            # Instructions
-            hint_font = pygame.font.SysFont(config.FONT_NAME, 18)
+            hint_font = fnt(18)
             hints = "ESC = back"
-            hint_surf = hint_font.render(hints, True, config.COLORS['text'])
-            surface.blit(hint_surf, (10, config.SCREEN_HEIGHT-30))
+            hint_surf = hint_font.render(hints, True, c('text'))
+            surface.blit(hint_surf, (10, s("height")-30))
 
+# --- BTSpoofMenu ---
 class BTSpoofMenu:
     def __init__(self):
         self.info = "Pair spoof: simulate pairing requests (demo)."
@@ -218,8 +228,6 @@ class BTSpoofMenu:
 
     def spoof_pair(self, addr):
         self.last_action = f"Pairing request sent to {addr} (demo)."
-        # Real spoofing would require lower-level stack access (or tools like btproxy/ubertooth)
-        # This is a placeholder.
 
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
@@ -238,33 +246,31 @@ class BTSpoofMenu:
         pass
 
     def draw(self, surface):
-        surface.fill(config.COLORS['background'])
-        font = pygame.font.SysFont(config.FONT_NAME, 40)
-        surf = font.render("Pair Spoof", True, config.COLORS['accent'])
-        surface.blit(surf, surf.get_rect(center=(config.SCREEN_WIDTH//2, 40)))
-        info_font = pygame.font.SysFont(config.FONT_NAME, 24)
-        info_surf = info_font.render(self.info, True, config.COLORS['text'])
-        surface.blit(info_surf, info_surf.get_rect(center=(config.SCREEN_WIDTH//2, 90)))
-        # List devices
+        surface.fill(c('background'))
+        font = fnt(40)
+        surf = font.render("Pair Spoof", True, c('accent'))
+        surface.blit(surf, surf.get_rect(center=(s("width")//2, 40)))
+        info_font = fnt(24)
+        info_surf = info_font.render(self.info, True, c('text'))
+        surface.blit(info_surf, info_surf.get_rect(center=(s("width")//2, 90)))
         y = 140
-        dev_font = pygame.font.SysFont(config.FONT_NAME, 22)
+        dev_font = fnt(22)
         for i, dev in enumerate(self.devices):
-            s = f"{dev['name']}  |  {dev['addr']}"
-            color = config.COLORS['accent'] if i == self.selected_idx else config.COLORS['text']
-            surf = dev_font.render(s, True, color)
-            rect = surf.get_rect(center=(config.SCREEN_WIDTH//2, y + i*32))
+            s_txt = f"{dev['name']}  |  {dev['addr']}"
+            color = c('accent') if i == self.selected_idx else c('text')
+            surf = dev_font.render(s_txt, True, color)
+            rect = surf.get_rect(center=(s("width")//2, y + i*32))
             surface.blit(surf, rect)
-        # Last action
         if self.last_action:
-            act_font = pygame.font.SysFont(config.FONT_NAME, 18)
-            act_surf = act_font.render(self.last_action, True, config.COLORS['accent'])
-            surface.blit(act_surf, (40, config.SCREEN_HEIGHT-80))
-        # Instructions
-        hint_font = pygame.font.SysFont(config.FONT_NAME, 18)
+            act_font = fnt(18)
+            act_surf = act_font.render(self.last_action, True, c('accent'))
+            surface.blit(act_surf, (40, s("height")-80))
+        hint_font = fnt(18)
         hints = "UP/DOWN = select  |  ENTER = spoof pair  |  ESC = back"
-        hint_surf = hint_font.render(hints, True, config.COLORS['text'])
-        surface.blit(hint_surf, (10, config.SCREEN_HEIGHT-30))
+        hint_surf = hint_font.render(hints, True, c('text'))
+        surface.blit(hint_surf, (10, s("height")-30))
 
+# --- BTDoSMenu ---
 class BTDoSMenu:
     def __init__(self):
         self.info = "DoS: L2Ping flood (demo)."
@@ -292,7 +298,6 @@ class BTDoSMenu:
     def start_attack(self, addr):
         self.attacking = True
         self.last_action = f"L2Ping flood started (to {addr})"
-        # Run l2ping flood in background (demo, 10 packets)
         cmd = f"sudo l2ping -i hci0 -f -c 10 {addr}"
         try:
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=6)
@@ -320,33 +325,31 @@ class BTDoSMenu:
         pass
 
     def draw(self, surface):
-        surface.fill(config.COLORS['background'])
-        font = pygame.font.SysFont(config.FONT_NAME, 40)
-        surf = font.render("DoS Attack", True, config.COLORS['accent'])
-        surface.blit(surf, surf.get_rect(center=(config.SCREEN_WIDTH//2, 40)))
-        info_font = pygame.font.SysFont(config.FONT_NAME, 24)
-        info_surf = info_font.render(self.info, True, config.COLORS['text'])
-        surface.blit(info_surf, info_surf.get_rect(center=(config.SCREEN_WIDTH//2, 90)))
-        # List devices
+        surface.fill(c('background'))
+        font = fnt(40)
+        surf = font.render("DoS Attack", True, c('accent'))
+        surface.blit(surf, surf.get_rect(center=(s("width")//2, 40)))
+        info_font = fnt(24)
+        info_surf = info_font.render(self.info, True, c('text'))
+        surface.blit(info_surf, info_surf.get_rect(center=(s("width")//2, 90)))
         y = 140
-        dev_font = pygame.font.SysFont(config.FONT_NAME, 22)
+        dev_font = fnt(22)
         for i, dev in enumerate(self.devices):
-            s = f"{dev['name']}  |  {dev['addr']}"
-            color = config.COLORS['accent'] if i == self.selected_idx else config.COLORS['text']
-            surf = dev_font.render(s, True, color)
-            rect = surf.get_rect(center=(config.SCREEN_WIDTH//2, y + i*32))
+            s_txt = f"{dev['name']}  |  {dev['addr']}"
+            color = c('accent') if i == self.selected_idx else c('text')
+            surf = dev_font.render(s_txt, True, color)
+            rect = surf.get_rect(center=(s("width")//2, y + i*32))
             surface.blit(surf, rect)
-        # Last action
         if self.last_action:
-            act_font = pygame.font.SysFont(config.FONT_NAME, 18)
-            act_surf = act_font.render(self.last_action, True, config.COLORS['accent'])
-            surface.blit(act_surf, (40, config.SCREEN_HEIGHT-80))
-        # Instructions
-        hint_font = pygame.font.SysFont(config.FONT_NAME, 18)
+            act_font = fnt(18)
+            act_surf = act_font.render(self.last_action, True, c('accent'))
+            surface.blit(act_surf, (40, s("height")-80))
+        hint_font = fnt(18)
         hints = "UP/DOWN = select  |  ENTER = flood  |  ESC = back"
-        hint_surf = hint_font.render(hints, True, config.COLORS['text'])
-        surface.blit(hint_surf, (10, config.SCREEN_HEIGHT-30))
+        hint_surf = hint_font.render(hints, True, c('text'))
+        surface.blit(hint_surf, (10, s("height")-30))
 
+# --- BTSavedMenu ---
 class BTSavedMenu:
     def __init__(self):
         self.info = "No logs implemented yet. (Demo page)"
@@ -355,21 +358,21 @@ class BTSavedMenu:
             return 'back'
     def update(self): pass
     def draw(self, surface):
-        surface.fill(config.COLORS['background'])
-        font = pygame.font.SysFont(config.FONT_NAME, 40)
-        surf = font.render("Saved Logs", True, config.COLORS['accent'])
-        surface.blit(surf, surf.get_rect(center=(config.SCREEN_WIDTH//2, 40)))
-        info_font = pygame.font.SysFont(config.FONT_NAME, 24)
-        info_surf = info_font.render(self.info, True, config.COLORS['text'])
-        surface.blit(info_surf, info_surf.get_rect(center=(config.SCREEN_WIDTH//2, 130)))
-        # Instructions
-        hint_font = pygame.font.SysFont(config.FONT_NAME, 18)
+        surface.fill(c('background'))
+        font = fnt(40)
+        surf = font.render("Saved Logs", True, c('accent'))
+        surface.blit(surf, surf.get_rect(center=(s("width")//2, 40)))
+        info_font = fnt(24)
+        info_surf = info_font.render(self.info, True, c('text'))
+        surface.blit(info_surf, info_surf.get_rect(center=(s("width")//2, 130)))
+        hint_font = fnt(18)
         hints = "ESC = back"
-        hint_surf = hint_font.render(hints, True, config.COLORS['text'])
-        surface.blit(hint_surf, (10, config.SCREEN_HEIGHT-30))
+        hint_surf = hint_font.render(hints, True, c('text'))
+        surface.blit(hint_surf, (10, s("height")-30))
 
+# --- BTConnectMenu ---
 class BTConnectMenu:
-    MAX_VISIBLE = 7  # Number of devices visible at once
+    MAX_VISIBLE = 7
 
     def __init__(self):
         self.info = "O/F: On/Off | R: Scan | C: Connect | D: Disconnect | P: Pair | U: Unpair"
@@ -454,7 +457,7 @@ class BTConnectMenu:
             self.last_action = f"Paired and trusted {addr}."
         except subprocess.CalledProcessError as e:
             self.last_action = f"Pair failed: {e.stderr.strip() or e.stdout.strip()}"
-        self.scan_devices()  # Update list
+        self.scan_devices()
 
     def unpair_device(self, addr):
         self.last_action = f"Unpairing {addr}..."
@@ -464,7 +467,7 @@ class BTConnectMenu:
             self.last_action = f"Removed {addr}."
         except subprocess.CalledProcessError as e:
             self.last_action = f"Remove failed: {e.stderr.strip() or e.stdout.strip()}"
-        self.scan_devices()  # Update list
+        self.scan_devices()
 
     def connect_device(self, addr):
         self.last_action = f"Connecting to {addr}..."
@@ -474,7 +477,7 @@ class BTConnectMenu:
             self.last_action = f"Connected to {addr}."
         except subprocess.CalledProcessError as e:
             self.last_action = f"Connect failed: {e.stderr.strip() or e.stdout.strip()}"
-        self.scan_devices()  # Update list
+        self.scan_devices()
 
     def disconnect_device(self, addr):
         self.last_action = f"Disconnecting {addr}..."
@@ -484,7 +487,7 @@ class BTConnectMenu:
             self.last_action = f"Disconnected {addr}."
         except subprocess.CalledProcessError as e:
             self.last_action = f"Disconnect failed: {e.stderr.strip() or e.stdout.strip()}"
-        self.scan_devices()  # Update list
+        self.scan_devices()
 
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
@@ -522,51 +525,48 @@ class BTConnectMenu:
         self.status = self.get_bt_status()
 
     def draw(self, surface):
-        surface.fill(config.COLORS['background'])
-        font = pygame.font.SysFont(config.FONT_NAME, 40)
-        surf = font.render("Bluetooth Connect", True, config.COLORS['accent'])
-        surface.blit(surf, surf.get_rect(center=(config.SCREEN_WIDTH // 2, 40)))
-        status_font = pygame.font.SysFont(config.FONT_NAME, 24)
-        stat_surf = status_font.render(f"Bluetooth: {self.status}", True, config.COLORS['text'])
+        surface.fill(c('background'))
+        font = fnt(40)
+        surf = font.render("Bluetooth Connect", True, c('accent'))
+        surface.blit(surf, surf.get_rect(center=(s("width") // 2, 40)))
+        status_font = fnt(24)
+        stat_surf = status_font.render(f"Bluetooth: {self.status}", True, c('text'))
         surface.blit(stat_surf, (40, 90))
-        info_font = pygame.font.SysFont(config.FONT_NAME, 22)
-        info_surf = info_font.render(self.info, True, config.COLORS['text'])
+        info_font = fnt(22)
+        info_surf = info_font.render(self.info, True, c('text'))
         surface.blit(info_surf, (40, 130))
 
-        # Scrollable device list
         y = 180
-        dev_font = pygame.font.SysFont(config.FONT_NAME, 22)
+        dev_font = fnt(22)
         visible_devices = self.devices[self.scroll_offset:self.scroll_offset + self.MAX_VISIBLE]
         for i, dev in enumerate(visible_devices):
             idx = i + self.scroll_offset
             connected = "✓" if dev.get('connected') else ""
             paired = "[Paired]" if dev.get('paired') else ""
-            s = f"{dev['name']} {paired} {connected}  |  {dev['addr']}"
-            color = config.COLORS['accent'] if idx == self.selected_idx else config.COLORS['text']
-            surf = dev_font.render(s, True, color)
-            rect = surf.get_rect(center=(config.SCREEN_WIDTH // 2, y + i * 32))
+            s_txt = f"{dev['name']} {paired} {connected}  |  {dev['addr']}"
+            color = c('accent') if idx == self.selected_idx else c('text')
+            surf = dev_font.render(s_txt, True, color)
+            rect = surf.get_rect(center=(s("width") // 2, y + i * 32))
             surface.blit(surf, rect)
-        # Scroll indicators
-        arrow_font = pygame.font.SysFont(config.FONT_NAME, 24)
+        arrow_font = fnt(24)
         if self.scroll_offset > 0:
-            up_surf = arrow_font.render("^", True, config.COLORS['text'])
-            surface.blit(up_surf, (config.SCREEN_WIDTH // 2, y - 28))
+            up_surf = arrow_font.render("^", True, c('text'))
+            surface.blit(up_surf, (s("width") // 2, y - 28))
         if self.scroll_offset + self.MAX_VISIBLE < len(self.devices):
-            down_surf = arrow_font.render("v", True, config.COLORS['text'])
-            surface.blit(down_surf, (config.SCREEN_WIDTH // 2, y + self.MAX_VISIBLE * 32))
+            down_surf = arrow_font.render("v", True, c('text'))
+            surface.blit(down_surf, (s("width") // 2, y + self.MAX_VISIBLE * 32))
 
-        # Last action
         if self.last_action:
-            act_font = pygame.font.SysFont(config.FONT_NAME, 18)
-            act_surf = act_font.render(self.last_action, True, config.COLORS['accent'])
-            surface.blit(act_surf, (40, config.SCREEN_HEIGHT - 80))
+            act_font = fnt(18)
+            act_surf = act_font.render(self.last_action, True, c('accent'))
+            surface.blit(act_surf, (40, s("height") - 80))
 
-        # Instructions
-        hint_font = pygame.font.SysFont(config.FONT_NAME, 18)
+        hint_font = fnt(18)
         hints = "O/F: On/Off | R: Scan | C: Connect | D: Disconnect | P: Pair | U: Unpair"
-        hint_surf = hint_font.render(hints, True, config.COLORS['text'])
-        surface.blit(hint_surf, (10, config.SCREEN_HEIGHT - 30))
+        hint_surf = hint_font.render(hints, True, c('text'))
+        surface.blit(hint_surf, (10, s("height") - 30))
 
+# --- BluetoothMenu (Main) ---
 class BluetoothMenu:
     ITEMS_PER_TAB = 3
 
@@ -641,33 +641,33 @@ class BluetoothMenu:
             self.active_page.draw(surface)
             return
 
-        surface.fill(config.COLORS['background'])
-        font = pygame.font.SysFont(config.FONT_NAME, 40)
-        title_surf = font.render("Bluetooth Tools", True, config.COLORS['text'])
-        surface.blit(title_surf, title_surf.get_rect(center=(config.SCREEN_WIDTH//2, 35)))
+        surface.fill(c('background'))
+        font = fnt(40)
+        title_surf = font.render("Bluetooth Tools", True, c('text'))
+        surface.blit(title_surf, title_surf.get_rect(center=(s("width")//2, 35)))
         active_tab = self.tabmgr.active
         start = active_tab * self.ITEMS_PER_TAB
         end = start + self.ITEMS_PER_TAB
         for idx, btn in enumerate(self.btns[start:end]):
             global_idx = start + idx
-            btn.rect.x = config.SCREEN_WIDTH//2 - btn.rect.width//2
+            btn.rect.x = s("width")//2 - btn.rect.width//2
             btn.rect.y = 70 + idx * (btn.rect.height + 10)
             pygame.draw.rect(
                 surface,
-                config.COLORS['button'],
+                c('button'),
                 btn.rect,
-                border_radius=config.RADIUS['app_button']
+                border_radius=r('app_button', 12)
             )
-            lbl_font = pygame.font.SysFont(config.FONT_NAME, 30)
-            lbl_surf = lbl_font.render(btn.text, True, config.COLORS['text_light'])
+            lbl_font = fnt(30)
+            lbl_surf = lbl_font.render(btn.text, True, c('text_light'))
             surface.blit(lbl_surf, lbl_surf.get_rect(center=btn.rect.center))
             if global_idx == self.selected_idx:
                 pygame.draw.rect(
                     surface,
-                    config.COLORS['accent'],
+                    c('accent'),
                     btn.rect.inflate(6, 6),
                     width=4,
-                    border_radius=config.RADIUS['app_button'] + 4
+                    border_radius=r('app_button', 12) + 4
                 )
         self.tabmgr.draw(surface)
         self.warning.draw(surface)
@@ -675,7 +675,7 @@ class BluetoothMenu:
 # --- To test standalone ---
 if __name__ == '__main__':
     pygame.init()
-    screen = pygame.display.set_mode((config.SCREEN_WIDTH, config.SCREEN_HEIGHT), pygame.FULLSCREEN)
+    screen = pygame.display.set_mode((s("width"), s("height")), pygame.FULLSCREEN)
     pygame.display.set_caption("Bluetooth Tools Menu")
     clock = pygame.time.Clock()
     menu = BluetoothMenu()
@@ -685,4 +685,4 @@ if __name__ == '__main__':
         menu.update()
         menu.draw(screen)
         pygame.display.flip()
-        clock.tick(config.FPS)
+        clock.tick(30)

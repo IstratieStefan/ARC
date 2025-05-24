@@ -6,7 +6,7 @@ import math
 import time
 import serial
 import serial.tools.list_ports
-import config
+from config import config 
 import json
 import datetime
 from ui_elements import Button, WarningMessage, TabManager
@@ -193,16 +193,16 @@ class NFCMenu:
         self.warning.update()
 
     def draw(self, surface):
-        surface.fill(config.COLORS['background'])
+        surface.fill(config.colors.background)
 
-        font = pygame.font.SysFont(config.FONT_NAME, 40)
-        title_surf = font.render("NFC Tools", True, config.COLORS['text'])
-        surface.blit(title_surf, title_surf.get_rect(center=(config.SCREEN_WIDTH // 2, 35)))
+        font = pygame.font.SysFont(config.font.name, 40)
+        title_surf = font.render("NFC Tools", True, config.colors.text)
+        surface.blit(title_surf, title_surf.get_rect(center=(config.screen.width // 2, 35)))
 
         if self.connecting or self.loading:
-            font = pygame.font.SysFont(config.FONT_NAME, 30)
-            txt = font.render(self.loading_text, True, config.COLORS['accent'])
-            surface.blit(txt, txt.get_rect(center=(config.SCREEN_WIDTH // 2, config.SCREEN_HEIGHT // 2)))
+            font = pygame.font.SysFont(config.font.name, 30)
+            txt = font.render(self.loading_text, True, config.accent_color)
+            surface.blit(txt, txt.get_rect(center=(config.screen.width // 2, config.screen.height // 2)))
             return
 
         active_tab = self.tabmgr.active
@@ -211,35 +211,35 @@ class NFCMenu:
 
         for idx, btn in enumerate(self.btns[start:end]):
             global_idx = start + idx
-            btn.rect.x = config.SCREEN_WIDTH // 2 - btn.rect.width // 2
+            btn.rect.x = config.screen.width // 2 - btn.rect.width // 2
             btn.rect.y = 70 + idx * (btn.rect.height + 10)
 
-            pygame.draw.rect(surface, config.COLORS['button'], btn.rect, border_radius=config.RADIUS['app_button'])
-            lbl_font = pygame.font.SysFont(config.FONT_NAME, 30)
-            lbl_surf = lbl_font.render(btn.text, True, config.COLORS['text_light'])
+            pygame.draw.rect(surface, config.colors.button, btn.rect, border_radius=config.radius.app_button)
+            lbl_font = pygame.font.SysFont(config.font.name, 30)
+            lbl_surf = lbl_font.render(btn.text, True, config.colors.text_light)
             surface.blit(lbl_surf, lbl_surf.get_rect(center=btn.rect.center))
 
             if global_idx == self.selected_idx:
                 pygame.draw.rect(
                     surface,
-                    config.ACCENT_COLOR,
+                    config.accent_color,
                     btn.rect.inflate(6, 6),
                     width=3,
-                    border_radius=config.RADIUS['app_button'] + 3
+                    border_radius=config.radius.app_button + 3
                 )
 
         self.tabmgr.draw(surface)
         self.warning.draw(surface)
 
         if self.awaiting_title:
-            font = pygame.font.SysFont(config.FONT_NAME, 24)
-            prompt = font.render("Title: " + self.title_input, True, config.COLORS['text'])
-            surface.blit(prompt, (config.SCREEN_WIDTH // 2 - 150, config.SCREEN_HEIGHT - 50))
+            font = pygame.font.SysFont(config.font.name, 24)
+            prompt = font.render("Title: " + self.title_input, True, config.colors.text)
+            surface.blit(prompt, (config.screen.width // 2 - 150, config.screen.height - 50))
 
 
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((config.SCREEN_WIDTH, config.SCREEN_HEIGHT), pygame.FULLSCREEN)
+    screen = pygame.display.set_mode((config.screen.width, config.screen.height), pygame.FULLSCREEN)
     pygame.display.set_caption("NFC Tools Menu")
     clock = pygame.time.Clock()
 
@@ -250,7 +250,7 @@ def main():
         menu.update()
         menu.draw(screen)
         pygame.display.flip()
-        clock.tick(config.FPS)
+        clock.tick(30)
 
 
 if __name__ == '__main__':

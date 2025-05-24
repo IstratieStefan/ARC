@@ -1,75 +1,72 @@
 import pygame
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import math
-import config
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from config import config
 from music_player.menu import MainMenu
 from music_player.song_selector import SongSelector, scan_music_dir
-from music_player.album_selector import *
+from music_player.album_selector import AlbumSelector
 from music_player.player import PlayerScreen
 from music_player.artist_selector import ArtistSelector
 
-
 def main():
-    # Initialize Pygame
+    # ---- Init Pygame and Config ----
     pygame.init()
-    screen = pygame.display.set_mode((480, 320), pygame.FULLSCREEN)
+    screen_width = getattr(getattr(config, "screen", None), "width", 480)
+    screen_height = getattr(getattr(config, "screen", None), "height", 320)
+    screen = pygame.display.set_mode((screen_width, screen_height), pygame.FULLSCREEN)
     pygame.display.set_caption("Arc Music Player")
     clock = pygame.time.Clock()
     pygame.font.init()
 
-    # Load fonts
+    # ---- Fonts (get path from config if available) ----
+    font_paths = getattr(getattr(config, "font", None), "paths", None) or {}
     fonts = (
-        pygame.font.Font("assets/fonts/Inter/Inter_28pt-SemiBold.ttf", 28),
-        pygame.font.Font("assets/fonts/Inter/Inter_24pt-Regular.ttf", 22),
-        pygame.font.Font("assets/fonts/Inter/Inter_18pt-Regular.ttf", 16),
+        pygame.font.Font(font_paths.get("semibold", "assets/fonts/Inter/Inter_28pt-SemiBold.ttf"), 28),
+        pygame.font.Font(font_paths.get("regular", "assets/fonts/Inter/Inter_24pt-Regular.ttf"), 22),
+        pygame.font.Font(font_paths.get("small", "assets/fonts/Inter/Inter_18pt-Regular.ttf"), 16),
     )
-    # Define colors
+
+    # ---- Colors from config ----
     colors = (
-        config.COLORS['background_light'],  # BG
+        getattr(getattr(config, "colors", None), "background_light", (28, 32, 40)),  # BG
         (240, 240, 240),  # PANEL (unused)
-        config.COLORS['text_light'],     # TEXT
-        config.ACCENT_COLOR,    # ACCENT
+        getattr(getattr(config, "colors", None), "text_light", (210, 210, 210)),    # TEXT
+        getattr(config, "accent_color", (100, 150, 255)),                          # ACCENT
         (200, 200, 200),  # SCROLL
         (200, 200, 200),  # OUTLINE
     )
 
-    # Base directory for media
-    base_dir = os.path.abspath('.')
+    # ---- Music directory ----
+    music_dir = getattr(config, "music_dir", "./Music")
 
-    # State machine
+    # ---- State Machine Setup ----
     state = 'MENU'
     menu = MainMenu(fonts, colors, screen)
-    all_tracks = scan_music_dir(config.MUSIC_DIR)
-    songs = SongSelector(None, fonts, colors, screen, tracks=all_tracks)  # all songs
+    all_tracks = scan_music_dir(music_dir)
+    songs = SongSelector(None, fonts, colors, screen, tracks=all_tracks)
     album_sel = AlbumSelector(all_tracks, fonts, colors, screen)
     artist_sel = ArtistSelector(all_tracks, fonts, colors, screen)
 
-    # Build simple album grouping (5 songs per album)
-    albums_data = []
-    for i in range(0, len(songs.tracks), 5):
-        albums_data.append({
-            'name': f"Album {i//5+1}",
-            'songs': songs.tracks[i:i+5]
-        })
-
-
     player = None
     album_songs_selector = None
-    # Main loop
+
+    # ---- Main Loop ----
     while True:
         for ev in pygame.event.get():
             if ev.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-
-            if ev.type == pygame.KEYDOWN:
-                if state == "MENU" and ev.key == pygame.K_ESCAPE:
+            if ev.type == pygame.KEYDOWN and ev.key == pygame.K_ESCAPE:
+                if state == "MENU":
                     pygame.quit()
                     sys.exit()
+                if state in ("PLAYER", "SONGS", "ALBUMS", "ALBUM_SONGS", "ARTISTS"):
+                    state = "MENU"
 
-            # Handle input based on current state
+            # State handling
             if state == 'MENU':
                 res = menu.handle_event(ev)
                 if res == 'Songs':
@@ -80,7 +77,6 @@ def main():
                     state = 'ARTISTS'
                 elif res == 'Now Playing' and player:
                     state = 'PLAYER'
-
             elif state == 'SONGS':
                 res = songs.handle_event(ev)
                 if res == 'BACK':
@@ -89,7 +85,14 @@ def main():
                     idx = res[1]
                     player = PlayerScreen(songs.tracks, idx, fonts, colors, screen)
                     state = 'PLAYER'
-
+            elif state == 'ALBUMS':
+                res = album_sel.handle_event(ev)
+                if res == 'BACK':
+                    state = 'MENU'
+                elif isinstance(res, tuple) and res[0] == 'SELECT_ALBUM':
+                    album_tracks = res[1]
+                    songs = SongSelector(None, fonts, colors, screen, tracks=album_tracks)
+                    state = 'SONGS'
             elif state == 'ARTISTS':
                 res = artist_sel.handle_event(ev)
                 if res == 'BACK':
@@ -98,33 +101,13 @@ def main():
                     artist_tracks = res[1]
                     songs = SongSelector(None, fonts, colors, screen, tracks=artist_tracks)
                     state = 'SONGS'
-
-            elif state == 'ALBUMS':
-                res = album_sel.handle_event(ev)
-                if res == 'BACK':
-                    state = 'MENU'
-                elif isinstance(res, tuple) and res[0] == 'SELECT_ALBUM':
-                    album_tracks = res[1]
-                    songs = SongSelector(None, fonts, colors, screen, tracks=album_tracks)  # Only these tracks
-                    state = 'SONGS'
-
-
-            elif state == 'ALBUM_SONGS':
-                res = album_songs_selector.handle_event(ev)
-                if res == 'BACK':
-                    state = 'ALBUMS'
-                elif isinstance(res, tuple) and res[0] == 'PLAY_SONG':
-                    idx = res[1]
-                    player = PlayerScreen(album_songs_selector.tracks, idx, fonts, colors, screen)
-                    state = 'PLAYER'
-
             elif state == 'PLAYER' and player:
                 res = player.handle_event(ev)
                 if res == 'BACK':
                     state = 'MENU'
-                player.update()  # now valid
+                player.update()
 
-        # Update logic
+        # Update Logic
         if state == 'SONGS':
             songs.update()
         elif state == 'ALBUMS':
@@ -134,8 +117,8 @@ def main():
         elif state == 'PLAYER' and player:
             player.update()
 
-        # Draw current screen
-        screen.fill(colors[0])  # clear to background color
+        # Draw
+        screen.fill(colors[0])
         if state == 'MENU':
             menu.draw()
         elif state == 'SONGS':
@@ -151,7 +134,6 @@ def main():
 
         pygame.display.flip()
         clock.tick(20)
-
 
 if __name__ == '__main__':
     main()

@@ -6,17 +6,16 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from PIL import Image
 import io
-import config
+from config import config   # <-- YAML loader
 
-WIDTH, HEIGHT = 480, 320
-ACCENT_COLOR = config.ACCENT_COLOR
-BG_COLOR = config.COLORS['background']
-TEXT_COLOR = config.COLORS['text']
+WIDTH, HEIGHT = config.screen.width, config.screen.height
+ACCENT_COLOR = tuple(config.accent_color)
+BG_COLOR = tuple(config.colors.background)
+TEXT_COLOR = tuple(config.colors.text)
 
 def get_ip_address():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
-        # Doesn't need to be reachable; just used to get local IP
         s.connect(('8.8.8.8', 80))
         ip = s.getsockname()[0]
     except Exception:
@@ -58,13 +57,9 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    running = False
-                    pygame.quit()
-
-
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                running = False
+                pygame.quit()
 
         screen.fill(BG_COLOR)
 

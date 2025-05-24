@@ -6,23 +6,32 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from ui_elements import ScrollableList, MessageBox
-import config
+from config import config  # now from YAML, dot-access
+
+def safe_color(val, fallback):
+    # Accept list/tuple of 3 ints as color
+    if isinstance(val, (list, tuple)) and len(val) == 3:
+        return tuple(val)
+    return fallback
 
 class BluetoothMenu:
-    WIDTH = config.SCREEN_WIDTH
-    HEIGHT = config.SCREEN_HEIGHT
-    screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
-    BG_COLOR = config.COLORS.get('popup_bg', (36, 42, 48))
-    TEXT_COLOR = config.COLORS.get('popup_fg', (240, 240, 240))
-    HIGHLIGHT = config.ACCENT_COLOR
-    FONT_NAME = config.FONT_NAME
-    FONT_SIZE = 18
-    LINE_HEIGHT = FONT_SIZE + 10
-    SCAN_INTERVAL = getattr(config, 'BT_SCAN_INTERVAL', 8)  # seconds
-
     def __init__(self):
+        # --- Use YAML-based config everywhere! ---
+        self.WIDTH = config.screen.width
+        self.HEIGHT = config.screen.height
+        self.BG_COLOR = safe_color(getattr(config.colors, "popup_bg", None), (36, 42, 48))
+        self.TEXT_COLOR = safe_color(getattr(config.colors, "popup_fg", None), (240, 240, 240))
+        self.HIGHLIGHT = safe_color(getattr(config, "accent_color", None), (204, 99, 36))
+        self.FONT_NAME = getattr(config.font, "name", None)
+        self.FONT_SIZE = 18
+        self.LINE_HEIGHT = self.FONT_SIZE + 10
+        self.SCAN_INTERVAL = getattr(config, "bt_scan_interval", 8)
+
+        # Surface (should be passed in real use, but this keeps compat for demo)
+        self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT), pygame.FULLSCREEN)
+
         self.active = True
-        self.rect = pygame.Rect(0, config.TOPBAR_HEIGHT, self.WIDTH, self.HEIGHT - config.TOPBAR_HEIGHT)
+        self.rect = pygame.Rect(0, getattr(config.topbar, "height", 30), self.WIDTH, self.HEIGHT - getattr(config.topbar, "height", 30))
         self.font = pygame.font.SysFont(self.FONT_NAME, self.FONT_SIZE)
         self.devices = ['<scanning...>']
         self.scanning = False
@@ -64,45 +73,6 @@ class BluetoothMenu:
             self.device_list.max_offset = max(0, len(self.device_list.items) * self.LINE_HEIGHT - self.device_list.rect.height)
             time.sleep(self.SCAN_INTERVAL)
         self.scanning = False
-
-    def get_wifi_strength(self):
-        try:
-            out = subprocess.check_output([
-                'nmcli', '-t', '-f', 'ACTIVE,SIGNAL',
-                'device', 'wifi', 'list'
-            ], stderr=subprocess.DEVNULL).decode()
-            for line in out.splitlines():
-                parts = line.split(':')
-                if parts[0] == 'yes' and len(parts) >= 2:
-                    return int(parts[1])
-        except:
-            pass
-        return 0
-
-    def get_bt_status(self):
-        try:
-            out = subprocess.check_output(['bluetoothctl', 'show'], stderr=subprocess.DEVNULL, text=True)
-            powered = False
-            for line in out.splitlines():
-                if line.strip().startswith("Powered:"):
-                    powered = "yes" in line
-                    break
-            if not powered:
-                return 0  # OFF
-
-            out = subprocess.check_output(['bluetoothctl', 'devices'], stderr=subprocess.DEVNULL, text=True)
-            for line in out.splitlines():
-                parts = line.split()
-                if len(parts) >= 2:
-                    addr = parts[1]
-                    info = subprocess.check_output(['bluetoothctl', 'info', addr], stderr=subprocess.DEVNULL, text=True)
-                    for il in info.splitlines():
-                        if il.strip().startswith("Connected:") and "yes" in il:
-                            return 2  # CONNECTED
-
-            return 1  # ON, but not connected
-        except Exception:
-            return 0  # If any error, treat as OFF
 
     def scan_bt_devices(self):
         try:
@@ -164,7 +134,7 @@ class BluetoothMenu:
             return
         # Draw background
         pygame.draw.rect(surface, self.BG_COLOR, self.rect)
-        pygame.draw.rect(surface, config.ACCENT_COLOR, self.rect, 2)
+        pygame.draw.rect(surface, self.HIGHLIGHT, self.rect, 2)
 
         # Draw title
         title = self.font.render("Bluetooth Devices", True, self.TEXT_COLOR)
@@ -181,9 +151,9 @@ class BluetoothMenu:
         # Draw device list
         self.device_list.draw(surface)
 
+# --- Demo usage, using config for sizing/colors ---
 if __name__ == "__main__":
     pygame.init()
-
     clock = pygame.time.Clock()
     bt_menu = BluetoothMenu()
     bt_menu.open()
@@ -195,7 +165,7 @@ if __name__ == "__main__":
                 exit()
             bt_menu.handle_event(event)
 
-        BluetoothMenu.screen.fill((0, 0, 0))
+        bt_menu.screen.fill((0, 0, 0))
         bt_menu.update()
         bt_menu.draw()
         pygame.display.flip()

@@ -80,7 +80,7 @@ def build_page_icons(app_list):
     for idx, app in enumerate(app_list):
         row, col = divmod(idx, config.grid.cols)
         x = config.grid.x_offset + pad + col * (config.cell.width + config.grid.margin)
-        y = config.topbar.height + pad + row * (config.cell.height + config.grid.margin)
+        y = config.grid.y_offset+ config.topbar.height + pad + row * (config.cell.height + config.grid.margin)
         rect = (x, y, config.cell.width, config.cell.height)
         icons.append(AppIcon(
             app.get('name',''), app.get('icon',''), rect,

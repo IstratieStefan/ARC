@@ -7,7 +7,7 @@ import os
 import threading
 import time
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import config
+from config import config
 from ui_elements import Button, WarningMessage, TabManager
 
 
@@ -91,41 +91,41 @@ class ScanMenu:
         pass
 
     def draw(self, surface):
-        surface.fill(config.COLORS['background'])
-        font = pygame.font.SysFont(config.FONT_NAME, 40)
-        surf = font.render("Scan Networks", True, config.COLORS['accent'])
-        surface.blit(surf, surf.get_rect(center=(config.SCREEN_WIDTH//2, 40)))
+        surface.fill(config.colors.background)
+        font = pygame.font.SysFont(config.font.name, 40)
+        surf = font.render("Scan Networks", True, config.accent_color)
+        surface.blit(surf, surf.get_rect(center=(config.screen.width//2, 40)))
 
-        info_font = pygame.font.SysFont(config.FONT_NAME, 24)
-        info_surf = info_font.render(self.info, True, config.COLORS['text'])
-        surface.blit(info_surf, info_surf.get_rect(center=(config.SCREEN_WIDTH//2, 90)))
+        info_font = pygame.font.SysFont(config.font.name, 24)
+        info_surf = info_font.render(self.info, True, config.colors.text)
+        surface.blit(info_surf, info_surf.get_rect(center=(config.screen.width//2, 90)))
 
         # Draw visible networks only
         y = 140
-        net_font = pygame.font.SysFont(config.FONT_NAME, 22)
+        net_font = pygame.font.SysFont(config.font.name, 22)
         visible_networks = self.networks[self.scroll_offset:self.scroll_offset + self.MAX_VISIBLE]
         for i, net in enumerate(visible_networks):
             idx = i + self.scroll_offset
             s = f"{net['ssid']}  |  {net['bssid']}  |  Signal: {net['signal']} dBm" if net['signal'] is not None else f"{net['ssid']}  |  {net['bssid']}"
-            color = config.COLORS['accent'] if idx == self.selected_idx else config.COLORS['text']
+            color = config.accent_color if idx == self.selected_idx else config.colors.text
             surf = net_font.render(s, True, color)
-            rect = surf.get_rect(center=(config.SCREEN_WIDTH//2, y + i*32))
+            rect = surf.get_rect(center=(config.screen.width//2, y + i*32))
             surface.blit(surf, rect)
 
         # Scroll indicators
-        arrow_font = pygame.font.SysFont(config.FONT_NAME, 24)
+        arrow_font = pygame.font.SysFont(config.font.name, 24)
         if self.scroll_offset > 0:
-            up_surf = arrow_font.render("^", True, config.COLORS['text'])
-            surface.blit(up_surf, (config.SCREEN_WIDTH//2, y - 28))
+            up_surf = arrow_font.render("^", True, config.colors.text)
+            surface.blit(up_surf, (config.screen.width//2, y - 28))
         if self.scroll_offset + self.MAX_VISIBLE < len(self.networks):
-            down_surf = arrow_font.render("v", True, config.COLORS['text'])
-            surface.blit(down_surf, (config.SCREEN_WIDTH//2, y + self.MAX_VISIBLE * 32))
+            down_surf = arrow_font.render("v", True, config.colors.text)
+            surface.blit(down_surf, (config.screen.width//2, y + self.MAX_VISIBLE * 32))
 
         # Error display with background
         if self.last_error:
-            err_font = pygame.font.SysFont(config.FONT_NAME, 20)
+            err_font = pygame.font.SysFont(config.font.name, 20)
             err_surf = err_font.render(self.last_error, True, (255, 80, 80))
-            err_pos = (10, config.SCREEN_HEIGHT-60)
+            err_pos = (10, config.screen.height-60)
             err_rect = err_surf.get_rect(topleft=err_pos)
             bg_color = (60, 0, 0)
             padding = 6
@@ -134,10 +134,10 @@ class ScanMenu:
             surface.blit(err_surf, err_pos)
 
         # Instructions
-        hint_font = pygame.font.SysFont(config.FONT_NAME, 18)
+        hint_font = pygame.font.SysFont(config.font.name, 18)
         hints = "UP/DOWN = select  |  R = rescan  |  ESC = back"
-        hint_surf = hint_font.render(hints, True, config.COLORS['text'])
-        surface.blit(hint_surf, (10, config.SCREEN_HEIGHT-30))
+        hint_surf = hint_font.render(hints, True, config.colors.text)
+        surface.blit(hint_surf, (10, config.screen.height-30))
 class HandshakeMenu:
     def __init__(self):
         self.info = "Select network and press ENTER to capture handshake."
@@ -264,35 +264,35 @@ class HandshakeMenu:
             self.last_scan_time = time.time()
 
     def draw(self, surface):
-        surface.fill(config.COLORS['background'])
-        font = pygame.font.SysFont(config.FONT_NAME, 40)
-        surf = font.render("Capture Handshake", True, config.COLORS['accent'])
-        surface.blit(surf, surf.get_rect(center=(config.SCREEN_WIDTH//2, 40)))
-        info_font = pygame.font.SysFont(config.FONT_NAME, 24)
-        info_surf = info_font.render(self.info, True, config.COLORS['text'])
-        surface.blit(info_surf, info_surf.get_rect(center=(config.SCREEN_WIDTH//2, 80)))
+        surface.fill(config.colors.background)
+        font = pygame.font.SysFont(config.font.name, 40)
+        surf = font.render("Capture Handshake", True, config.accent_color)
+        surface.blit(surf, surf.get_rect(center=(config.screen.width//2, 40)))
+        info_font = pygame.font.SysFont(config.font.name, 24)
+        info_surf = info_font.render(self.info, True, config.colors.text)
+        surface.blit(info_surf, info_surf.get_rect(center=(config.screen.width//2, 80)))
 
         # List networks
         y = 120
-        net_font = pygame.font.SysFont(config.FONT_NAME, 22)
+        net_font = pygame.font.SysFont(config.font.name, 22)
         for i, net in enumerate(self.networks):
             s = f"{net['ssid']} | CH {net['channel']} | {net['bssid']}"
-            color = config.COLORS['accent'] if i == self.selected_idx else config.COLORS['text']
+            color = config.accent_color if i == self.selected_idx else config.colors.text
             surf = net_font.render(s, True, color)
-            rect = surf.get_rect(center=(config.SCREEN_WIDTH//2, y + i*32))
+            rect = surf.get_rect(center=(config.screen.width//2, y + i*32))
             surface.blit(surf, rect)
 
         # Show status
         if self.capturing or self.capture_status:
-            stat_font = pygame.font.SysFont(config.FONT_NAME, 22)
-            stat_surf = stat_font.render(self.capture_status, True, config.COLORS['text'])
-            surface.blit(stat_surf, (40, config.SCREEN_HEIGHT-60))
+            stat_font = pygame.font.SysFont(config.font.name, 22)
+            stat_surf = stat_font.render(self.capture_status, True, config.colors.text)
+            surface.blit(stat_surf, (40, config.screen.height-60))
 
         # Instructions
-        hint_font = pygame.font.SysFont(config.FONT_NAME, 18)
+        hint_font = pygame.font.SysFont(config.font.name, 18)
         hints = "UP/DOWN = select  |  ENTER = capture  |  ESC = back/stop"
-        hint_surf = hint_font.render(hints, True, config.COLORS['text'])
-        surface.blit(hint_surf, (10, config.SCREEN_HEIGHT-30))
+        hint_surf = hint_font.render(hints, True, config.colors.text)
+        surface.blit(hint_surf, (10, config.screen.height-30))
 
 
 class DeauthMenu:
@@ -446,47 +446,47 @@ class DeauthMenu:
         pass
 
     def draw(self, surface):
-        surface.fill(config.COLORS['background'])
-        font = pygame.font.SysFont(config.FONT_NAME, 38)
-        surf = font.render("Deauth Attack", True, config.COLORS['accent'])
-        surface.blit(surf, surf.get_rect(center=(config.SCREEN_WIDTH//2, 40)))
+        surface.fill(config.colors.background)
+        font = pygame.font.SysFont(config.font.name, 38)
+        surf = font.render("Deauth Attack", True, config.accent_color)
+        surface.blit(surf, surf.get_rect(center=(config.screen.width//2, 40)))
 
-        info_font = pygame.font.SysFont(config.FONT_NAME, 24)
-        info_surf = info_font.render(self.info, True, config.COLORS['text'])
+        info_font = pygame.font.SysFont(config.font.name, 24)
+        info_surf = info_font.render(self.info, True, config.colors.text)
         surface.blit(info_surf, (40, 85))
 
         y = 130
-        net_font = pygame.font.SysFont(config.FONT_NAME, 22)
+        net_font = pygame.font.SysFont(config.font.name, 22)
 
         if self.stage == 0:  # AP selection
             for i, ap in enumerate(self.ap_list):
                 s = f"{ap['ssid']} | {ap['bssid']}"
-                color = config.COLORS['accent'] if i == self.selected_ap else config.COLORS['text']
+                color = config.accent_color if i == self.selected_ap else config.colors.text
                 surf = net_font.render(s, True, color)
-                rect = surf.get_rect(center=(config.SCREEN_WIDTH//2, y + i*30))
+                rect = surf.get_rect(center=(config.screen.width//2, y + i*30))
                 surface.blit(surf, rect)
         elif self.stage == 1:  # Client selection
             for i, client in enumerate(self.client_list_for_ap):
                 s = f"Client: {client['client']}"
-                color = config.COLORS['accent'] if i == self.selected_client else config.COLORS['text']
+                color = config.accent_color if i == self.selected_client else config.colors.text
                 surf = net_font.render(s, True, color)
-                rect = surf.get_rect(center=(config.SCREEN_WIDTH//2, y + i*30))
+                rect = surf.get_rect(center=(config.screen.width//2, y + i*30))
                 surface.blit(surf, rect)
         elif self.stage == 2:  # Attacking
-            stat_font = pygame.font.SysFont(config.FONT_NAME, 24)
-            stat_surf = stat_font.render(self.attack_status, True, config.COLORS['text'])
+            stat_font = pygame.font.SysFont(config.font.name, 24)
+            stat_surf = stat_font.render(self.attack_status, True, config.colors.text)
             surface.blit(stat_surf, (40, y))
 
         # Hints
-        hint_font = pygame.font.SysFont(config.FONT_NAME, 18)
+        hint_font = pygame.font.SysFont(config.font.name, 18)
         if self.stage == 0:
             hints = "UP/DOWN: select AP | ENTER: select | R: rescan | ESC: back"
         elif self.stage == 1:
             hints = "UP/DOWN: select client | ENTER: deauth | ESC: back"
         else:
             hints = "ESC: stop/return"
-        hint_surf = hint_font.render(hints, True, config.COLORS['text'])
-        surface.blit(hint_surf, (10, config.SCREEN_HEIGHT-30))
+        hint_surf = hint_font.render(hints, True, config.colors.text)
+        surface.blit(hint_surf, (10, config.screen.height-30))
 
 class CrackMenu:
     def __init__(self):
@@ -565,40 +565,40 @@ class CrackMenu:
             self.cap_files = self._find_cap_files()
 
     def draw(self, surface):
-        surface.fill(config.COLORS['background'])
-        font = pygame.font.SysFont(config.FONT_NAME, 40)
-        surf = font.render("Crack Handshake", True, config.COLORS['accent'])
-        surface.blit(surf, surf.get_rect(center=(config.SCREEN_WIDTH//2, 40)))
-        info_font = pygame.font.SysFont(config.FONT_NAME, 24)
-        info_surf = info_font.render(self.info, True, config.COLORS['text'])
+        surface.fill(config.colors.background)
+        font = pygame.font.SysFont(config.font.name, 40)
+        surf = font.render("Crack Handshake", True, config.accent_color)
+        surface.blit(surf, surf.get_rect(center=(config.screen.width//2, 40)))
+        info_font = pygame.font.SysFont(config.font.name, 24)
+        info_surf = info_font.render(self.info, True, config.colors.text)
         surface.blit(info_surf, (40, 85))
 
         y = 130
-        file_font = pygame.font.SysFont(config.FONT_NAME, 22)
+        file_font = pygame.font.SysFont(config.font.name, 22)
         for i, fname in enumerate(self.cap_files):
-            color = config.COLORS['accent'] if i == self.selected_idx else config.COLORS['text']
+            color = config.accent_color if i == self.selected_idx else config.colors.text
             surf = file_font.render(fname, True, color)
-            rect = surf.get_rect(center=(config.SCREEN_WIDTH//2, y + i*30))
+            rect = surf.get_rect(center=(config.screen.width//2, y + i*30))
             surface.blit(surf, rect)
 
         # Show cracking status
-        stat_y = config.SCREEN_HEIGHT-90
+        stat_y = config.screen.height-90
         if self.cracking or self.crack_status:
-            stat_font = pygame.font.SysFont(config.FONT_NAME, 22)
-            stat_surf = stat_font.render(self.crack_status, True, config.COLORS['text'])
+            stat_font = pygame.font.SysFont(config.font.name, 22)
+            stat_surf = stat_font.render(self.crack_status, True, config.colors.text)
             surface.blit(stat_surf, (40, stat_y))
 
         # Show result
         if self.result:
-            result_font = pygame.font.SysFont(config.FONT_NAME, 26)
-            result_surf = result_font.render(self.result, True, config.COLORS['accent'])
+            result_font = pygame.font.SysFont(config.font.name, 26)
+            result_surf = result_font.render(self.result, True, config.accent_color)
             surface.blit(result_surf, (40, stat_y + 30))
 
         # Instructions
-        hint_font = pygame.font.SysFont(config.FONT_NAME, 18)
+        hint_font = pygame.font.SysFont(config.font.name, 18)
         hints = "UP/DOWN = select  |  ENTER = crack  |  ESC = back"
-        hint_surf = hint_font.render(hints, True, config.COLORS['text'])
-        surface.blit(hint_surf, (10, config.SCREEN_HEIGHT-30))
+        hint_surf = hint_font.render(hints, True, config.colors.text)
+        surface.blit(hint_surf, (10, config.screen.height-30))
 
 class MonitorMenu:
     def __init__(self):
@@ -703,39 +703,39 @@ class MonitorMenu:
         self.update_status()
 
     def draw(self, surface):
-        surface.fill(config.COLORS['background'])
-        font = pygame.font.SysFont(config.FONT_NAME, 40)
-        surf = font.render("Monitor Mode", True, config.COLORS['accent'])
-        surface.blit(surf, surf.get_rect(center=(config.SCREEN_WIDTH//2, 40)))
+        surface.fill(config.colors.background)
+        font = pygame.font.SysFont(config.font.name, 40)
+        surf = font.render("Monitor Mode", True, config.accent_color)
+        surface.blit(surf, surf.get_rect(center=(config.screen.width//2, 40)))
 
-        info_font = pygame.font.SysFont(config.FONT_NAME, 24)
-        info_surf = info_font.render(self.info, True, config.COLORS['text'])
+        info_font = pygame.font.SysFont(config.font.name, 24)
+        info_surf = info_font.render(self.info, True, config.colors.text)
         surface.blit(info_surf, (40, 85))
 
         # Show all interfaces and their modes
-        status_font = pygame.font.SysFont(config.FONT_NAME, 26)
+        status_font = pygame.font.SysFont(config.font.name, 26)
         y = 135
         for i, iface in enumerate(self.ifaces):
             mode = self.iface_mode(iface)
             prefix = ">" if i == self.selected else " "
-            color = config.COLORS['accent'] if i == self.selected else config.COLORS['text']
+            color = config.accent_color if i == self.selected else config.colors.text
             surf = status_font.render(f"{prefix} {iface}: {mode}", True, color)
             surface.blit(surf, (40, y + i*32))
 
         # Error
         if self.last_error:
-            err_font = pygame.font.SysFont(config.FONT_NAME, 22)
+            err_font = pygame.font.SysFont(config.font.name, 22)
             err_surf = err_font.render(self.last_error, True, (255, 60, 60))
             surface.blit(err_surf, (40, y + len(self.ifaces)*32 + 10))
 
         # Action hint
-        hint_font = pygame.font.SysFont(config.FONT_NAME, 20)
+        hint_font = pygame.font.SysFont(config.font.name, 20)
         if self.busy:
             hint = "Working, please wait..."
         else:
             hint = "UP/DOWN = select  |  ENTER = toggle mode  |  ESC = back"
-        hint_surf = hint_font.render(hint, True, config.COLORS['text'])
-        surface.blit(hint_surf, (10, config.SCREEN_HEIGHT-30))
+        hint_surf = hint_font.render(hint, True, config.colors.text)
+        surface.blit(hint_surf, (10, config.screen.height-30))
 
 class SavedMenu:
     def __init__(self):
@@ -795,55 +795,55 @@ class SavedMenu:
         self.files = self._scan_files()
 
     def draw(self, surface):
-        surface.fill(config.COLORS['background'])
-        font = pygame.font.SysFont(config.FONT_NAME, 40)
-        surf = font.render("Saved Captures", True, config.COLORS['accent'])
-        surface.blit(surf, surf.get_rect(center=(config.SCREEN_WIDTH//2, 40)))
+        surface.fill(config.colors.background)
+        font = pygame.font.SysFont(config.font.name, 40)
+        surf = font.render("Saved Captures", True, config.accent_color)
+        surface.blit(surf, surf.get_rect(center=(config.screen.width//2, 40)))
 
-        info_font = pygame.font.SysFont(config.FONT_NAME, 24)
-        info_surf = info_font.render(self.info, True, config.COLORS['text'])
+        info_font = pygame.font.SysFont(config.font.name, 24)
+        info_surf = info_font.render(self.info, True, config.colors.text)
         surface.blit(info_surf, (40, 85))
 
         y = 130
-        file_font = pygame.font.SysFont(config.FONT_NAME, 22)
+        file_font = pygame.font.SysFont(config.font.name, 22)
         for i, f in enumerate(self.files):
             t = time.strftime("%Y-%m-%d %H:%M", time.localtime(f["ctime"]))
             size = f["size"] // 1024
             s = f"{f['fname']} ({size} KB, {t})"
-            color = config.COLORS['accent'] if i == self.selected_idx else config.COLORS['text']
+            color = config.accent_color if i == self.selected_idx else config.colors.text
             surf = file_font.render(s, True, color)
-            rect = surf.get_rect(center=(config.SCREEN_WIDTH//2, y + i*30))
+            rect = surf.get_rect(center=(config.screen.width//2, y + i*30))
             surface.blit(surf, rect)
 
         # Show file details
         if self.files:
             sel = self.files[self.selected_idx]
-            detail_font = pygame.font.SysFont(config.FONT_NAME, 20)
+            detail_font = pygame.font.SysFont(config.font.name, 20)
             path = os.path.join(self.save_dir, sel["fname"])
             details = f"File: {sel['fname']} | Size: {sel['size'] // 1024} KB | Path: {path}"
-            detail_surf = detail_font.render(details, True, config.COLORS['text'])
-            surface.blit(detail_surf, (40, config.SCREEN_HEIGHT-100))
+            detail_surf = detail_font.render(details, True, config.colors.text)
+            surface.blit(detail_surf, (40, config.screen.height-100))
 
         # Delete confirmation
         if self.delete_confirm and self.files:
-            msg_font = pygame.font.SysFont(config.FONT_NAME, 26)
+            msg_font = pygame.font.SysFont(config.font.name, 26)
             msg = f"Delete {self.files[self.selected_idx]['fname']}? (Y/N)"
             msg_surf = msg_font.render(msg, True, (255,60,60))
-            r = msg_surf.get_rect(center=(config.SCREEN_WIDTH//2, config.SCREEN_HEIGHT//2))
+            r = msg_surf.get_rect(center=(config.screen.width//2, config.screen.height//2))
             pygame.draw.rect(surface, (50,0,0), r.inflate(16,16))
             surface.blit(msg_surf, r)
 
         # Last action/status
         if self.last_action:
-            la_font = pygame.font.SysFont(config.FONT_NAME, 18)
-            la_surf = la_font.render(self.last_action, True, config.COLORS['accent'])
-            surface.blit(la_surf, (40, config.SCREEN_HEIGHT-70))
+            la_font = pygame.font.SysFont(config.font.name, 18)
+            la_surf = la_font.render(self.last_action, True, config.accent_color)
+            surface.blit(la_surf, (40, config.screen.height-70))
 
         # Instructions
-        hint_font = pygame.font.SysFont(config.FONT_NAME, 18)
+        hint_font = pygame.font.SysFont(config.font.name, 18)
         hints = "UP/DOWN = select | D = delete | ESC = back"
-        hint_surf = hint_font.render(hints, True, config.COLORS['text'])
-        surface.blit(hint_surf, (10, config.SCREEN_HEIGHT-30))
+        hint_surf = hint_font.render(hints, True, config.colors.text)
+        surface.blit(hint_surf, (10, config.screen.height-30))
 
 
 # --- Main Menu ---
@@ -925,37 +925,37 @@ class WifiMenu:
         if self.active_page:
             self.active_page.draw(surface)
             # Optional: Draw a back indicator/hint
-            font = pygame.font.SysFont(config.FONT_NAME, 18)
+            font = pygame.font.SysFont(config.font.name, 18)
             return
 
-        surface.fill(config.COLORS['background'])
-        font = pygame.font.SysFont(config.FONT_NAME, 40)
-        title_surf = font.render("WiFi Tools", True, config.COLORS['text'])
-        surface.blit(title_surf, title_surf.get_rect(center=(config.SCREEN_WIDTH//2, 35)))
+        surface.fill(config.colors.background)
+        font = pygame.font.SysFont(config.font.name, 40)
+        title_surf = font.render("WiFi Tools", True, config.colors.text)
+        surface.blit(title_surf, title_surf.get_rect(center=(config.screen.width//2, 35)))
 
         active_tab = self.tabmgr.active
         start = active_tab * self.ITEMS_PER_TAB
         end = start + self.ITEMS_PER_TAB
         for idx, btn in enumerate(self.btns[start:end]):
             global_idx = start + idx
-            btn.rect.x = config.SCREEN_WIDTH//2 - btn.rect.width//2
+            btn.rect.x = config.screen.width//2 - btn.rect.width//2
             btn.rect.y = 70 + idx * (btn.rect.height + 10)
             pygame.draw.rect(
                 surface,
-                config.COLORS['button'],
+                config.colors.button,
                 btn.rect,
-                border_radius=config.RADIUS['app_button']
+                border_radius=config.radius.app_button
             )
-            lbl_font = pygame.font.SysFont(config.FONT_NAME, 30)
-            lbl_surf = lbl_font.render(btn.text, True, config.COLORS['text_light'])
+            lbl_font = pygame.font.SysFont(config.font.name, 30)
+            lbl_surf = lbl_font.render(btn.text, True, config.colors.text_light)
             surface.blit(lbl_surf, lbl_surf.get_rect(center=btn.rect.center))
             if global_idx == self.selected_idx:
                 pygame.draw.rect(
                     surface,
-                    config.COLORS['accent'],
+                    config.accent_color,
                     btn.rect.inflate(6, 6),
                     width=4,
-                    border_radius=config.RADIUS['app_button'] + 4
+                    border_radius=config.radius.app_button + 4
                 )
 
         self.tabmgr.draw(surface)
@@ -963,7 +963,7 @@ class WifiMenu:
 
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((config.SCREEN_WIDTH, config.SCREEN_HEIGHT), pygame.FULLSCREEN)
+    screen = pygame.display.set_mode((config.screen.width, config.screen.height), pygame.FULLSCREEN)
     pygame.display.set_caption("WiFi Tools Menu")
     clock = pygame.time.Clock()
 
@@ -974,7 +974,7 @@ def main():
         menu.update()
         menu.draw(screen)
         pygame.display.flip()
-        clock.tick(config.FPS)
+        clock.tick(30)
 
 if __name__ == '__main__':
     main()

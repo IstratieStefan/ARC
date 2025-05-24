@@ -124,7 +124,7 @@ class CalendarApp:
                     elif self.RIGHT_ARROW_RECT.collidepoint(event.pos):
                         self.next_month()
             self.draw()
-            self.clock.tick(self.FPS)
+            self.clock.tick(30)
         pygame.quit()
         sys.exit()
 

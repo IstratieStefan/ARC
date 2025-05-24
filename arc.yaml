@@ -103,11 +103,12 @@ grid:
   rows: 2
   margin: 10
   padding: 30
-  x_offset: 23
+  x_offset: 4
+  y_offset: 0
 
 cell:
-  width: 80  # (you may want to compute this in Python based on grid, etc.)
-  height: 80
+  width: 90  # (you may want to compute this in Python based on grid, etc.)
+  height: 90
 
 topbar:
   height: 30

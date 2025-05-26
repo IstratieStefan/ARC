@@ -12,15 +12,16 @@ class GameMenu:
 
     def __init__(self, games_file=None):
         if games_file is None:
-            games_file = getattr(config, "GAME_JSON", "games.json")
+            games_file = os.path.expanduser(config.game_json)
 
-        # Load games from JSON
+        print(f"[DEBUG] Loading games from: {games_file}")
         self.games = []
         try:
             with open(games_file, 'r') as f:
                 self.games = json.load(f)
+            print(f"[DEBUG] Loaded {len(self.games)} games")
         except Exception as e:
-            print(f"Failed to load games from {games_file}: {e}")
+            print(f"[ERROR] Failed to load games from {games_file}: {e}")
             self.games = []
 
         self.selected_idx = 0
@@ -31,6 +32,7 @@ class GameMenu:
                 callback=lambda g=game: self.launch_game(g)
             ) for i, game in enumerate(self.games)
         ]
+        print(f"[DEBUG] Created {len(self.btns)} buttons")
         tabs = max(1, (len(self.btns) + self.ITEMS_PER_TAB - 1) // self.ITEMS_PER_TAB)
         self.tabmgr = TabManager(["" for _ in range(tabs)])
         self.warning = WarningMessage("")
@@ -78,7 +80,6 @@ class GameMenu:
         self.warning.update()
 
     def draw(self, surface):
-        # Use dot notation, fallback to hardcoded values if missing
         width = getattr(getattr(config, 'screen', None), 'width', 480)
         height = getattr(getattr(config, 'screen', None), 'height', 320)
         bg = getattr(getattr(config, 'colors', None), 'background', (30, 30, 30))
@@ -94,7 +95,6 @@ class GameMenu:
         title_surf = font.render("Game Menu", True, text_color)
         surface.blit(title_surf, title_surf.get_rect(center=(width//2, 35)))
 
-        # draw current page
         active_tab = getattr(self.tabmgr, "active", 0)
         start = active_tab * self.ITEMS_PER_TAB
         end = start + self.ITEMS_PER_TAB
@@ -102,12 +102,7 @@ class GameMenu:
             global_idx = start + idx
             btn.rect.x = width//2 - btn.rect.width//2
             btn.rect.y = 70 + idx * (btn.rect.height + 10)
-            pygame.draw.rect(
-                surface,
-                button_color,
-                btn.rect,
-                border_radius=radius
-            )
+            pygame.draw.rect(surface, button_color, btn.rect, border_radius=radius)
             lbl_font = pygame.font.SysFont(font_name, 30)
             lbl_surf = lbl_font.render(btn.text, True, text_light)
             surface.blit(lbl_surf, lbl_surf.get_rect(center=btn.rect.center))
@@ -126,7 +121,6 @@ def main():
     pygame.init()
     width = getattr(getattr(config, 'screen', None), 'width', 480)
     height = getattr(getattr(config, 'screen', None), 'height', 320)
-    fps = getattr(config, 'fps', 30)
     screen = pygame.display.set_mode((width, height), pygame.FULLSCREEN)
     pygame.display.set_caption("Game Menu")
     clock = pygame.time.Clock()
@@ -141,5 +135,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-    # TODO: make the games load after the changes

@@ -159,6 +159,6 @@ font:
   size: 20
 
 music_dir: ~/Music
-game_json: ./Games/games.json
+game_json: ~/Games/games.json
 
 warning_duration: 2000

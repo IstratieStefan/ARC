@@ -14,7 +14,7 @@ FONT_NAME     = config.font.name
 FONT_SIZE     = config.font.size
 LINE_HEIGHT   = FONT_SIZE + 10
 FPS           = config.screen.fps
-SCAN_INTERVAL = getattr(config, "wifi_scan_interval", 10)
+SCAN_INTERVAL = 10
 LOCK_ICON_PATH = config.icons.wifi_locked
 OPEN_ICON_PATH = config.icons.wifi_unlocked
 

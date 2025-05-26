@@ -1,0 +1,117 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Hero from '../../components/Hero';
+
+const hardwareSections = [
+  {
+    title: "Specifications",
+    description: "Detailed hardware specifications for all OpenPhone models",
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M320-80v-180h-40q-83 0-141.5-58.5T80-460q0-83 58.5-141.5T280-660h160v-220h160v220h80q83 0 141.5 58.5T880-460q0 83-58.5 141.5T680-260h-40v180H320Zm0-310h320q33 0 56.5-23.5T720-470q0-33-23.5-56.5T640-550H320q-33 0-56.5 23.5T240-470q0 33 23.5 56.5T320-390Z"/></svg>',
+    links: [
+      { title: "Processor and Memory", url: "/docs/hardware/specifications#processor" },
+      { title: "Display Technology", url: "/docs/hardware/specifications#display" },
+      { title: "Camera Systems", url: "/docs/hardware/specifications#camera" },
+      { title: "Battery and Power", url: "/docs/hardware/specifications#battery" },
+      { title: "Connectivity Options", url: "/docs/hardware/specifications#connectivity" }
+    ]
+  },
+  {
+    title: "Assembly & Disassembly",
+    description: "Guides for taking apart and reassembling your OpenPhone",
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M450-80v-95q-59-10-107-41t-79-86l83-48q21 47 66 77.5T520-242q68 0 115-47t47-116q0-68-47-115t-115-47q-38 0-73 17t-61 45l-57-80q38-34 87-56t104-22q34 0 66 7t62 21V-800h120v107q42 26 74 63.5T777-545l-103 30q-14-48-51-76.5T536-620q-68 0-115 47t-47 115q0 50 29 90t77 58l-24 103q-92-22-149-96.5T250-462q0-32 6.5-63t19.5-59h-96v-120h169q29-26 62.5-43.5T480-766q29 0 57 7t53 20v-101h120v206q19 20 34 43t25 49l-103 30q-5-16-11.5-31T640-575l-11-14-8-11h-17l-13 6q-6 3-11 7t-10 8l-83-49q30-39 75-61t118-22q36 0 69.5 9t63.5 25V-800h120v107q45 28 77.5 72.5T990-505q0 42-12.5 81T937-347l-103-30q9-19 12.5-39t3.5-42q0-75-32-133t-86-93v684H450Z"/></svg>',
+    links: [
+      { title: "Opening the Case", url: "/docs/hardware/disassembly#opening" },
+      { title: "Accessing Internal Components", url: "/docs/hardware/disassembly#internal" },
+      { title: "Modular Component Replacement", url: "/docs/hardware/disassembly#modular" },
+      { title: "Reassembly Best Practices", url: "/docs/hardware/disassembly#reassembly" }
+    ]
+  },
+  {
+    title: "Repairs & Maintenance",
+    description: "How to repair and maintain your device for longevity",
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M440-120v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm-120 80v-80h80v80h-80Zm0 160v-80h80v80h-80Zm0 160v-80h80v80h-80Zm240-320v-80h80v80h-80Zm0 160v-80h80v80h-80Zm0 160v-80h80v80h-80Z"/></svg>',
+    links: [
+      { title: "Screen Replacement", url: "/docs/hardware/repair#screen" },
+      { title: "Battery Replacement", url: "/docs/hardware/repair#battery" },
+      { title: "Camera Module Repair", url: "/docs/hardware/repair#camera" },
+      { title: "Port and Button Fixes", url: "/docs/hardware/repair#ports" },
+      { title: "Preventative Maintenance", url: "/docs/hardware/repair#maintenance" }
+    ]
+  },
+  {
+    title: "Modding & Customization",
+    description: "Hardware modifications to enhance your OpenPhone",
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M280-600v-80h400v80H280Zm0 320v-80h400v80H280Zm0-160v-80h400v80H280Z"/></svg>',
+    links: [
+      { title: "Expanded Storage Options", url: "/docs/hardware/modding#storage" },
+      { title: "Custom Back Plates", url: "/docs/hardware/modding#backplates" },
+      { title: "Enhanced Cooling", url: "/docs/hardware/modding#cooling" },
+      { title: "External Antennas", url: "/docs/hardware/modding#antennas" },
+      { title: "Hardware Add-ons", url: "/docs/hardware/modding#addons" }
+    ]
+  }
+];
+---
+
+<Layout title="Hardware Documentation">
+  <Hero
+    client:load
+    title="Hardware Documentation"
+    subtitle="Everything you need to know about OpenPhone hardware"
+    image="https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg"
+  />
+
+  <section class="section">
+    <div class="container-custom">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {hardwareSections.map((section) => (
+          <div class="card p-6">
+            <div class="flex items-start mb-4">
+              <div class="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center text-accent mr-4">
+                <span class="material-icons" set:html={section.icon} />
+              </div>
+              <div>
+                <h2 class="text-xl font-semibold">{section.title}</h2>
+                <p class="text-gray-600">{section.description}</p>
+              </div>
+            </div>
+            
+            <ul class="space-y-2 ml-16">
+              {section.links.map((link) => (
+                <li>
+                  <a 
+                    href={link.url} 
+                    class="text-accent hover:text-accent-hover hover:underline"
+                  >
+                    {link.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+      
+      <div class="mt-16 bg-gray-50 rounded-xl p-8">
+        <div class="flex flex-col md:flex-row gap-8 items-center">
+          <div class="md:w-1/2">
+            <h2 class="heading-2 mb-4">Technical Schematics</h2>
+            <p class="text-gray-700 mb-6">
+              Access detailed technical schematics and diagrams for all OpenPhone hardware components. Perfect for repairs, modifications, or educational purposes.
+            </p>
+            <a href="/docs/hardware/schematics" class="btn-primary">
+              View Schematics
+            </a>
+          </div>
+          <div class="md:w-1/2">
+            <img 
+              src="https://images.pexels.com/photos/356056/pexels-photo-356056.jpeg" 
+              alt="Technical Schematics" 
+              class="rounded-lg shadow-lg w-full"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>

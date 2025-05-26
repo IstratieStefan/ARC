@@ -1,0 +1,11 @@
+numpy
+pygame
+mutagen
+pywebview
+pyqtwebengine
+pyqt5
+qtpy
+requests
+pyaudio
+qrcode
+pillow

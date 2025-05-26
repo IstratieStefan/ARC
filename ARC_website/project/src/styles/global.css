@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-accent: #007aff;
+  --color-accent-hover: #0056b3;
+}
+
+[data-accent="blue"] {
+  --color-accent: #007aff;
+  --color-accent-hover: #0056b3;
+}
+
+[data-accent="green"] {
+  --color-accent: #34c759;
+  --color-accent-hover: #248a3d;
+}
+
+[data-accent="purple"] {
+  --color-accent: #af52de;
+  --color-accent-hover: #8944ab;
+}
+
+[data-accent="orange"] {
+  --color-accent: #ff9500;
+  --color-accent-hover: #c27400;
+}
+
+[data-accent="red"] {
+  --color-accent: #ff3b30;
+  --color-accent-hover: #c72b20;
+}
+
+html, body {
+  @apply font-sans text-gray-900 bg-white;
+  scroll-behavior: smooth;
+}
+
+@layer components {
+  .container-custom {
+    @apply container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl;
+  }
+  
+  .btn {
+    @apply inline-flex items-center justify-center px-6 py-3 rounded-md font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+  
+  .btn-primary {
+    @apply btn bg-accent text-white hover:bg-accent-hover focus:ring-accent;
+  }
+  
+  .btn-secondary {
+    @apply btn bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-300;
+  }
+  
+  .btn-outline {
+    @apply btn bg-transparent border-2 border-accent text-accent hover:bg-accent hover:text-white focus:ring-accent;
+  }
+  
+  .section {
+    @apply py-16 md:py-24;
+  }
+  
+  .heading-1 {
+    @apply text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight;
+  }
+  
+  .heading-2 {
+    @apply text-3xl md:text-4xl font-bold tracking-tight;
+  }
+  
+  .heading-3 {
+    @apply text-2xl md:text-3xl font-semibold;
+  }
+  
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-md;
+  }
+}

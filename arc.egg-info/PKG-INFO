@@ -1,0 +1,19 @@
+Metadata-Version: 2.4
+Name: arc
+Version: 0.1.0
+Summary: ARC desktop
+Author-email: Istratie Stefan <istratie.stefan123@gmail.com>
+Requires-Python: >=3.7
+License-File: LICENSE
+Requires-Dist: numpy
+Requires-Dist: pygame
+Requires-Dist: mutagen
+Requires-Dist: pywebview
+Requires-Dist: pyqtwebengine
+Requires-Dist: pyqt5
+Requires-Dist: qtpy
+Requires-Dist: requests
+Requires-Dist: pyaudio
+Requires-Dist: qrcode
+Requires-Dist: pillow
+Dynamic: license-file

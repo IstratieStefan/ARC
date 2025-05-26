@@ -1,0 +1,40 @@
+---
+import '../styles/global.css';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer.astro';
+import ThemeProvider from '../components/ThemeProvider';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { 
+  title, 
+  description = "An innovative open source phone project bringing freedom and privacy to mobile computing" 
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <title>{title} | Open Source Phone Project</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <ThemeProvider client:load>
+      <Navbar client:load />
+      <main>
+        <slot />
+      </main>
+      <Footer />
+    </ThemeProvider>
+  </body>
+</html>

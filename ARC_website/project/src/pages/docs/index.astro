@@ -1,0 +1,137 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Hero from '../../components/Hero';
+
+const docSections = [
+  {
+    title: "Hardware Documentation",
+    description: "Everything you need to know about OpenPhone hardware, from specifications to repairs and modifications.",
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M320-160v-80h320v80H320Zm0-560v-80h320v80H320Zm-40 320q-33 0-56.5-23.5T200-480q0-33 23.5-56.5T280-560q33 0 56.5 23.5T360-480q0 33-23.5 56.5T280-400Zm400 0q-33 0-56.5-23.5T600-480q0-33 23.5-56.5T680-560q33 0 56.5 23.5T760-480q0 33-23.5 56.5T680-400ZM240-720v80h-40q-33 0-56.5-23.5T120-720v-80q33 0 56.5 23.5T200-720h40Zm520 0q0-33-23.5-56.5T680-800v-80q33 0 56.5 23.5T760-800v80h-40v-80h40Zm-520 560h-40q-33 0-56.5-23.5T120-240v-80q33 0 56.5 23.5T200-240h40v80Zm520 0v-80h40q33 0 56.5-23.5T880-240v80q-33 0-56.5 23.5T800-160h-40Zm40-560v80h-40v-80h40ZM200-240v-80h40v80h-40Z"/></svg>',
+    links: [
+      { title: "Hardware Specifications", url: "/docs/hardware/specifications" },
+      { title: "Component Diagrams", url: "/docs/hardware/diagrams" },
+      { title: "Repair Guides", url: "/docs/hardware/repair" },
+      { title: "Modding & Customization", url: "/docs/hardware/modding" },
+      { title: "3D Printing Resources", url: "/docs/hardware/3d-printing" }
+    ]
+  },
+  {
+    title: "Software Documentation",
+    description: "Guides and reference materials for OpenPhone's software, from the operating system to application development.",
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm0-240h640v-320H160v320Z"/></svg>',
+    links: [
+      { title: "Operating System", url: "/docs/software/os" },
+      { title: "Security Features", url: "/docs/software/security" },
+      { title: "App Development", url: "/docs/software/app-development" },
+      { title: "Customization", url: "/docs/software/customization" },
+      { title: "Troubleshooting", url: "/docs/software/troubleshooting" }
+    ]
+  }
+];
+
+const popularArticles = [
+  {
+    title: "Getting Started with OpenPhone",
+    description: "A comprehensive guide to setting up your new OpenPhone for the first time.",
+    url: "/docs/getting-started",
+    category: "Beginner"
+  },
+  {
+    title: "How to Flash Custom ROMs",
+    description: "Step-by-step instructions for installing alternative operating systems on your device.",
+    url: "/docs/software/custom-roms",
+    category: "Advanced"
+  },
+  {
+    title: "Battery Replacement Guide",
+    description: "Learn how to safely replace your OpenPhone's battery to extend its lifespan.",
+    url: "/docs/hardware/battery-replacement",
+    category: "Intermediate"
+  },
+  {
+    title: "Building Apps for OpenPhone",
+    description: "Developer documentation for creating applications compatible with OpenPhone OS.",
+    url: "/docs/software/app-development/getting-started",
+    category: "Developer"
+  }
+];
+---
+
+<Layout title="Documentation">
+  <Hero
+    client:load
+    title="OpenPhone Documentation"
+    subtitle="Comprehensive guides and reference materials for your open source phone"
+    image="https://images.pexels.com/photos/5926389/pexels-photo-5926389.jpeg"
+  />
+
+  <section class="section">
+    <div class="container-custom">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+        {docSections.map((section) => (
+          <div class="card p-8">
+            <div class="flex items-start">
+              <div class="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center text-accent mr-4">
+                <span class="material-icons" set:html={section.icon} />
+              </div>
+              <div>
+                <h2 class="text-2xl font-semibold mb-2">{section.title}</h2>
+                <p class="text-gray-600 mb-6">{section.description}</p>
+                
+                <ul class="space-y-3">
+                  {section.links.map((link) => (
+                    <li>
+                      <a 
+                        href={link.url} 
+                        class="flex items-center text-accent hover:text-accent-hover group"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="group-hover:underline">{link.title}</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+                
+                <a 
+                  href={section.title.includes("Hardware") ? "/docs/hardware" : "/docs/software"} 
+                  class="inline-flex items-center text-accent hover:text-accent-hover mt-6"
+                >
+                  View all documentation
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      <div>
+        <h2 class="heading-2 mb-8">Popular Articles</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {popularArticles.map((article) => (
+            <a href={article.url} class="card p-6 hover:shadow-md transition-shadow">
+              <div class="flex justify-between items-start mb-3">
+                <h3 class="text-xl font-semibold">{article.title}</h3>
+                <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
+                  {article.category}
+                </span>
+              </div>
+              <p class="text-gray-600 mb-4">{article.description}</p>
+              <div class="text-accent hover:text-accent-hover flex items-center">
+                Read more
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>

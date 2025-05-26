@@ -1,0 +1,170 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Hero from '../../components/Hero';
+
+const softwareSections = [
+  {
+    title: "Operating System",
+    description: "Documentation for OpenPhone OS, the core software powering your device",
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm0-80h640v-480H160v480Zm0 0v-480 480Z"/></svg>',
+    links: [
+      { title: "System Architecture", url: "/docs/software/os/architecture" },
+      { title: "Core Features", url: "/docs/software/os/features" },
+      { title: "Security Model", url: "/docs/software/os/security" },
+      { title: "Update System", url: "/docs/software/os/updates" },
+      { title: "Customization Options", url: "/docs/software/os/customization" }
+    ]
+  },
+  {
+    title: "Security Features",
+    description: "Learn about the security features built into OpenPhone OS",
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M480-80q-139-35-229.5-159.5T160-516v-244l320-120 320 120v244q0 17-2 33.5t-6 33.5h-84q5-16 8.5-33t3.5-34v-210l-240-90-240 90v210q0 143 70 242.5T480-160v80Zm0-274Zm46 194-46-46-46 46-56-56 46-46-46-46 56-56 46 46 46-46 56 56-46 46 46 46-56 56Z"/></svg>',
+    links: [
+      { title: "Encryption Framework", url: "/docs/software/security/encryption" },
+      { title: "Secure Boot", url: "/docs/software/security/secure-boot" },
+      { title: "App Permissions", url: "/docs/software/security/permissions" },
+      { title: "Firewall & Networking", url: "/docs/software/security/firewall" },
+      { title: "Security Hardening", url: "/docs/software/security/hardening" }
+    ]
+  },
+  {
+    title: "App Development",
+    description: "Resources for developers building applications for OpenPhone",
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M320-240 80-480l240-240 57 57-184 183 184 183-57 57Zm320 0-57-57 184-183-184-183 57-57 240 240-240 240Z"/></svg>',
+    links: [
+      { title: "Getting Started", url: "/docs/software/app-development/getting-started" },
+      { title: "SDK Reference", url: "/docs/software/app-development/sdk" },
+      { title: "UI Guidelines", url: "/docs/software/app-development/ui-guidelines" },
+      { title: "App Store Submission", url: "/docs/software/app-development/submission" },
+      { title: "Code Examples", url: "/docs/software/app-development/examples" }
+    ]
+  },
+  {
+    title: "Troubleshooting",
+    description: "Common issues and their solutions for OpenPhone OS",
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M480-80q-139-35-229.5-159.5T160-516v-244l320-120 320 120v244q0 146-90.5 270.5T480-80Zm0-80q104-33 172-132t68-224v-189l-240-90-240 90v189q0 125 68 224t172 132Zm0-120q17 0 28.5-11.5T520-320q0-17-11.5-28.5T480-360q-17 0-28.5 11.5T440-320q0 17 11.5 28.5T480-280Zm0-160q17 0 28.5-11.5T520-480v-120q0-17-11.5-28.5T480-640q-17 0-28.5 11.5T440-600v120q0 17 11.5 28.5T480-440Zm0-40Z"/></svg>',
+    links: [
+      { title: "Boot Issues", url: "/docs/software/troubleshooting/boot" },
+      { title: "Performance Problems", url: "/docs/software/troubleshooting/performance" },
+      { title: "App Compatibility", url: "/docs/software/troubleshooting/app-compatibility" },
+      { title: "System Recovery", url: "/docs/software/troubleshooting/recovery" },
+      { title: "Factory Reset", url: "/docs/software/troubleshooting/factory-reset" }
+    ]
+  }
+];
+
+const devResources = [
+  {
+    title: "API Documentation",
+    description: "Complete reference for all OpenPhone OS APIs and services",
+    url: "/docs/software/api"
+  },
+  {
+    title: "Developer Tools",
+    description: "Tools and utilities for OpenPhone app development",
+    url: "/docs/software/developer-tools"
+  },
+  {
+    title: "Building Custom ROMs",
+    description: "Guide to building your own custom OpenPhone OS distribution",
+    url: "/docs/software/custom-roms"
+  },
+  {
+    title: "Contributing to OpenPhone",
+    description: "How to contribute code to the OpenPhone project",
+    url: "/docs/software/contributing"
+  }
+];
+---
+
+<Layout title="Software Documentation">
+  <Hero
+    client:load
+    title="Software Documentation"
+    subtitle="Comprehensive guides for OpenPhone's operating system and applications"
+    image="https://images.pexels.com/photos/577585/pexels-photo-577585.jpeg"
+  />
+
+  <section class="section">
+    <div class="container-custom">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {softwareSections.map((section) => (
+          <div class="card p-6">
+            <div class="flex items-start mb-4">
+              <div class="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center text-accent mr-4">
+                <span class="material-icons" set:html={section.icon} />
+              </div>
+              <div>
+                <h2 class="text-xl font-semibold">{section.title}</h2>
+                <p class="text-gray-600">{section.description}</p>
+              </div>
+            </div>
+            
+            <ul class="space-y-2 ml-16">
+              {section.links.map((link) => (
+                <li>
+                  <a 
+                    href={link.url} 
+                    class="text-accent hover:text-accent-hover hover:underline"
+                  >
+                    {link.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+      
+      <div class="mt-16">
+        <h2 class="heading-2 mb-8">Developer Resources</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {devResources.map((resource) => (
+            <a href={resource.url} class="card p-6 hover:shadow-md transition-shadow">
+              <h3 class="text-xl font-semibold mb-2">{resource.title}</h3>
+              <p class="text-gray-600 mb-4">{resource.description}</p>
+              <div class="text-accent hover:text-accent-hover flex items-center">
+                View resource
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+      
+      <div class="mt-16 bg-gray-900 text-white rounded-xl p-8">
+        <div class="flex flex-col md:flex-row gap-8 items-center">
+          <div class="md:w-1/2">
+            <h2 class="text-3xl font-semibold mb-4">Open Source Community</h2>
+            <p class="text-gray-300 mb-6">
+              OpenPhone OS is developed by a global community of contributors. Learn how you can participate and help shape the future of mobile computing.
+            </p>
+            <div class="flex flex-wrap gap-4">
+              <a href="/docs/software/contributing" class="btn-primary">
+                Start Contributing
+              </a>
+              <a 
+                href="https://github.com/openphone/openphone-os" 
+                class="btn-outline border-white text-white hover:bg-white hover:text-gray-900"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub Repository
+              </a>
+            </div>
+          </div>
+          <div class="md:w-1/2">
+            <img 
+              src="https://images.pexels.com/photos/7654039/pexels-photo-7654039.jpeg" 
+              alt="Open Source Collaboration" 
+              class="rounded-lg shadow-lg w-full"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>

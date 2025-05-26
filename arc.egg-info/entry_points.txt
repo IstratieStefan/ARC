@@ -1,0 +1,2 @@
+[console_scripts]
+arc-launcher = ARC_DE.launcher:main

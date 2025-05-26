@@ -1,0 +1,112 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero';
+import FeatureSection from '../components/FeatureSection';
+import SpecsSection from '../components/SpecsSection';
+import CTASection from '../components/CTASection';
+
+
+export const phoneFeatures = [
+  {
+    icon: 'LockOpen',
+    title: 'Full User Control',
+    description: 'Total root access to every part of your ARC device. Run your own code, access the hardware directly, and customize the system for any workflow or mission.'
+  },
+  {
+    icon: 'TrackChanges',
+    title: 'No Tracking, No Telemetry',
+    description: 'ARC never phones home. No analytics, no hidden connections—just pure local control. Your data and activities stay yours, always.'
+  },
+  {
+    icon: 'Security',
+    title: 'Secure by Design',
+    description: 'Built with security in mind from the ground up, featuring encrypted storage, secure boot options, and regular security updates.'
+  },
+  {
+    icon: 'Build',
+    title: 'Modular Hardware',
+    description: 'Swap or upgrade radios, batteries, and modules. Repair or expand your ARC with off-the-shelf or custom parts—no soldering iron required for most upgrades.'
+  },
+  {
+    icon: 'Code',
+    title: 'Open Source Everything',
+    description: 'From PCB design to the UI, every piece of ARC is open. Study, modify, and contribute—hardware schematics and software code are all public and documented.'
+  },
+  {
+    icon: 'Apps',
+    title: 'Flexible App Ecosystem',
+    description: 'Run open source tools, Python scripts, penetration testing frameworks, or even custom apps—right alongside Linux CLI utilities. Mix and match, no vendor lock-in.'
+  }
+];
+
+const phoneSpecs = {
+  categories: [
+    {
+      title: "Processing",
+      items: [
+        { name: "Processor", value: "ARM Cortex-A53 1GHz" },
+        { name: "GPU", value: "Broadcom VideoCore IV" },
+        { name: "RAM", value: "512MB SDRAM" }
+      ]
+    },
+    {
+      title: "Display",
+      items: [
+        { name: "Size", value: "3.5 inches" },
+        { name: "Resolution", value: "480 x 320 pixels" },
+        { name: "Type", value: "LCD" },
+      ]
+    },
+    {
+      title: "Battery",
+      items: [
+        { name: "Capacity", value: "3,200 mAh (replaceable)" },
+        { name: "Fast Charging", value: "14W" },
+      ]
+    },
+    {
+      title: "Storage",
+      items: [
+        { name: "Internal", value: "0GB" },
+        { name: "Expandable", value: "MicroSD up to 512GB" }
+      ]
+    }
+  ]
+};
+---
+
+<Layout title="Home">
+  <Hero
+    client:load
+    title="Ultimate Power and Portability for Hackers & Makers"
+    subtitle="The all-in-one portable hacking and utility console, designed for makers, tinkerers, and security professionals. Take total control of wireless, NFC, and more—right from your pocket, with zero compromise on freedom or features."
+    image="/Hero.png"
+    ctaText="Get [ARC] now"
+    ctaLink="/download"
+    secondaryCtaText="Learn More"
+    secondaryCtaLink="#features"
+  />
+
+  <FeatureSection
+    client:visible
+    title="Why Choose ARC?"
+    subtitle="A pocket-sized powerhouse that empowers you to explore, hack, and create—on your terms."
+    features={phoneFeatures}
+  />
+
+  <SpecsSection
+    client:visible
+    categories={phoneSpecs.categories}
+    image="/Front.png"
+  />
+
+  <CTASection
+    client:visible
+    title="Ready to Unlock Your Potential?"
+    subtitle="Join thousands of makers, hackers, and tinkerers who trust ARC to push the boundaries of what's possible with portable hardware."
+    buttonText="Download ARC"
+    buttonLink="/download"
+    secondaryButtonText="Explore Apps & Tools"
+    secondaryButtonLink="/app-store"
+  />
+</Layout>

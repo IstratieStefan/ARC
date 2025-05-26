@@ -1,0 +1,181 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero';
+
+const releases = [
+  {
+    version: "2.5.0",
+    date: "March 15, 2025",
+    codename: "Freedom",
+    description: "Latest stable release with improved battery life and camera performance",
+    files: [
+      { name: "Full Image", size: "1.2 GB", type: "img", url: "/download/openphone-2.5.0-full.img" },
+      { name: "OTA Update", size: "450 MB", type: "zip", url: "/download/openphone-2.5.0-ota.zip" },
+      { name: "Recovery", size: "85 MB", type: "img", url: "/download/openphone-2.5.0-recovery.img" }
+    ]
+  },
+  {
+    version: "2.4.2",
+    date: "February 2, 2025",
+    codename: "Liberty",
+    description: "Security update with fixes for critical vulnerabilities",
+    files: [
+      { name: "Full Image", size: "1.2 GB", type: "img", url: "/download/openphone-2.4.2-full.img" },
+      { name: "OTA Update", size: "120 MB", type: "zip", url: "/download/openphone-2.4.2-ota.zip" },
+      { name: "Recovery", size: "85 MB", type: "img", url: "/download/openphone-2.4.2-recovery.img" }
+    ]
+  },
+  {
+    version: "2.4.0",
+    date: "January 10, 2025",
+    codename: "Liberty",
+    description: "Feature update with improved performance and new customization options",
+    files: [
+      { name: "Full Image", size: "1.1 GB", type: "img", url: "/download/openphone-2.4.0-full.img" },
+      { name: "OTA Update", size: "380 MB", type: "zip", url: "/download/openphone-2.4.0-ota.zip" },
+      { name: "Recovery", size: "80 MB", type: "img", url: "/download/openphone-2.4.0-recovery.img" }
+    ]
+  }
+];
+---
+
+<Layout title="Download" description="Download the latest version of ARC OS and related software">
+  <Hero
+    client:load
+    title="Download ARC OS"
+    subtitle="Get the latest version of our open source operating system and related software"
+    image="https://images.pexels.com/photos/7014765/pexels-photo-7014765.jpeg"
+  />
+
+  <section class="section">
+    <div class="container-custom">
+      <div class="mb-12">
+        <h2 class="heading-2 mb-4">OS Releases</h2>
+        <p class="text-gray-600">Select the version that best suits your needs. We recommend always using the latest stable release for the best experience and security.</p>
+      </div>
+
+      <div class="space-y-8">
+        {releases.map((release) => (
+          <div class="card p-6">
+            <div class="flex flex-wrap justify-between items-start gap-4 mb-4">
+              <div>
+                <h3 class="text-2xl font-semibold">
+                  Version {release.version} 
+                  <span class="text-sm font-normal text-gray-500 ml-2">({release.codename})</span>
+                </h3>
+                <p class="text-gray-500">Released on {release.date}</p>
+              </div>
+              <span class={`px-3 py-1 rounded-full text-sm font-medium ${
+                release.version === releases[0].version 
+                  ? 'bg-accent/10 text-accent' 
+                  : 'bg-gray-100 text-gray-700'
+              }`}>
+                {release.version === releases[0].version ? 'Latest' : 'Stable'}
+              </span>
+            </div>
+            
+            <p class="text-gray-700 mb-6">{release.description}</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {release.files.map((file) => (
+                <div class="border border-gray-200 rounded-lg p-4 hover:border-accent transition-colors">
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="font-medium">{file.name}</span>
+                    <span class="text-sm text-gray-500">{file.size}</span>
+                  </div>
+                  <a 
+                    href={file.url} 
+                    class="flex items-center text-accent hover:text-accent-hover"
+                  >
+                    <span>Download</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div class="mt-16">
+        <h2 class="heading-2 mb-6">Installation Instructions</h2>
+        
+        <div class="prose max-w-none">
+          <h3>Prerequisites</h3>
+          <ul>
+            <li>A compatible OpenPhone device</li>
+            <li>A computer with ADB and Fastboot installed</li>
+            <li>USB cable</li>
+            <li>At least 2GB of free space on your computer</li>
+          </ul>
+
+          <h3>Installation Steps</h3>
+          <ol>
+            <li>
+              <p><strong>Backup your data</strong></p>
+              <p>Before proceeding, make sure to back up all important data on your phone.</p>
+            </li>
+            <li>
+              <p><strong>Boot into recovery mode</strong></p>
+              <p>Turn off your phone, then press and hold Volume Up + Power buttons until the recovery screen appears.</p>
+            </li>
+            <li>
+              <p><strong>Connect to computer</strong></p>
+              <p>Connect your phone to your computer using a USB cable.</p>
+            </li>
+            <li>
+              <p><strong>Flash the image</strong></p>
+              <p>Open a terminal/command prompt on your computer and run:</p>
+              <pre><code>fastboot flash system /path/to/openphone-x.x.x-full.img</code></pre>
+            </li>
+            <li>
+              <p><strong>Reboot</strong></p>
+              <p>Once the flashing is complete, reboot your device:</p>
+              <pre><code>fastboot reboot</code></pre>
+            </li>
+          </ol>
+
+          <h3>OTA Updates</h3>
+          <p>To apply an OTA update:</p>
+          <ol>
+            <li>Download the OTA zip file to your phone</li>
+            <li>Go to Settings > System > Updates</li>
+            <li>Tap "Install from storage" and select the downloaded zip file</li>
+            <li>Follow the on-screen instructions</li>
+          </ol>
+
+          <div class="bg-amber-50 border-l-4 border-amber-500 p-4 my-4">
+            <p class="font-medium text-amber-800">Warning</p>
+            <p class="text-amber-700">Installing or flashing system software always carries some risk. Make sure to follow the instructions carefully and backup your data before proceeding.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .prose h3 {
+    @apply text-xl font-semibold mt-8 mb-4;
+  }
+  .prose p {
+    @apply my-4 text-gray-700;
+  }
+  .prose ul, .prose ol {
+    @apply pl-6 my-4 space-y-2 text-gray-700;
+  }
+  .prose ul {
+    @apply list-disc;
+  }
+  .prose ol {
+    @apply list-decimal;
+  }
+  .prose pre {
+    @apply bg-gray-100 p-3 rounded-md overflow-x-auto text-sm my-4;
+  }
+  .prose code {
+    @apply font-mono text-gray-800;
+  }
+</style>

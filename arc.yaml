@@ -60,7 +60,7 @@ builtin_apps:
     exec: "python3 ./web_apps/whatsapp.py"
   - name: Calendar
     icon: ./ARC_DE/icons/calendar.png
-    exec: "python3 -m calendar_app.main"
+    exec: "python3 -m Calendar_app.main"
   - name: RF tools
     icon: ./ARC_DE/icons/rf.png
     exec: "python3 -m RF_tools.main"

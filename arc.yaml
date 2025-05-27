@@ -46,18 +46,6 @@ builtin_apps:
   - name: Web browser
     icon: ./ARC_DE/icons/browser.png
     exec: "python3 ./web_apps/browser.py"
-  - name: Phone
-    icon: ./ARC_DE/icons/phone.png
-    exec: "python3 coming_soon.coming_soon"
-  - name: Contacts
-    icon: ./ARC_DE/icons/contacts.png
-    exec: "python3 coming_soon.coming_soon"
-  - name: Mail
-    icon: ./ARC_DE/icons/mail.png
-    exec: "python3 coming_soon.coming_soon"
-  - name: Whatsapp
-    icon: ./ARC_DE/icons/sms.png
-    exec: "python3 ./web_apps/whatsapp.py"
   - name: Calendar
     icon: ./ARC_DE/icons/calendar.png
     exec: "python3 -m Calendar_app.main"
@@ -81,7 +69,7 @@ builtin_apps:
     exec: "pcmanfm"
   - name: Text editor
     icon: ./ARC_DE/icons/editor.png
-    exec: "vim -r"
+    exec: "python3 -m Notes_app.main"
   - name: Music
     icon: ./ARC_DE/icons/music.png
     exec: "python3 -m music_player.main"

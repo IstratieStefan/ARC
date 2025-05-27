@@ -367,7 +367,7 @@ class AppIcon(Button):
         # draw text only for hovered icon at bottom center of screen
         if self.hovered:
             font_name = getattr(getattr(config, "font", None), "name", "Arial")
-            hover_font = pygame.font.SysFont(font_name, self._font_size + 6)
+            hover_font = pygame.font.SysFont(font_name, self._font_size + 12)
             text_surf = hover_font.render(self.text, True, self.text_color)
             text_rect = text_surf.get_rect()
             sw, sh = surface.get_size()

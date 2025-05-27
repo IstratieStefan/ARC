@@ -1,3 +1,4 @@
+![Hardware](https://github.com/user-attachments/assets/97f00517-e868-492f-8eb3-124fec76963c)
 # ARC – All-in-one Remote Console
 
 ## 🚀 What is ARC?
@@ -8,6 +9,7 @@ Built around a Raspberry Pi Zero 2 W, ARC brings together NFC, RF, LoRa, GSM, an
 > **Think of ARC as the Swiss Army knife for wireless tech:** scan NFC tags, analyze RF signals, communicate over LoRa or GSM, and launch custom apps, all from your pocket.
 
 ---
+
 
 ## 🎯 Key Features
 
@@ -65,9 +67,15 @@ Built around a Raspberry Pi Zero 2 W, ARC brings together NFC, RF, LoRa, GSM, an
 
 ---
 
-## 🖼️ Screenshots
+## 🖼️ Gallery
 
+![Development](https://github.com/user-attachments/assets/d6d2a515-0eaf-4327-b26b-5b2a4da00ada)
+![Front](https://github.com/user-attachments/assets/de0579b6-031c-4c4d-8d47-989d9715a2b8)
+![Front](https://github.com/user-attachments/assets/d0d650c2-c3e5-4c89-b56b-4c54f1cce6c4)
+![Download](https://github.com/user-attachments/assets/97b7d35d-ce33-4349-95d9-c69049c38d88)
 
+![Software](https://github.com/user-attachments/assets/e000bd59-a31f-419d-8945-ad2524a62cea)
+![IMG_0927](https://github.com/user-attachments/assets/ee1bf564-0469-4747-a7e7-439e4b54048f)
 
 ---
 

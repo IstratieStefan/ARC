@@ -5,7 +5,7 @@ import Hero from '../../components/Hero';
 const docSections = [
   {
     title: "Hardware Documentation",
-    description: "Everything you need to know about OpenPhone hardware, from specifications to repairs and modifications.",
+    description: "Everything you need to know about ARC's hardware, from hardware to repairs and modifications.",
     icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M320-160v-80h320v80H320Zm0-560v-80h320v80H320Zm-40 320q-33 0-56.5-23.5T200-480q0-33 23.5-56.5T280-560q33 0 56.5 23.5T360-480q0 33-23.5 56.5T280-400Zm400 0q-33 0-56.5-23.5T600-480q0-33 23.5-56.5T680-560q33 0 56.5 23.5T760-480q0 33-23.5 56.5T680-400ZM240-720v80h-40q-33 0-56.5-23.5T120-720v-80q33 0 56.5 23.5T200-720h40Zm520 0q0-33-23.5-56.5T680-800v-80q33 0 56.5 23.5T760-800v80h-40v-80h40Zm-520 560h-40q-33 0-56.5-23.5T120-240v-80q33 0 56.5 23.5T200-240h40v80Zm520 0v-80h40q33 0 56.5-23.5T880-240v80q-33 0-56.5 23.5T800-160h-40Zm40-560v80h-40v-80h40ZM200-240v-80h40v80h-40Z"/></svg>',
     links: [
       { title: "Hardware Specifications", url: "/docs/hardware/specifications" },
@@ -17,7 +17,7 @@ const docSections = [
   },
   {
     title: "Software Documentation",
-    description: "Guides and reference materials for OpenPhone's software, from the operating system to application development.",
+    description: "Guides and reference materials for ARC's software, from the operating system to application development.",
     icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm0-240h640v-320H160v320Z"/></svg>',
     links: [
       { title: "Operating System", url: "/docs/software/os" },
@@ -31,8 +31,8 @@ const docSections = [
 
 const popularArticles = [
   {
-    title: "Getting Started with OpenPhone",
-    description: "A comprehensive guide to setting up your new OpenPhone for the first time.",
+    title: "Getting Started with ARC",
+    description: "A comprehensive guide to setting up your new ARC for the first time.",
     url: "/docs/getting-started",
     category: "Beginner"
   },
@@ -44,13 +44,13 @@ const popularArticles = [
   },
   {
     title: "Battery Replacement Guide",
-    description: "Learn how to safely replace your OpenPhone's battery to extend its lifespan.",
+    description: "Learn how to safely replace your ARC's battery to extend its lifespan.",
     url: "/docs/hardware/battery-replacement",
     category: "Intermediate"
   },
   {
-    title: "Building Apps for OpenPhone",
-    description: "Developer documentation for creating applications compatible with OpenPhone OS.",
+    title: "Building Apps for ARC",
+    description: "Developer documentation for creating applications compatible with ARC OS.",
     url: "/docs/software/app-development/getting-started",
     category: "Developer"
   }
@@ -60,9 +60,9 @@ const popularArticles = [
 <Layout title="Documentation">
   <Hero
     client:load
-    title="OpenPhone Documentation"
+    title="ARC Documentation"
     subtitle="Comprehensive guides and reference materials for your open source phone"
-    image="https://images.pexels.com/photos/5926389/pexels-photo-5926389.jpeg"
+    image="/Docs.JPG"
   />
 
   <section class="section">
@@ -95,7 +95,7 @@ const popularArticles = [
                 </ul>
                 
                 <a 
-                  href={section.title.includes("Hardware") ? "/docs/hardware" : "/docs/software"} 
+                  href={section.title.includes("Hardware") ? "/docs/hardware" : "/docs/software"}
                   class="inline-flex items-center text-accent hover:text-accent-hover mt-6"
                 >
                   View all documentation

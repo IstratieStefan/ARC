@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import ColorSelector from './ColorSelector';
+// import ColorSelector from './ColorSelector'; // Uncomment if you use it
 
 const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -21,88 +21,96 @@ const Navbar: React.FC = () => {
     { name: 'Docs', href: '/docs' },
   ];
 
+  // Dynamically set link color
+  const linkTextClass = isScrolled
+      ? "text-gray-900 hover:text-accent"
+      : "text-white hover:text-accent";
+
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? 'bg-white/90 backdrop-blur-md shadow-sm'
-          : 'bg-transparent'
-      }`}
-    >
-      <div className="container-custom">
-        <div className="flex items-center justify-between h-16 md:h-20">
-          {/* Logo */}
-          <a href="/" className="flex items-center">
-            <img src="/logo.svg" alt="ARC Logo" className="h-16 w-16 mr-2"/>
-          </a>
+      <header
+          className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+              isScrolled
+                  ? 'bg-white/90 backdrop-blur-md shadow-sm'
+                  : 'bg-transparent'
+          }`}
+      >
+        <div className="container-custom">
+          <div className="flex items-center justify-between h-16 md:h-20">
+            {/* Logo */}
+            <a href="/" className="flex items-center">
+              <img
+                  src={isScrolled ? "/logo.svg" : "/logo_light.svg"}
+                  alt="ARC Logo"
+                  className="h-16 w-16 mr-2 transition-all duration-300"
+              />
+            </a>
 
-
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => (
-                <a
-                    key={link.name}
-                    href={link.href}
-                className="text-gray-900 hover:text-accent font-medium transition-colors"
-              >
-                {link.name}
-              </a>
-            ))}
-          </nav>
-
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2 text-gray-900 focus:outline-none"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              className="w-6 h-6"
-            >
-              {isMobileMenuOpen ? (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              ) : (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              )}
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Navigation */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden bg-white shadow-lg animate-fade-in">
-          <div className="container-custom py-4">
-            <nav className="flex flex-col space-y-4">
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center space-x-8">
               {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  className="text-gray-900 hover:text-accent py-2 font-medium transition-colors"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {link.name}
-                </a>
+                  <a
+                      key={link.name}
+                      href={link.href}
+                      className={`${linkTextClass} font-medium transition-colors duration-300`}
+                  >
+                    {link.name}
+                  </a>
               ))}
             </nav>
+
+            {/* Mobile Menu Button */}
+            <button
+                className={`md:hidden p-2 focus:outline-none transition-colors duration-300 ${isScrolled ? "text-gray-900" : "text-white"}`}
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                aria-label="Toggle menu"
+            >
+              <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  className="w-6 h-6"
+              >
+                {isMobileMenuOpen ? (
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                    />
+                ) : (
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 6h16M4 12h16M4 18h16"
+                    />
+                )}
+              </svg>
+            </button>
           </div>
         </div>
-      )}
-    </header>
+
+        {/* Mobile Navigation */}
+        {isMobileMenuOpen && (
+            <div className="md:hidden bg-white shadow-lg animate-fade-in">
+              <div className="container-custom py-4">
+                <nav className="flex flex-col space-y-4">
+                  {navLinks.map((link) => (
+                      <a
+                          key={link.name}
+                          href={link.href}
+                          className={`text-gray-900 hover:text-accent py-2 font-medium transition-colors duration-300`}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        {link.name}
+                      </a>
+                  ))}
+                </nav>
+              </div>
+            </div>
+        )}
+      </header>
   );
 };
 

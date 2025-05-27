@@ -1,12 +1,27 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
+import MarkdownRenderer from '../../../components/MarkdownRenderer.jsx';
+
+// Define your markdown content inside the frontmatter
+const doc = `
+# ARC Hardware Overview
+
+- **Processor:** Raspberry Pi Zero 2 W (quad-core ARM Cortex-A53 @ 1 GHz)
+- **RAM:** 512 MB LPDDR2 SDRAM
+- **Storage:** microSD (up to 512GB)
+- **Co-Processor:** RP2040 Pico (keyboard controller, QMK firmware)
+- **Display:** 3.5" Waveshare TFT LCD, 480×320, resistive touch
+- **Keyboard:** 40% custom QWERTY, RGB notification, tactile switches
+- **Connectivity:** WiFi 802.11 b/g/n, Bluetooth 4.2 BLE, GSM (SIM800L), NFC (PN532), RF (CC1101, NRF24)
+- **Audio:** I2S DAC, onboard speaker, 3.5mm headphone jack
+- **Battery:** 3.7V Li-ion/LiPo, USB-C charging, MAX17048 fuel gauge
+- **Power:** Soft-latching circuit, 5–8h runtime typical
+- **Enclosure:** Custom PCB, 3D-printed case, ~140×75×28 mm
+
+> Modular, portable, open source!
+`;
 ---
 
 <Layout title="ARC Hardware Specifications">
-    <h1>Hardware Specifications</h1>
-    <h2 id="processor">Processor and Memory</h2>
-    <p>Your specs here...</p>
-    <h2 id="display">Display Technology</h2>
-    <p>Display details...</p>
-    <!-- More sections -->
+    <MarkdownRenderer client:load content={doc} />
 </Layout>

@@ -1,3 +1,53 @@
 ---
+import Layout from '../../../layouts/Layout.astro';
+import MarkdownRenderer from '../../../components/MarkdownRenderer.jsx';
+
+// Define your markdown content inside the frontmatter
+const doc = `
+# ARC Launcher
+
+\`launcher.py\` is the main entry point for the ARC desktop environment. It provides the application launcher, home screen, and system integration for ARC devices.
 
 ---
+
+## Features
+
+- Launches and manages ARC apps in a fullscreen interface
+- Loads configuration from a YAML or Python config file
+- Displays a grid of app icons, top bar with system status, and quick access to built-in utilities
+- Handles user input from keyboard, touchscreen, and custom hardware
+- Supports theming, custom icons, and multiple built-in apps
+
+---
+
+## Usage
+
+Run the launcher directly:
+
+\`\`\`bash
+python3 launcher.py
+\`\`\`
+
+Or, add it to your startup applications for auto-launch at boot.
+
+## Customization
+
+Apps and icons are configured in the YAML file in your .config directory.
+
+Appearance, colors, and layout are all customizable via the config.
+
+Add or remove apps by editing the builtin_apps section of the config.
+
+## Development
+
+Written in Python using Pygame for rendering and input.
+
+Requires the config.py module and access to resource folders (icons, fonts, etc.).
+
+Screen resolution is **480x320** pixels by default.
+`;
+---
+
+<Layout title="ARC Launcher">
+    <MarkdownRenderer client:load content={doc} />
+</Layout>

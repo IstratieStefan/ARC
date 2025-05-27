@@ -1,0 +1,38 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import MarkdownRenderer from '../../../components/MarkdownRenderer.jsx';
+
+// Define your markdown content inside the frontmatter
+const doc = `
+## Firmware
+
+ARC’s firmware is divided into two core components, each responsible for critical hardware features:
+
+### 1. Keyboard Firmware
+
+- **Platform:** Runs on the Waveshare RP2040 Pico Mini microcontroller
+- **Customization:**  
+  - The keyboard firmware is written in CircuitPython
+  - Users can easily modify key mappings, layers, macros, and special functions by editing the main script (\`code.py\`) directly on the device (shows up as a USB drive when connected to a PC)
+
+> For a full list, see the [CircuitPython HID Keycode Documentation](https://circuitpython.readthedocs.io/projects/hid/en/latest/api.html#keycode).
+
+### 2. Display Driver
+
+- **Driver:** \`fbcp-ili9341\` (Framebuffer Copy for ILI9341 displays)
+- **Role:**  
+  - Bridges the Raspberry Pi’s main framebuffer to the 3.5" SPI TFT display used by ARC
+  - Ensures smooth graphics, touch input support, and compatibility with the custom launcher
+- **Configuration:**  
+  - Driver is managed as a systemd service, auto-starting on boot
+  - Supports screen rotation, custom resolutions, and performance tweaks
+
+---
+
+> Together, these firmware components enable a fully custom, reprogrammable user interface and seamless hardware integration for ARC.
+`;
+---
+
+<Layout title="Firmware">
+    <MarkdownRenderer client:load content={doc} />
+</Layout>

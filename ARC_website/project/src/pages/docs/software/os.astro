@@ -1,3 +1,32 @@
 ---
+import Layout from '../../../layouts/Layout.astro';
+import MarkdownRenderer from '../../../components/MarkdownRenderer.jsx';
 
+// Define your markdown content inside the frontmatter
+const doc = `
+## ARC Operating System
+
+The ARC OS is a custom Linux distribution tailored for portable, embedded use with the ARC device. It is designed for reliability, speed, and flexibility.
+
+- **Base:** Debian (Raspbian) Bullseye 32-bit
+- **Window Manager:** Openbox, running on Xorg for lightweight graphical performance
+- **Custom Launcher:**  
+  - Written in Python using Pygame for a unique, touch- and keyboard-friendly interface  
+  - The launcher acts as the main desktop, providing app launching, system menus, utilities, and more
+
+- **Configuration:**  
+  - The launcher and app menu are fully configurable via a YAML file, located in the user's \`.config\` directory  
+  - Users can easily add or remove apps, change themes, and adjust settings without editing code
+
+- **Designed for:**  
+  - Fast boot and low resource usage  
+  - Full compatibility with the ARC hardware, including custom keyboard, display, and modular expansions
+
+> ARC OS combines the stability of Raspbian with a streamlined user experience, optimized for hacking, making, and portable productivity.
+
+`;
 ---
+
+<Layout title="ARC Operating system">
+    <MarkdownRenderer client:load content={doc} />
+</Layout>

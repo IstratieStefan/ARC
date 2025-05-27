@@ -1,3 +1,96 @@
 ---
+import Layout from '../../../layouts/Layout.astro';
+import MarkdownRenderer from '../../../components/MarkdownRenderer.jsx';
 
+// Define your markdown content inside the frontmatter
+const doc = `
+# ARC App Development Guide
+
+This guide will help you get started with developing fullscreen apps for the ARC platform. ARC apps are written in Python, typically using PyCharm or your favorite IDE, and are designed to run at 480x320 pixels.
+
+## 1. Setting Up Your Environment
+
+Recommended IDE: PyCharm (Community or Professional Edition)
+
+Python Version: Match the version used on ARC (usually Python 3.7+)
+
+Code Style: Follow PEP8 for best readability.
+
+## 2. App Structure
+
+Apps are generally single-file or package-based Python projects that are launched by the ARC launcher in fullscreen mode (480x320 px).
+
+App Entry Point: Main script (e.g., main.py or yourapp.py)
+
+Fullscreen Mode: Make sure your Pygame window or other UI fills 480x320 pixels.
+
+Config Import: All ARC apps use the global config for colors, sizing, and paths. Import it at the top of your script:
+
+from config import config
+
+The config.py file must be in the same folder as your app, or on the Python path.
+
+## 3. Example Minimal App
+
+\`\`\`
+import pygame
+from config import config
+
+WIDTH, HEIGHT = 480, 320
+
+pygame.init()
+screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
+clock = pygame.time.Clock()
+
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            running = False
+
+    screen.fill(config.colors.background)
+    # Your drawing code here
+
+    pygame.display.flip()
+    clock.tick(30)
+
+pygame.quit()
+\`\`\`
+
+## 4. Using the Config Object
+
+The config object is your source for:
+
+Colors (e.g., config.colors.background)
+
+UI sizing (e.g., config.tab.width, config.topbar.height)
+
+Paths to resources (icons, fonts, etc.)
+
+Grid and layout information
+Refer to the ARC config documentation for all available fields.
+
+## 5. App Packaging & Launcher Integration
+
+Place your app in the ARC apps directory, or install them as binaries.
+Add a new entry to builtin_apps in the YAML config:
+
+\`\`\`
+- name: MyApp
+  icon: ./ARC_DE/icons/myapp.png
+  exec: "python3 -m my_app.main"
+\`\`\`
+
+Ensure your app's dependencies are installed on the ARC system.
+All apps must be compatible with 480x320 resolution and support touch or keyboard input as needed.
+
+### Happy developing! For examples, check the official ARC built-in apps or the ARC GitHub repository.
+
+`;
 ---
+
+<Layout title="ARC App development">
+    <MarkdownRenderer client:load content={doc} />
+</Layout>

@@ -10,8 +10,8 @@ const releases = [
     description: "Software v1",
     files: [
       { name: "Full Image", size: "1.1 GB", type: "img", url: "/download/openphone-2.4.0-full.img" },
-      { name: "OTA Update", size: "380 MB", type: "zip", url: "/download/openphone-2.4.0-ota.zip" },
-      { name: "Recovery", size: "80 MB", type: "img", url: "/download/openphone-2.4.0-recovery.img" }
+      //{ name: "OTA Update", size: "380 MB", type: "zip", url: "/download/openphone-2.4.0-ota.zip" },
+      //{ name: "Recovery", size: "80 MB", type: "img", url: "/download/openphone-2.4.0-recovery.img" }
     ]
   }
 ];
@@ -83,45 +83,39 @@ const releases = [
         <div class="prose max-w-none">
           <h3>Prerequisites</h3>
           <ul>
-            <li>A compatible OpenPhone device</li>
-            <li>A computer with ADB and Fastboot installed</li>
-            <li>USB cable</li>
-            <li>At least 2GB of free space on your computer</li>
+            <li>ARC Hardware or a Raspberry pi zero 2w</li>
+            <li>A computer</li>
+            <li>A micro SD card with at least 16GB of free space</li>
+            <li>At least 4GB of free space on your computer</li>
           </ul>
 
           <h3>Installation Steps</h3>
           <ol>
             <li>
-              <p><strong>Backup your data</strong></p>
-              <p>Before proceeding, make sure to back up all important data on your phone.</p>
+              <p><strong>Hardware assembly</strong></p>
+              <p>Before proceeding, make sure the ARC hardware is assembled correctly </p>
             </li>
             <li>
-              <p><strong>Boot into recovery mode</strong></p>
-              <p>Turn off your phone, then press and hold Volume Up + Power buttons until the recovery screen appears.</p>
+              <p><strong>Install the necessary files and tools</strong></p>
+              <p>Install the <code>.img</code> file from the website and a disk image utility like Balena Etcher</p>
             </li>
             <li>
-              <p><strong>Connect to computer</strong></p>
-              <p>Connect your phone to your computer using a USB cable.</p>
+              <p><strong>Plug the micro SD card into the computer</strong></p>
+              <p>flash the <code>.img</code> file onto the SD card</p>
             </li>
             <li>
               <p><strong>Flash the image</strong></p>
-              <p>Open a terminal/command prompt on your computer and run:</p>
-              <pre><code>fastboot flash system /path/to/openphone-x.x.x-full.img</code></pre>
+              <p>plug the SD card into the raspberry pi, and turn the power on</p>
+            </li>
+            <li>
+              <p><strong>Log in</strong></p>
+              <p>Log into pi, with the password root</p>
             </li>
             <li>
               <p><strong>Reboot</strong></p>
               <p>Once the flashing is complete, reboot your device:</p>
-              <pre><code>fastboot reboot</code></pre>
+              <pre><code>sudo reboot</code></pre>
             </li>
-          </ol>
-
-          <h3>OTA Updates</h3>
-          <p>To apply an OTA update:</p>
-          <ol>
-            <li>Download the OTA zip file to your phone</li>
-            <li>Go to Settings > System > Updates</li>
-            <li>Tap "Install from storage" and select the downloaded zip file</li>
-            <li>Follow the on-screen instructions</li>
           </ol>
 
           <div class="bg-amber-50 border-l-4 border-amber-500 p-4 my-4">

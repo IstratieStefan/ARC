@@ -1,0 +1,164 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import MarkdownRenderer from '../../../components/MarkdownRenderer.jsx';
+
+// Define your markdown content inside the frontmatter
+const doc = `
+# ARC Device App Documentation
+This document lists and describes all included apps for the ARC device.
+- Screen size: 480x320 pixels
+- Development: Apps are written in Python, run fullscreen, and import config with from config import config.
+
+# Table of Contents
+- Notes / Scratchpad
+- Time Utility (Stopwatch, Timer, Pomodoro)
+- Music Player
+- Game Menu
+- WiFi Tools
+- Calculator
+- ScanMenu (WiFi Scan)
+- Settings (Beta)
+- Bluetooth Menu
+- File Picker
+- Volume/Audio Widget(coming soon)
+- Custom Apps
+
+## Notes App
+Location: Notes_app/main.py
+
+Purpose: Simple notes editor for writing and saving text files.
+Features:
+
+Open, edit, and save notes.
+
+File dialog for custom file location and type.
+
+Uses Tkinter for dialogs.
+
+Screen Controls: Keyboard/touch
+
+Dependencies: pygame, tkinter
+
+## Time Utility (coming soon)
+Location: Time_app/main.py
+
+Purpose: Combines Stopwatch, Timer, and Pomodoro timer in one app.
+
+Features:
+
+Multiple timer modes
+
+Start, pause, reset controls
+
+Visual feedback for current mode
+
+Screen Controls: Touch, buttons
+
+## Music Player
+![Music Player Screenshot](/screenshots/music_player.png)
+Location: music_player/main.py
+
+Purpose: MP3 and FLAC playback with simple UI.
+
+Features:
+
+Playlist scrolling
+
+Metadata display (artist, track)
+
+Play/pause/next/prev buttons
+
+Dependencies: pygame, mutagen
+
+## Game Menu
+![Game Menu Screenshot](/screenshots/game_menu.png)
+Location: games_menu/main.py
+
+Purpose: Launcher for installed games.
+
+Features:
+
+Scrollable game list
+
+Launch by selecting
+
+Loads game entries from JSON
+
+## WiFi Tools
+![WiFi Tools Screenshot](/screenshots/wifi_tools.png)
+Location: wifi_tools/main.py
+
+Purpose: Wireless network scanner and utilities.
+
+Features:
+
+List and connect to WiFi networks
+
+Display network info (signal, security)
+
+Uses system calls (iwlist)
+
+Dependencies: subprocess, re
+
+## Calculator (coming soon)
+Location: calculator_app/main.py
+
+Purpose: Simple calculator for quick math.
+
+Features:
+
+Basic arithmetic
+
+Touch/button input
+
+## Settings (WIP)
+Location: settings_app/main.py
+
+Purpose: ARC device settings.
+
+Features:
+
+Change preferences (volume, brightness, etc.)
+
+Touch sliders, toggles, dropdowns
+
+## Bluetooth Menu
+Location: bluetooth_menu.py
+![Bluetooth Menu Screenshot](/screenshots/bluetooth_tools.png)
+Purpose: Scan and connect to Bluetooth devices.
+
+Features:
+
+List available devices
+
+Connect/disconnect
+
+## Volume/Audio Widget (WIP)
+Location: volume_widget.py
+
+Purpose: Control and display audio volume.
+
+Features:
+
+Slider for volume
+
+Visual feedback
+
+## Custom Apps
+To add your own app:
+
+Create a new folder in the ARC apps directory.
+
+Start from a minimal main.py using pygame and from config import config.
+
+Set screen size: screen = pygame.display.set_mode((480, 320))
+
+Use the config file for color and layout constants.
+
+
+`;
+---
+
+<Layout title="ARC configuration">
+    <MarkdownRenderer client:load content={doc} />
+</Layout>

@@ -8,11 +8,10 @@ const softwareSections = [
     description: "Documentation for ARC OS, the core software powering your device",
     icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm0-80h640v-480H160v480Zm0 0v-480 480Z"/></svg>',
     links: [
-      { title: "System Architecture", url: "/docs/software/os/architecture" },
-      { title: "Core Features", url: "/docs/software/os/features" },
-      { title: "Security Model", url: "/docs/software/os/security" },
+      { title: "System Architecture", url: "/docs/software/os" },
+      { title: "Core Features", url: "/docs/software/apps" },
       { title: "Update System", url: "/docs/software/os/updates" },
-      { title: "Customization Options", url: "/docs/software/os/customization" }
+      { title: "Customization Options", url: "/docs/software/os/config" }
     ]
   },
   {
@@ -45,9 +44,9 @@ const softwareSections = [
     icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M480-80q-139-35-229.5-159.5T160-516v-244l320-120 320 120v244q0 146-90.5 270.5T480-80Zm0-80q104-33 172-132t68-224v-189l-240-90-240 90v189q0 125 68 224t172 132Zm0-120q17 0 28.5-11.5T520-320q0-17-11.5-28.5T480-360q-17 0-28.5 11.5T440-320q0 17 11.5 28.5T480-280Zm0-160q17 0 28.5-11.5T520-480v-120q0-17-11.5-28.5T480-640q-17 0-28.5 11.5T440-600v120q0 17 11.5 28.5T480-440Zm0-40Z"/></svg>',
     links: [
       { title: "Boot Issues", url: "/docs/software/troubleshooting/boot" },
-      { title: "Performance Problems", url: "/docs/software/troubleshooting/performance" },
-      { title: "App Compatibility", url: "/docs/software/troubleshooting/app-compatibility" },
-      { title: "System Recovery", url: "/docs/software/troubleshooting/recovery" },
+      { title: "Launcher not working", url: "/docs/software/troubleshooting/performance" },
+      { title: "Apps not working", url: "/docs/software/troubleshooting/app-compatibility" },
+      { title: "Window manager not starting", url: "/docs/software/troubleshooting/recovery" },
       { title: "Factory Reset", url: "/docs/software/troubleshooting/factory-reset" }
     ]
   }
@@ -55,24 +54,14 @@ const softwareSections = [
 
 const devResources = [
   {
-    title: "API Documentation",
-    description: "Complete reference for all ARC OS APIs and services",
-    url: "/docs/software/api"
-  },
-  {
-    title: "Developer Tools",
-    description: "Tools and utilities for ARC app development",
-    url: "/docs/software/developer-tools"
-  },
-  {
-    title: "Building Custom ROMs",
-    description: "Guide to building your own custom ARC OS distribution",
-    url: "/docs/software/custom-roms"
+    title: "App styling",
+    description: "Complete reference for all ARC OS UI components and styles",
+    url: "/docs/software/config"
   },
   {
     title: "Contributing to ARC",
     description: "How to contribute code to the ARC project",
-    url: "/docs/software/contributing"
+    url: "/docs/software/development"
   }
 ];
 ---

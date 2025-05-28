@@ -28,7 +28,7 @@ const docSections = [
     ]
   }
 ];
-
+/**
 const popularArticles = [
   {
     title: "Getting Started with ARC",
@@ -54,7 +54,7 @@ const popularArticles = [
     url: "/docs/software/app-development/getting-started",
     category: "Developer"
   }
-];
+];**/
 ---
 
 <Layout title="Documentation">
@@ -108,11 +108,12 @@ const popularArticles = [
           </div>
         ))}
       </div>
-      
+      <!--
       <div>
         <h2 class="heading-2 mb-8">Popular Articles</h2>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
           {popularArticles.map((article) => (
             <a href={article.url} class="card p-6 hover:shadow-md transition-shadow">
               <div class="flex justify-between items-start mb-3">
@@ -131,6 +132,7 @@ const popularArticles = [
             </a>
           ))}
         </div>
+        !-->
       </div>
     </div>
   </section>

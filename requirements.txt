@@ -10,3 +10,5 @@ pyaudio
 qrcode
 pillow
 python-uinput
+flask
+flask-cors

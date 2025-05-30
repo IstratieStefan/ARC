@@ -1,6 +1,11 @@
 /** @type {import('tailwindcss').Config} */
-export default {
-  content: ['./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}'],
+
+const textShadow = require('tailwindcss-textshadow');
+
+module.exports = {
+  content: [
+    './src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}'
+  ],
   darkMode: 'class',
   theme: {
     extend: {
@@ -28,7 +33,15 @@ export default {
           '100%': { transform: 'translateY(0)', opacity: '1' },
         },
       },
+      textShadow: {
+        sm: '1px 1px 2px rgba(0, 0, 0, 0.25)',
+        DEFAULT: '2px 2px 4px rgba(0, 0, 0, 0.25)',
+        lg: '3px 3px 6px rgba(0, 0, 0, 0.3)',
+      },
     },
   },
-  plugins: [require('@tailwindcss/typography')],
+  plugins: [
+    require('@tailwindcss/typography'),
+    textShadow
+  ],
 };

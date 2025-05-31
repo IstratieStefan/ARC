@@ -57,8 +57,8 @@ const Navbar: React.FC = () => {
     { name: 'Home', href: '/' },
     { name: 'Download', href: '/download' },
     { name: 'App Store', href: '/app-store' },
-    { name: 'Docs', href: '/docs' },
     { name: 'ARC Connect', href: '/arc-connect' },
+    { name: 'Docs', href: '/docs' },
   ];
 
   const linkTextClass =

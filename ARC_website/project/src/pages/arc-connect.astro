@@ -1,28 +1,21 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { Html5Qrcode } from 'html5-qrcode';
+import QrScanReact from '../components/QrScanReact.jsx';
 ---
 <Layout title="ARC configuration">
-    <div class="max-w-xl mx-auto mt-10 p-6 bg-white dark:bg-gray-900 rounded-lg shadow-md">
+    <div class="max-w-xl mx-auto mt-20 mb-16 p-6 py-8 bg-gray-50 dark:bg-gray-900 rounded-lg shadow-md">
         <h2 class="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Send Files to ARC</h2>
 
         <label for="ip" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Enter or Scan ARC IP:</label>
         <input
                 type="text"
                 id="ip"
+                name="ip"
                 placeholder="192.168.x.x"
                 class="w-full p-2 mb-4 mt-1 rounded border dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white"
         />
 
-        <div class="mb-4">
-            <div id="qr" class="rounded-md border border-gray-300 dark:border-gray-600 overflow-hidden aspect-video bg-black"></div>
-            <button
-                    onclick="startQR()"
-                    class="mt-3 w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white shadow-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition focus:outline-none focus:ring-2 focus:ring-accent"
-            >
-                Scan QR Code
-            </button>
-        </div>
+        <QrScanReact client:only="react" onDetected={val => document.getElementById('ip').value = val} />
 
         <form id="uploadForm" class="space-y-4">
             <div>
@@ -36,59 +29,37 @@ import { Html5Qrcode } from 'html5-qrcode';
                 Send to ARC
             </button>
         </form>
-
         <p id="status" class="mt-4 text-sm text-gray-700 dark:text-gray-300"></p>
     </div>
 
     <script>
-        const ipInput = document.getElementById('ip');
-        const form = document.getElementById('uploadForm');
-        const status = document.getElementById('status');
+        window.addEventListener('DOMContentLoaded', () => {
+            const ipInput = document.getElementById('ip');
+            const form = document.getElementById('uploadForm');
+            const status = document.getElementById('status');
+            form.onsubmit = async (e) => {
+                e.preventDefault();
+                const ip = ipInput.value.trim();
+                const file = document.getElementById('file').files[0];
+                if (!ip || !file) return alert("Enter IP and select a file.");
 
-        function startQR() {
-            const qrRegion = document.getElementById('qr');
-            qrRegion.innerHTML = ""; // clear previous scanner
+                const formData = new FormData();
+                formData.append("file", file);
 
-            const qr = new Html5Qrcode("qr");
+                try {
+                    const response = await fetch(`http://${ip}:5000/upload`, {
+                        method: "POST",
+                        body: formData,
+                    });
 
-            qr.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 250, height: 250 } },
-                (decoded) => {
-                    ipInput.value = decoded;
-                    qr.stop().then(() => qr.clear()).catch(console.error);
-                },
-                (err) => {
-                    console.warn("QR scan error", err);
+                    status.textContent = response.ok
+                        ? "✅ File sent successfully!"
+                        : "❌ Error uploading file.";
+                } catch (err) {
+                    status.textContent = "❌ Could not connect to ARC.";
+                    console.error(err);
                 }
-            ).catch(err => {
-                console.error("Failed to start QR scanner", err);
-            });
-        }
-
-        form.onsubmit = async (e) => {
-            e.preventDefault();
-            const ip = ipInput.value.trim();
-            const file = document.getElementById('file').files[0];
-            if (!ip || !file) return alert("Enter IP and select a file.");
-
-            const formData = new FormData();
-            formData.append("file", file);
-
-            try {
-                const response = await fetch(`http://${ip}:5000/upload`, {
-                    method: "POST",
-                    body: formData,
-                });
-
-                status.textContent = response.ok
-                    ? "✅ File sent successfully!"
-                    : "❌ Error uploading file.";
-            } catch (err) {
-                status.textContent = "❌ Could not connect to ARC.";
-                console.error(err);
-            }
-        };
+            };
+        });
     </script>
-
 </Layout>

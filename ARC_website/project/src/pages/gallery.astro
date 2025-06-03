@@ -1,0 +1,122 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero';
+
+const galleries = [
+    {
+        title: "ARC",
+        images: [
+            "/Hardware.JPG", // Replace with your own image paths
+        ],
+        count: 1,
+    },
+    {
+        title: "ARC",
+        images: [
+            "/Front.JPG",
+        ],
+        count: 1,
+    },
+    {
+        title: "Launcher",
+        images: [
+            "/Download.JPG",
+        ],
+        count: 1,
+    },
+    {
+        title: "Development",
+        images: [
+            "/Development.JPG",
+        ],
+        count: 1,
+    },
+    {
+        title: "Docs",
+        images: [
+            "Docs.JPG",
+        ],
+        count: 1,
+    },
+
+];
+---
+
+<Layout title="Gallery" description="Browse photo galleries">
+    <Hero
+            client:load
+            title="Gallery"
+            subtitle="Pictures and media from the [ARC] project"
+            image="/IMG_0927.JPG"
+    />
+    <section class="py-10">
+        <h1 class="text-3xl font-semibold text-center mb-6 font-cursive">Gallery</h1>
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {galleries.map((gallery, idx) => (
+                        <div
+                                class="group relative rounded-lg overflow-hidden shadow hover:shadow-2xl transition-shadow cursor-pointer"
+                                onclick={`openModal('${gallery.images[0]}', '${gallery.title}')`}
+                                tabindex="0"
+                                aria-label={`Open preview for ${gallery.title}`}
+                                onkeypress={`if(event.key==='Enter'){openModal('${gallery.images[0]}', '${gallery.title}')}`}
+                        >
+                            <img
+                                    src={gallery.images[0]}
+                                    alt={gallery.title}
+                                    class="w-full h-56 object-cover transition-transform duration-300 group-hover:scale-105"
+                            />
+                            <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end">
+                                <div class="p-4">
+                                    <h2 class="text-lg font-semibold text-white">{gallery.title}</h2>
+                                    <p class="text-sm text-gray-200">{gallery.count} photos</p>
+                                </div>
+                            </div>
+                        </div>
+                ))}
+            </div>
+        </div>
+
+        {/* Lightbox/Modal */}
+        <div
+                id="gallery-modal"
+                class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center hidden transition"
+                tabindex="-1"
+                onclick="closeModal(event)"
+        >
+            <div class="relative">
+                <img id="modal-img" src="" alt="Gallery Preview" class="rounded-lg shadow-2xl max-w-[90vw] max-h-[80vh]" />
+                <button
+                        onclick="closeModal(event)"
+                        class="absolute top-2 right-2 text-white text-2xl bg-black/50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/80 transition"
+                        aria-label="Close preview"
+                >
+                    &times;
+                </button>
+                <div id="modal-title" class="text-white text-lg font-semibold mt-4 text-center"></div>
+            </div>
+        </div>
+    </section>
+
+    <script is:inline>
+        function openModal(src, title) {
+            const modal = document.getElementById('gallery-modal');
+            const img = document.getElementById('modal-img');
+            const modalTitle = document.getElementById('modal-title');
+            img.src = src;
+            modalTitle.textContent = title;
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeModal(e) {
+            if (e.target.id === 'gallery-modal' || e.type === 'click' || e.type === 'keydown') {
+                const modal = document.getElementById('gallery-modal');
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        }
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeModal(e);
+        });
+    </script>
+</Layout>

@@ -58,6 +58,7 @@ const Navbar: React.FC = () => {
     { name: 'Download', href: '/download' },
     { name: 'App Store', href: '/app-store' },
     { name: 'ARC Connect', href: '/arc-connect' },
+    { name: 'Gallery', href: '/gallery' },
     { name: 'Docs', href: '/docs' },
   ];
 

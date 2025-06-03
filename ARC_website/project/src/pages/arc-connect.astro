@@ -1,8 +1,15 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero';
 import QrScanReact from '../components/QrScanReact.jsx';
 ---
 <Layout title="ARC configuration">
+    <Hero
+            client:load
+            title="ARC connect"
+            subtitle="Connect your ARC device to the network and send files"
+            image="/Download.JPG"
+    />
     <div class="max-w-xl mx-auto mt-20 mb-16 p-6 py-8 bg-gray-50 dark:bg-gray-900 rounded-lg shadow-md">
         <h2 class="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Send Files to ARC</h2>
 

@@ -1,0 +1,53 @@
+---
+interface Props {
+  percentage: number;
+  size?: number;
+  strokeWidth?: number;
+  color?: string;
+}
+
+const { 
+  percentage, 
+  size = 120, 
+  strokeWidth = 10, 
+  color = 'green'
+} = Astro.props;
+
+const radius = (size - strokeWidth) / 2;
+const circumference = radius * 2 * Math.PI;
+const offset = circumference - (percentage / 100) * circumference;
+const colorClass = `text-${color}`;
+---
+
+<svg class={`${colorClass} transform -rotate-90`} width={size} height={size}>
+  <circle
+    class="text-gray-200"
+    stroke="currentColor"
+    fill="transparent"
+    stroke-width={strokeWidth}
+    r={radius}
+    cx={size / 2}
+    cy={size / 2}
+  />
+  <circle
+    class={colorClass}
+    stroke="currentColor"
+    fill="transparent"
+    stroke-width={strokeWidth}
+    stroke-dasharray={circumference}
+    stroke-dashoffset={offset}
+    r={radius}
+    cx={size / 2}
+    cy={size / 2}
+    stroke-linecap="round"
+  />
+  <text
+    x="50%"
+    y="50%"
+    dy=".3em"
+    text-anchor="middle"
+    class="text-xl font-semibold fill-current text-arc-text"
+  >
+    {percentage}%
+  </text>
+</svg>

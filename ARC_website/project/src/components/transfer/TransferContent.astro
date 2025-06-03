@@ -1,0 +1,166 @@
+---
+---
+
+<div>
+    <h1 class="text-3xl font-bold mb-8">File Transfer</h1>
+
+    <div class="max-w-2xl">
+        <div class="bg-arc-card rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div class="mb-6">
+                <label for="pi-address" class="block text-sm font-medium text-arc-text-light mb-1">Raspberry Pi Address</label>
+                <div class="flex gap-2">
+                    <input
+                            type="text"
+                            id="pi-address"
+                            class="flex-1 rounded-lg border-gray-300 bg-gray-50 px-4 py-2 focus:border-arc-accent focus:ring-1 focus:ring-arc-accent"
+                            placeholder="http://192.168.1.100:8000"
+                    />
+                    <button
+                            id="connect-button"
+                            class="px-4 py-2 bg-arc-accent text-white rounded-lg hover:bg-arc-accent/90 transition-colors"
+                    >
+                        Connect
+                    </button>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center" id="drop-zone">
+                    <div class="mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                    </div>
+                    <p class="text-arc-text-light mb-2">Drag and drop files here or</p>
+                    <label class="inline-block px-4 py-2 bg-gray-100 text-arc-text rounded-lg cursor-pointer hover:bg-gray-200 transition-colors">
+                        Browse Files
+                        <input type="file" class="hidden" multiple id="file-input" />
+                    </label>
+                </div>
+            </div>
+
+            <div id="file-list" class="space-y-3"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let piAddress = '';
+    const connectButton = document.getElementById('connect-button');
+    const addressInput = document.getElementById('pi-address');
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const fileList = document.getElementById('file-list');
+
+    // Connect button handler
+    connectButton?.addEventListener('click', () => {
+        if (addressInput instanceof HTMLInputElement) {
+            piAddress = addressInput.value;
+            // Test connection
+            fetch(piAddress + '/ping')
+                .then(response => {
+                    if (response.ok) {
+                        connectButton.textContent = 'Connected';
+                        connectButton.classList.add('bg-arc-success');
+                    }
+                })
+                .catch(() => {
+                    alert('Could not connect to Raspberry Pi');
+                });
+        }
+    });
+
+    // File drop handlers
+    dropZone?.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('bg-gray-50');
+    });
+
+    dropZone?.addEventListener('dragleave', () => {
+        dropZone.classList.remove('bg-gray-50');
+    });
+
+    dropZone?.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('bg-gray-50');
+
+        if (e.dataTransfer?.files) {
+            handleFiles(Array.from(e.dataTransfer.files));
+        }
+    });
+
+    fileInput?.addEventListener('change', (e) => {
+        const target = e.target as HTMLInputElement;
+        if (target.files) {
+            handleFiles(Array.from(target.files));
+        }
+    });
+
+    function handleFiles(files: File[]) {
+        if (!piAddress) {
+            alert('Please connect to a Raspberry Pi first');
+            return;
+        }
+
+        files.forEach(file => {
+            const fileElement = document.createElement('div');
+            fileElement.className = 'flex items-center justify-between bg-gray-50 rounded-lg p-3';
+
+            const fileInfo = document.createElement('div');
+            fileInfo.className = 'flex items-center space-x-3';
+
+            const fileName = document.createElement('span');
+            fileName.className = 'text-arc-text';
+            fileName.textContent = file.name;
+
+            const fileSize = document.createElement('span');
+            fileSize.className = 'text-arc-text-light text-sm';
+            fileSize.textContent = formatFileSize(file.size);
+
+            fileInfo.appendChild(fileName);
+            fileInfo.appendChild(fileSize);
+
+            const progress = document.createElement('div');
+            progress.className = 'w-24 bg-gray-200 rounded-full h-2';
+            progress.innerHTML = '<div class="bg-arc-accent h-2 rounded-full" style="width: 0%"></div>';
+
+            fileElement.appendChild(fileInfo);
+            fileElement.appendChild(progress);
+
+            if (fileList) {
+                fileList.appendChild(fileElement);
+            }
+
+            uploadFile(file, progress.querySelector('div') as HTMLElement);
+        });
+    }
+
+    function formatFileSize(bytes: number): string {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function uploadFile(file: File, progressBar: HTMLElement) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        fetch(piAddress + '/upload', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => {
+                if (!response.ok) throw new Error('Upload failed');
+                progressBar.style.width = '100%';
+                progressBar.classList.remove('bg-arc-accent');
+                progressBar.classList.add('bg-arc-success');
+            })
+            .catch(error => {
+                progressBar.style.width = '100%';
+                progressBar.classList.remove('bg-arc-accent');
+                progressBar.classList.add('bg-arc-danger');
+            });
+    }
+</script>

@@ -5,12 +5,12 @@ import Hero from '../components/Hero';
 const releases = [
   {
     version: "1.0.0",
-    date: "May 27, 2025",
+    date: "June 6, 2025",
     codename: "Bullseye",
-    description: "Software v1",
+    description: "Virtual Machine image",
     files: [
-      { name: "Full Image", size: "1.1 GB", type: "img", url: "/download/openphone-2.4.0-full.img" },
-      //{ name: "OTA Update", size: "380 MB", type: "zip", url: "/download/openphone-2.4.0-ota.zip" },
+      { name: "Virtual Machine image", size: "2.13 GB", type: "img.gz", url: "https://drive.google.com/file/d/1JPCXtUW5_V29cEVZS7RQ3z-sKopJFDg6/view?usp=sharing" },
+      { name: "Hardware iamge", size: "Coming soon", type: "zip", url: "/download/" },
       //{ name: "Recovery", size: "80 MB", type: "img", url: "/download/openphone-2.4.0-recovery.img" }
     ]
   }
@@ -19,10 +19,10 @@ const releases = [
 
 <Layout title="Download" description="Download the latest version of ARC OS and related software">
   <Hero
-    client:load
-    title="Download ARC OS"
-    subtitle="Get the latest version of our open source operating system and related software"
-    image="/Download.JPG"
+      client:load
+      title="Download ARC OS"
+      subtitle="Get the latest version of our open source operating system and related software"
+      image="/Download.JPG"
   />
 
   <section class="section">
@@ -34,52 +34,52 @@ const releases = [
 
       <div class="space-y-8">
         {releases.map((release) => (
-          <div class="card p-6">
-            <div class="flex flex-wrap justify-between items-start gap-4 mb-4">
-              <div>
-                <h3 class="text-2xl font-semibold">
-                  Version {release.version} 
-                  <span class="text-sm font-normal text-gray-500 ml-2">({release.codename})</span>
-                </h3>
-                <p class="text-gray-500">Released on {release.date}</p>
-              </div>
-              <span class={`px-3 py-1 rounded-full text-sm font-medium ${
-                release.version === releases[0].version 
-                  ? 'bg-accent/10 text-accent' 
-                  : 'bg-gray-100 text-gray-700'
-              }`}>
+            <div class="card p-6">
+              <div class="flex flex-wrap justify-between items-start gap-4 mb-4">
+                <div>
+                  <h3 class="text-2xl font-semibold">
+                    Version {release.version}
+                    <span class="text-sm font-normal text-gray-500 ml-2">({release.codename})</span>
+                  </h3>
+                  <p class="text-gray-500">Released on {release.date}</p>
+                </div>
+                <span class={`px-3 py-1 rounded-full text-sm font-medium ${
+                    release.version === releases[0].version
+                        ? 'bg-accent/10 text-accent'
+                        : 'bg-gray-100 text-gray-700'
+                }`}>
                 {release.version === releases[0].version ? 'Latest' : 'Stable'}
               </span>
+              </div>
+
+              <p class="text-gray-700 mb-6">{release.description}</p>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {release.files.map((file) => (
+                    <div class="border border-gray-200 rounded-lg p-4 hover:border-accent transition-colors">
+                      <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium">{file.name}</span>
+                        <span class="text-sm text-gray-500">{file.size}</span>
+                      </div>
+                      <a
+                          href={file.url}
+                          class="flex items-center text-accent hover:text-accent-hover"
+                      >
+                        <span>Download</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                      </a>
+                    </div>
+                ))}
+              </div>
             </div>
-            
-            <p class="text-gray-700 mb-6">{release.description}</p>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {release.files.map((file) => (
-                <div class="border border-gray-200 rounded-lg p-4 hover:border-accent transition-colors">
-                  <div class="flex justify-between items-center mb-2">
-                    <span class="font-medium">{file.name}</span>
-                    <span class="text-sm text-gray-500">{file.size}</span>
-                  </div>
-                  <a 
-                    href={file.url} 
-                    class="flex items-center text-accent hover:text-accent-hover"
-                  >
-                    <span>Download</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                      <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
-                    </svg>
-                  </a>
-                </div>
-              ))}
-            </div>
-          </div>
         ))}
       </div>
 
       <div class="mt-16">
         <h2 class="heading-2 mb-6">Installation Instructions</h2>
-        
+
         <div class="prose max-w-none">
           <h3>Prerequisites</h3>
           <ul>
@@ -117,6 +117,46 @@ const releases = [
               <pre><code>sudo reboot</code></pre>
             </li>
           </ol>
+
+          <h3>Virtual Machine Installation Steps</h3>
+          <ol>
+            <li>
+              <p><strong>Download the <code>.img.gz</code> file</strong></p>
+              <p>Click the download link on this page and save the <code>.img.gz</code> file to your computer.</p>
+            </li>
+            <li>
+              <p><strong>Extract the disk image</strong></p>
+              <p>Unzip the file to get the <code>.img</code> file. On Linux or macOS, run:</p>
+              <pre><code>gunzip Arc.img.gz</code></pre>
+              <p>On Windows, you can use 7-Zip or WinRAR to extract the <code>.img</code> file.</p>
+            </li>
+            <li>
+              <p><strong>Create a new virtual machine</strong></p>
+              <p>In your virtualization software (VirtualBox, QEMU, VMware, etc.), create a new virtual machine. When prompted for a hard disk, choose "use existing disk" and select the extracted <code>.img</code> file. For testing I used 2GB of Ram and 20GB for storage.</p>
+            </li>
+            <li>
+              <p><strong>Start the virtual machine</strong></p>
+              <p>Boot the VM. The system will start from the provided image.</p>
+            </li>
+            <li>
+              <p><strong>Log in</strong></p>
+              <p>At the login prompt, enter:</p>
+              <ul>
+                <li><strong>Username:</strong> <code>user</code></li>
+                <li><strong>Password:</strong> <code>admin</code></li>
+              </ul>
+            </li>
+            <li>
+              <p><strong>Optional: Resize disk (if needed)</strong></p>
+              <p>If you want to expand the virtual disk, use your VM software's disk resize feature, then expand the partition from inside the VM using a tool like <code>gparted</code>.</p>
+            </li>
+            <li>
+              <p><strong>Reboot the VM</strong></p>
+              <p>After any changes or updates, reboot your virtual machine:</p>
+              <pre><code>sudo reboot</code></pre>
+            </li>
+          </ol>
+
 
           <div class="bg-amber-50 border-l-4 border-amber-500 p-4 my-4">
             <p class="font-medium text-amber-800">Warning</p>

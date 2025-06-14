@@ -134,10 +134,10 @@ const apps = [
 
 <Layout title="App Store" description="Browse and download open source applications for your ARC">
   <Hero
-    client:load
-    title="[ARC] App Store"
-    subtitle="Discover privacy-respecting applications built for your open source phone"
-    image="/Software.JPG"
+      client:load
+      title="[ARC] App Store"
+      subtitle="Discover privacy-respecting applications built for your open source phone"
+      image="/Software.JPG"
   />
 
   <section class="section">
@@ -147,12 +147,12 @@ const apps = [
         <div class="overflow-x-auto pb-4">
           <div class="flex space-x-2 min-w-max">
             {categories.map((category) => (
-              <button
-                class="px-4 py-2 rounded-full border border-gray-200 hover:border-accent hover:text-accent transition-colors whitespace-nowrap"
-                data-category={category}
-              >
-                {category}
-              </button>
+                <button
+                    class="px-4 py-2 rounded-full border border-gray-200 hover:border-accent hover:text-accent transition-colors whitespace-nowrap"
+                    data-category={category}
+                >
+                  {category}
+                </button>
             ))}
           </div>
         </div>
@@ -160,189 +160,129 @@ const apps = [
         <!-- Search -->
         <div class="relative">
           <input
-            type="text"
-            id="app-search"
-            placeholder="Search applications..."
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent pl-10"
+              type="text"
+              id="app-search"
+              placeholder="Search applications..."
+              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent pl-10"
           />
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-3 top-3.5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
           </svg>
         </div>
 
-        <!-- Selected Apps -->
-        <div id="selected-apps" class="hidden">
-          <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
-            <div class="flex justify-between items-center">
-              <h3 class="font-semibold">Selected Apps: <span id="selected-count">0</span></h3>
-              <div>
-                <button id="download-selected" class="btn-primary py-2 px-4">
-                  Download Selected
-                </button>
-                <button id="clear-selected" class="ml-2 text-gray-600 hover:text-accent">
-                  Clear
-                </button>
+        <!-- App Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {apps.map((app) => (
+              <div class="card group" data-app-id={app.id} data-category={app.category}>
+                <div class="relative p-4 pb-0">
+                  <div class="relative h-40 mb-4 overflow-hidden rounded-lg">
+                    <img
+                        src={app.screenshots[0]}
+                        alt={app.name}
+                        class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </div>
+                </div>
+                <div class="p-4">
+                  <div class="flex justify-between items-start">
+                    <h3 class="font-semibold text-lg">{app.name}</h3>
+                    <span class="text-xs text-gray-500">v{app.version}</span>
+                  </div>
+                  <p class="text-xs text-gray-500 mb-2">{app.developer}</p>
+                  <p class="text-sm text-gray-600 mb-4 line-clamp-2">{app.description}</p>
+                  <div class="flex justify-between items-center">
+                  <span class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
+                    {app.size}
+                  </span>
+                    <a href={app.download} class="text-accent hover:text-accent-hover text-sm font-medium flex items-center" download>
+                      Download
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                      </svg>
+                    </a>
+                  </div>
+                </div>
               </div>
+          ))}
+        </div>
+
+        <br>
+        <div class="mt-16">
+          <h2 class="heading-2 mb-6">Run Apps on Desktop (Preview Only)</h2>
+
+          <div class="prose max-w-none">
+            <p>This method is intended <strong>only for previewing ARC applications</strong> on your current computer. The behavior and features may differ from the final ARC hardware experience.</p>
+
+            <h3>macOS</h3>
+            <ol>
+              <li>Download the .zip file for the desired application from this page.</li>
+              <li>Unzip it (double-click or use Terminal: <code>unzip filename.zip</code>).</li>
+              <li>Navigate to the <code>dist</code> folder: <code>cd dist</code></li>
+              <li>Run the app from Terminal: <code>./appname</code></li>
+              <li>If blocked by macOS Gatekeeper, go to System Settings → Privacy & Security → Allow Anyway.</li>
+            </ol>
+
+            <h3>Windows</h3>
+            <ol>
+              <li>Download and unzip the .zip file (right-click → Extract All).</li>
+              <li>Open the <code>dist</code> folder.</li>
+              <li>Double-click the <code>.exe</code> file to run it.</li>
+              <li>If SmartScreen appears, click “More Info” → “Run Anyway.”</li>
+            </ol>
+
+            <h3>Linux</h3>
+            <ol>
+              <li>Download and unzip the file (<code>unzip filename.zip</code>).</li>
+              <li>Navigate to the <code>dist</code> directory in terminal.</li>
+              <li>Make the file executable if needed: <code>chmod +x appname</code></li>
+              <li>Run the application: <code>./appname</code></li>
+            </ol>
+
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 my-4">
+              <p class="font-medium text-blue-800">Note</p>
+              <p class="text-blue-700">These previews are for demonstration and testing only. On ARC hardware, performance, I/O, and integration features may differ significantly.</p>
             </div>
           </div>
         </div>
 
-        <!-- App Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {apps.map((app) => (
-            <div class="card group" data-app-id={app.id} data-category={app.category}>
-              <div class="relative p-4 pb-0">
-                <div class="absolute top-4 right-4 z-10">
-                  <input 
-                    type="checkbox" 
-                    class="app-checkbox w-5 h-5 accent-accent"
-                    aria-label={`Select ${app.name}`}
-                  />
-                </div>
-                <div class="relative h-40 mb-4 overflow-hidden rounded-lg">
-                  <img 
-                    src={app.screenshots[0]}
-                    alt={app.name}
-                    class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                </div>
-              </div>
-              <div class="p-4">
-                <div class="flex justify-between items-start">
-                  <h3 class="font-semibold text-lg">{app.name}</h3>
-                  <span class="text-xs text-gray-500">v{app.version}</span>
-                </div>
-                <p class="text-xs text-gray-500 mb-2">{app.developer}</p>
-                <p class="text-sm text-gray-600 mb-4 line-clamp-2">{app.description}</p>
-                <div class="flex justify-between items-center">
-                  <span class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
-                    {app.size}
-                  </span>
-                  <a href={app.download} class="text-accent hover:text-accent-hover text-sm font-medium flex items-center" download>
-                  Download
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                      <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
-                    </svg>
-                  </a>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+
       </div>
     </div>
   </section>
+
+
 </Layout>
 
 <script>
-  // App Store functionality
   document.addEventListener('DOMContentLoaded', function() {
-    const appStore = document.getElementById('app-store');
     const appSearch = document.getElementById('app-search');
     const categoryButtons = document.querySelectorAll('[data-category]');
     const appCards = document.querySelectorAll('[data-app-id]');
-    const appCheckboxes = document.querySelectorAll('.app-checkbox');
-    const selectedAppsContainer = document.getElementById('selected-apps');
-    const selectedCountSpan = document.getElementById('selected-count');
-    const downloadSelectedButton = document.getElementById('download-selected');
-    const clearSelectedButton = document.getElementById('clear-selected');
-    
     let activeCategory = 'All';
-    let selectedApps = new Set();
 
-    // Initialize active category
     categoryButtons[0].classList.add('bg-accent', 'text-white', 'border-accent');
 
-    // Filter by category
     categoryButtons.forEach(button => {
       button.addEventListener('click', () => {
-        // Reset all buttons
-        categoryButtons.forEach(btn => {
-          btn.classList.remove('bg-accent', 'text-white', 'border-accent');
-        });
-        
-        // Set active button
+        categoryButtons.forEach(btn => btn.classList.remove('bg-accent', 'text-white', 'border-accent'));
         button.classList.add('bg-accent', 'text-white', 'border-accent');
-        
         activeCategory = button.getAttribute('data-category');
         filterApps();
       });
     });
 
-    // Search functionality
     appSearch.addEventListener('input', filterApps);
 
-    // Handle app selection
-    appCheckboxes.forEach(checkbox => {
-      checkbox.addEventListener('change', function() {
-        const appCard = this.closest('[data-app-id]');
-        const appId = appCard.getAttribute('data-app-id');
-        
-        if (this.checked) {
-          selectedApps.add(appId);
-        } else {
-          selectedApps.delete(appId);
-        }
-        
-        updateSelectedAppsUI();
-      });
-    });
-
-    // Clear selected apps
-    clearSelectedButton.addEventListener('click', () => {
-      selectedApps.clear();
-      appCheckboxes.forEach(checkbox => {
-        checkbox.checked = false;
-      });
-      updateSelectedAppsUI();
-    });
-
-    // Download selected apps
-    downloadSelectedButton.addEventListener('click', () => {
-      selectedApps.forEach(appId => {
-        const app = apps.find(a => a.id === appId);
-        if (app && app.download) {
-          const link = document.createElement('a');
-          link.href = app.download;
-          link.download = '';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        }
-      });
-    });
-
-    // Filter apps based on category and search
     function filterApps() {
       const searchTerm = appSearch.value.toLowerCase();
-      
       appCards.forEach(card => {
         const appCategory = card.getAttribute('data-category');
         const appName = card.querySelector('h3').textContent.toLowerCase();
         const appDescription = card.querySelector('p:nth-of-type(2)').textContent.toLowerCase();
-        
         const matchesCategory = activeCategory === 'All' || appCategory === activeCategory;
-        const matchesSearch = searchTerm === '' || 
-                             appName.includes(searchTerm) || 
-                             appDescription.includes(searchTerm);
-        
-        if (matchesCategory && matchesSearch) {
-          card.classList.remove('hidden');
-        } else {
-          card.classList.add('hidden');
-        }
+        const matchesSearch = !searchTerm || appName.includes(searchTerm) || appDescription.includes(searchTerm);
+        card.classList.toggle('hidden', !(matchesCategory && matchesSearch));
       });
-    }
-
-    // Update selected apps UI
-    function updateSelectedAppsUI() {
-      selectedCountSpan.textContent = selectedApps.size;
-      
-      if (selectedApps.size > 0) {
-        selectedAppsContainer.classList.remove('hidden');
-      } else {
-        selectedAppsContainer.classList.add('hidden');
-      }
     }
   });
 </script>

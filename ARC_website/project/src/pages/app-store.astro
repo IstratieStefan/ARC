@@ -12,13 +12,14 @@ const apps = [
     name: "Music player",
     category: "Media",
     description: "MP3 and FLAC player.",
-    version: "1.2.0",
-    size: "10 MB",
+    version: "2.1.0",
+    size: "53.3 MB",
     developer: "Istratie Stefan",
     icon: "/icons/music.png",
     screenshots: [
       "/screenshots/music_player.png",
-    ]
+    ],
+    download: "/app-store/Music_app.zip"
   },
   {
     id: "wifi_tools",
@@ -26,12 +27,13 @@ const apps = [
     category: "Pentesting",
     description: "Wifi cybersecurity tool",
     version: "1.0.0",
-    size: "4 MB",
+    size: "42.8 MB",
     developer: "Istratie Stefan",
     icon: "/icons/wifi_tools.png",
     screenshots: [
       "/screenshots/wifi_tools.png"
-    ]
+    ],
+    download: "/app-store/WifiTools.zip"
   },
   {
     id: "bluetooth_tools",
@@ -39,12 +41,13 @@ const apps = [
     category: "Pentesting",
     description: "Bluetooth analysis and security toolkit",
     version: "1.0.0",
-    size: "3.5 MB",
+    size: "42.8 MB",
     developer: "Istratie Stefan",
     icon: "/icons/bluetooth_tools.png",
     screenshots: [
       "/screenshots/bluetooth_tools.png"
-    ]
+    ],
+    download: "/app-store/BluetoothTools.zip"
   },
   {
     id: "ir_tools",
@@ -52,11 +55,11 @@ const apps = [
     category: "Pentesting",
     description: "Infrared control and analysis suite",
     version: "1.0.0",
-    size: "2.7 MB",
+    size: "Coming soon",
     developer: "Istratie Stefan",
     icon: "/icons/ir.png",
     screenshots: [
-      "/screenshots/ir_tools.png"
+      "/screenshots/coming_soon.png"
     ]
   },
   {
@@ -65,11 +68,11 @@ const apps = [
     category: "Pentesting",
     description: "NFC tag reader, writer, and emulator",
     version: "1.0.0",
-    size: "3.9 MB",
+    size: "Coming soon",
     developer: "Istratie Stefan",
     icon: "https://images.pexels.com/photos/279614/pexels-photo-279614.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
     screenshots: [
-      "/screenshots/NFC.png"
+      "/screenshots/coming_soon.png"
     ]
   },
   {
@@ -78,11 +81,11 @@ const apps = [
     category: "Pentesting",
     description: "Radio frequency signal analyzer and toolkit",
     version: "1.0.0",
-    size: "4.2 MB",
+    size: "Coming soon",
     developer: "Istratie Stefan",
     icon: "https://images.pexels.com/photos/130707/pexels-photo-130707.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
     screenshots: [
-      "/screenshots/RFTools.png"
+      "/screenshots/coming_soon.png"
     ]
   },
   {
@@ -91,12 +94,13 @@ const apps = [
     category: "Productivity",
     description: "Simple Calendar app",
     version: "1.0.0",
-    size: "4 MB",
+    size: "42.8 MB",
     developer: "Istratie Stefan",
     icon: "https://images.pexels.com/photos/7438440/pexels-photo-7438440.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
     screenshots: [
       "/screenshots/Calendar.png"
-    ]
+    ],
+    download: "/app-store/Calendar.zip"
   },
   {
     id: "notes",
@@ -104,11 +108,11 @@ const apps = [
     category: "Productivity",
     description: "A simple notes app",
     version: "1.0.0",
-    size: "8 MB",
+    size: "Coming soon",
     developer: "Istratie Stefan",
     icon: "https://images.pexels.com/photos/7438440/pexels-photo-7438440.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
     screenshots: [
-      "https://images.pexels.com/photos/7438440/pexels-photo-7438440.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+      "/screenshots/coming_soon.png"
     ]
   },
   {
@@ -117,12 +121,13 @@ const apps = [
     category: "Games",
     description: "Simple game launcher",
     version: "1.3.0",
-    size: "0 MB",
+    size: "42.8 MB",
     developer: "Istratie Stefan",
     icon: "https://images.pexels.com/photos/7438440/pexels-photo-7438440.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
     screenshots: [
       "/screenshots/GameLauncher.png"
-    ]
+    ],
+    download: "/app-store/GameLauncher.zip"
   },
 ];
 ---
@@ -213,11 +218,8 @@ const apps = [
                   <span class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
                     {app.size}
                   </span>
-                  <a 
-                    href={`/app-store/${app.id}`}
-                    class="text-accent hover:text-accent-hover text-sm font-medium flex items-center"
-                  >
-                    Download
+                  <a href={app.download} class="text-accent hover:text-accent-hover text-sm font-medium flex items-center" download>
+                  Download
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
                       <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
                     </svg>
@@ -297,7 +299,17 @@ const apps = [
 
     // Download selected apps
     downloadSelectedButton.addEventListener('click', () => {
-      alert(`Downloading ${selectedApps.size} apps: ${Array.from(selectedApps).join(', ')}`);
+      selectedApps.forEach(appId => {
+        const app = apps.find(a => a.id === appId);
+        if (app && app.download) {
+          const link = document.createElement('a');
+          link.href = app.download;
+          link.download = '';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      });
     });
 
     // Filter apps based on category and search

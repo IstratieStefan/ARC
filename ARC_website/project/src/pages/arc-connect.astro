@@ -97,19 +97,19 @@ import Hero from '../components/Hero';
                 const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
                 let ws;
                 try {
-                    ws = new WebSocket(`${scheme}://${ip}:5000`);
+                    // connect to FastAPI’s SSH proxy endpoint
+                    ws = new WebSocket(`${scheme}://${window.location.hostname}:8000/ws/ssh`);
                 } catch (err) {
-                    formError.textContent = '❌ Invalid IP or unsupported protocol.';
+                    formError.textContent = '❌ Cannot connect to proxy server.';
                     console.error(err);
                     return;
                 }
 
                 ws.onopen = () => {
-                    statusEl.textContent = '🔌 Connected, sending credentials…';
+                    statusEl.textContent = '🔌 Connected to proxy, sending credentials…';
                     ws.send(JSON.stringify({
-                        type:     'auth',
-                        host:     ip,     // <— send the ARC IP
-                        port:     22,     // <— optional if you need custom SSH port
+                        host:     ip,       // target ARC IP
+                        port:     22,
                         username: user,
                         password: pass
                     }));
@@ -120,27 +120,20 @@ import Hero from '../components/Hero';
                     console.error('WS error:', err);
                 };
 
-                ws.onmessage = ({ data }) => {
-                    const msg = JSON.parse(data);
-                    switch (msg.type) {
-                        case 'auth-success':
-                            statusEl.textContent = '✅ Authenticated—redirecting to Metrics…';
-                            localStorage.setItem(
-                                'arcConnection',
-                                JSON.stringify({ ip, user, pass })
-                            );
-                            window.location.href = '/dashboard/metrics';
-                            break;
-
-                        case 'auth-failure':
-                            // clear the “Connected…” before showing error
-                            statusEl.textContent = '';
-                            formError.textContent = '❌ Wrong username or password.';
-                            ws.close();
-                            break;
-
-                        // no-op for output/error here
+                ws.onclose = () => {
+                    if (!statusEl.textContent.startsWith('✅')) {
+                        formError.textContent = '❌ Connection closed unexpectedly.';
                     }
+                };
+
+                ws.onmessage = ({ data }) => {
+                    // any message back from FastAPI means auth & shell are live
+                    statusEl.textContent = '✅ SSH shell ready—redirecting to SSH UI…';
+                    localStorage.setItem(
+                        'arcConnection',
+                        JSON.stringify({ ip, user, pass })
+                    );
+                    window.location.href = '/dashboard/ssh';
                 };
             });
 

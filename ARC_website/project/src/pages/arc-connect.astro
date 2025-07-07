@@ -1,162 +1,151 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Hero from '../components/Hero';
-import QrScanReact from '../components/QrScanReact.jsx';
 ---
 <Layout title="ARC configuration">
     <Hero
             client:load
             title="ARC connect"
-            subtitle="Connect your ARC device to the network and send files"
+            subtitle="Connect your ARC device to the network"
             image="/Download.JPG"
     />
     <div class="max-w-xl mx-auto mt-20 mb-16 p-6 py-8 bg-gray-50 dark:bg-gray-900 rounded-lg shadow-md">
-        <h2 class="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Send Files to ARC</h2>
+        <h2 class="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Connect to ARC</h2>
 
-        <label for="ip" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Enter or Scan ARC IP:</label>
-        <input
-                type="text"
-                id="ip"
-                name="ip"
-                placeholder="192.168.x.x"
-                class="w-full p-2 mb-4 mt-1 rounded border dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white"
-        />
-
-        <QrScanReact client:only="react" onDetected={val => document.getElementById('ip').value = val} />
-
-        <form id="uploadForm" class="space-y-4 mt-4">
+        <form id="connectForm" class="space-y-4">
             <div>
-                <label for="file" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Choose file to send:</label>
-                <input type="file" id="file" required class="block mt-1" />
+                <label for="ip" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    ARC IP:
+                </label>
+                <input
+                        type="text"
+                        id="ip"
+                        name="ip"
+                        placeholder="192.168.x.x"
+                        class="w-full p-2 mb-4 mt-1 rounded border dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white"
+                />
+            </div>
+            <div>
+                <label for="user" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Username:
+                </label>
+                <input
+                        type="text"
+                        id="user"
+                        name="user"
+                        placeholder="Enter your username"
+                        class="w-full p-2 mb-4 mt-1 rounded border dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white"
+                />
+            </div>
+            <div>
+                <label for="pass" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Password:
+                </label>
+                <div class="relative">
+                    <input
+                            type="password"
+                            id="pass"
+                            name="pass"
+                            placeholder="Enter your password"
+                            class="w-full p-2 mb-4 mt-1 rounded border dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white"
+                    />
+                    <button
+                            type="button"
+                            id="togglePassword"
+                            class="absolute right-2 top-2 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white"
+                    >
+                        👁️
+                    </button>
+                </div>
             </div>
             <button
                     type="submit"
                     class="w-full px-4 py-2 bg-accent hover:bg-accent-hover text-white rounded shadow transition"
             >
-                Send to ARC
+                Connect to ARC
             </button>
         </form>
+
         <div id="formError" class="text-red-600 dark:text-red-400 mb-2 text-sm"></div>
         <p id="status" class="mt-4 text-sm text-gray-700 dark:text-gray-300"></p>
-
-        <!-- Authentication Modal -->
-        <div id="authModal"
-             class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50"
-             style="display: none;">
-            <div class="bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg p-8 w-full max-w-xs relative">
-                <button id="closeModal" type="button" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white text-2xl leading-none">
-                    &times;
-                </button>
-                <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">Authentication Required</h3>
-                <label for="user-modal" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Username:</label>
-                <input type="text" id="user-modal" class="w-full p-2 mb-3 mt-1 rounded border dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white" autocomplete="username" />
-                <label for="pass-modal" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password:</label>
-                <input type="password" id="pass-modal" class="w-full p-2 mb-3 mt-1 rounded border dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white" autocomplete="current-password" />
-                <div id="authError" class="text-red-600 dark:text-red-400 mb-2 text-sm"></div>
-                <button id="authSubmit" class="w-full px-4 py-2 bg-accent hover:bg-accent-hover text-white rounded shadow transition">
-                    Confirm & Send
-                </button>
-            </div>
-        </div>
     </div>
 
     <script>
-        window.addEventListener('DOMContentLoaded', async () => {
-            const ipInput = document.getElementById('ip');
-            const form = document.getElementById('uploadForm');
-            const status = document.getElementById('status');
-            const formError = document.getElementById('formError');
-            const fileInput = document.getElementById('file');
-            // Modal elements
-            const authModal = document.getElementById('authModal');
-            const authSubmit = document.getElementById('authSubmit');
-            const authError = document.getElementById('authError');
-            const userModal = document.getElementById('user-modal');
-            const passModal = document.getElementById('pass-modal');
-            const closeModal = document.getElementById('closeModal');
+        window.addEventListener('DOMContentLoaded', () => {
+            const ipInput    = document.getElementById('ip');
+            const userInput  = document.getElementById('user');
+            const passInput  = document.getElementById('pass');
+            const form       = document.getElementById('connectForm');
+            const formError  = document.getElementById('formError');
+            const statusEl   = document.getElementById('status');
+            const toggleBtn  = document.getElementById('togglePassword');
 
-            let pendingFile = null;
-            let pendingIp = null;
-
-            function showAuthModal() {
-                authModal.style.display = 'flex';
-                authError.textContent = '';
-                userModal.value = '';
-                passModal.value = '';
-                setTimeout(() => userModal.focus(), 100);
-            }
-
-            function hideAuthModal() {
-                authModal.style.display = 'none';
-            }
-
-            form.onsubmit = (e) => {
+            form.addEventListener('submit', e => {
                 e.preventDefault();
                 formError.textContent = '';
-                status.textContent = '';
+                statusEl.textContent  = '';
 
-                const ip = ipInput.value.trim();
-                const file = fileInput.files[0];
-                if (!ip || !file) {
-                    formError.textContent = "Enter IP and select a file.";
+                const ip   = ipInput.value.trim();
+                const user = userInput.value.trim();
+                const pass = passInput.value;
+
+                if (!ip || !user || !pass) {
+                    formError.textContent = 'Please fill in all fields.';
                     return;
                 }
 
-                pendingIp = ip;
-                pendingFile = file;
-                showAuthModal();
-            };
-
-            authSubmit.onclick = async () => {
-                authError.textContent = '';
-                const user = userModal.value.trim();
-                const pass = passModal.value;
-                if (!user || !pass) {
-                    authError.textContent = "Enter username and password.";
-                    return;
-                }
-                if (!pendingIp || !pendingFile) {
-                    hideAuthModal();
-                    formError.textContent = "Session expired, please reselect file and IP.";
-                    return;
-                }
-
-                const formData = new FormData();
-                formData.append("file", pendingFile);
-                formData.append("user", user);
-                formData.append("pass", pass);
-
+                const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
+                let ws;
                 try {
-                    const response = await fetch(`http://${pendingIp}:5000/upload`, {
-                        method: "POST",
-                        body: formData,
-                    });
-
-                    if (response.ok) {
-                        status.textContent = "✅ File sent successfully!";
-                        hideAuthModal();
-                        form.reset();
-                    } else if (response.status === 401) {
-                        authError.textContent = "❌ Wrong username or password.";
-                    } else {
-                        authError.textContent = "❌ Error uploading file. Check ARC status.";
-                    }
+                    ws = new WebSocket(`${scheme}://${ip}:5000`);
                 } catch (err) {
-                    authError.textContent = "❌ Could not connect to ARC.";
+                    formError.textContent = '❌ Invalid IP or unsupported protocol.';
                     console.error(err);
+                    return;
                 }
-            };
 
-            closeModal.onclick = () => {
-                hideAuthModal();
-                status.textContent = "❌ Upload cancelled.";
-            };
+                ws.onopen = () => {
+                    statusEl.textContent = '🔌 Connected, sending credentials…';
+                    ws.send(JSON.stringify({
+                        type:     'auth',
+                        host:     ip,     // <— send the ARC IP
+                        port:     22,     // <— optional if you need custom SSH port
+                        username: user,
+                        password: pass
+                    }));
+                };
 
-            window.addEventListener('keydown', (e) => {
-                if (authModal.style.display === 'flex' && e.key === "Escape") {
-                    hideAuthModal();
-                    status.textContent = "❌ Upload cancelled.";
-                }
+                ws.onerror = err => {
+                    formError.textContent = '❌ WebSocket error';
+                    console.error('WS error:', err);
+                };
+
+                ws.onmessage = ({ data }) => {
+                    const msg = JSON.parse(data);
+                    switch (msg.type) {
+                        case 'auth-success':
+                            statusEl.textContent = '✅ Authenticated—redirecting to Metrics…';
+                            localStorage.setItem(
+                                'arcConnection',
+                                JSON.stringify({ ip, user, pass })
+                            );
+                            window.location.href = '/dashboard/metrics';
+                            break;
+
+                        case 'auth-failure':
+                            // clear the “Connected…” before showing error
+                            statusEl.textContent = '';
+                            formError.textContent = '❌ Wrong username or password.';
+                            ws.close();
+                            break;
+
+                        // no-op for output/error here
+                    }
+                };
+            });
+
+            toggleBtn.addEventListener('click', () => {
+                passInput.type = passInput.type === 'password' ? 'text' : 'password';
             });
         });
     </script>

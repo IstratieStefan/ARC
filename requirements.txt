@@ -12,3 +12,5 @@ pillow
 python-uinput
 flask
 flask-cors
+websockets
+paramiko

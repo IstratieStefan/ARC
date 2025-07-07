@@ -5,78 +5,28 @@ import CircularProgress from './CircularProgress.astro';
 
 <div>
   <h1 class="text-3xl font-bold mb-8">System Dashboard</h1>
-  
+
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <!-- Memory Usage Card -->
-    <InfoCard 
-      title="Memory Usage" 
-      icon='<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" /></svg>'
-      value="4.2 GB / 16 GB"
-      subValue="26% of total memory"
-      color="arc-accent"
+    <InfoCard
+        title="Memory Usage"
+        icon='<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" /></svg>'
+        value="4.2 GB / 16 GB"
+        subValue="26% of total memory"
+        color="arc-accent"
     >
       <div class="flex justify-center">
         <CircularProgress percentage={26} />
       </div>
     </InfoCard>
-    
-    <!-- Battery Card -->
-    <InfoCard 
-      title="Battery" 
-      icon='<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>'
-      value="78%"
-      subValue="Power adapter connected"
-      color="arc-success"
-    >
-      <div class="flex items-center justify-center mb-4 h-16">
-        <div class="relative w-16 h-8 bg-gray-200 rounded-full">
-          <div class="absolute top-0 left-0 h-8 bg-green-500 rounded-full" style="width: 78%;"></div>
-        </div>
-      </div>
-    </InfoCard>
-    
-    <!-- Time Connected Card -->
-    <InfoCard 
-      title="Time Connected" 
-      icon='<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>'
-      value="12h 34m 17s"
-      subValue="Since power-on"
-      color="arc-accent"
-    >
-      <div class="flex justify-center items-center h-16">
-        <div class="text-5xl text-arc-accent">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </div>
-      </div>
-    </InfoCard>
-    
-    <!-- CPU Temperature Card -->
-    <InfoCard 
-      title="CPU Temperature" 
-      icon='<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>'
-      value="52°C"
-      subValue="Normal operating temperature"
-      color="arc-success"
-    >
-      <div class="flex justify-center items-center h-16">
-        <div class="relative w-6 h-16 bg-gray-200 rounded-full overflow-hidden">
-          <div class="absolute bottom-0 left-0 right-0 bg-green-500 rounded-b-full" style="height: 40%;"></div>
-          <div class="absolute top-3 left-0 right-0 border-t border-gray-400"></div>
-          <div class="absolute top-7 left-0 right-0 border-t border-gray-400"></div>
-          <div class="absolute top-11 left-0 right-0 border-t border-gray-400"></div>
-        </div>
-      </div>
-    </InfoCard>
-    
+
     <!-- WiFi Strength Card -->
-    <InfoCard 
-      title="WiFi Strength" 
-      icon='<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.246-3.905 14.15 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" /></svg>'
-      value="86%"
-      subValue="IP: 192.168.1.105"
-      color="arc-accent"
+    <InfoCard
+        title="WiFi Strength"
+        icon='<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.246-3.905 14.15 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" /></svg>'
+        value="86%"
+        subValue="IP: Loading..."
+        color="arc-accent"
     >
       <div class="flex justify-center items-end space-x-1 h-16 mb-2">
         <div class="w-3 h-4 bg-green-500 rounded-sm"></div>
@@ -85,42 +35,25 @@ import CircularProgress from './CircularProgress.astro';
         <div class="w-3 h-14 bg-green-500 rounded-sm"></div>
       </div>
     </InfoCard>
-    
-    <!-- System Stats Card -->
-    <InfoCard 
-      title="System Stats" 
-      icon='<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>'
-      value="12 Boots"
-      subValue="Avg. Session: 8h 45m"
-      color="arc-accent"
-    >
-      <div class="flex justify-center items-center h-16">
-        <div class="grid grid-cols-5 gap-1 w-full max-w-xs">
-          {Array(12).fill('').map((_, i) => (
-            <div class="h-2 bg-arc-accent rounded-full"></div>
-          ))}
-        </div>
-      </div>
-    </InfoCard>
   </div>
 </div>
 
 <script>
-  // Update time connected counter
-  let seconds = 45437; // 12h 34m 17s in seconds
-  
-  setInterval(() => {
-    seconds++;
-    
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    
-    const timeDisplay = `${hours}h ${minutes}m ${secs}s`;
-    
-    const timeValueElement = document.querySelector('[title="Time Connected"] .text-2xl');
-    if (timeValueElement) {
-      timeValueElement.textContent = timeDisplay;
+  window.addEventListener('DOMContentLoaded', () => {
+    const connectionInfo = JSON.parse(localStorage.getItem('arcConnection'));
+    if (connectionInfo) {
+      const { ip, user } = connectionInfo;
+
+      // Update WiFi Strength Card with IP
+      const wifiCardSubValue = document.querySelector('[title="WiFi Strength"] .text-sm');
+      if (wifiCardSubValue) {
+        wifiCardSubValue.textContent = `IP: ${ip}`;
+      }
+
+      console.log(`Connected as ${user} to ${ip}`);
+    } else {
+      alert('No connection information found. Please connect first.');
+      window.location.href = '/arc-connect';
     }
-  }, 1000);
+  });
 </script>

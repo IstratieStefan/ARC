@@ -17,7 +17,7 @@ const { activeTab } = Astro.props;
   
   <nav class="flex-1 px-4 py-4 space-y-2">
     <a 
-      href="/dashboard" 
+      href="/project/src/pages/dashboard/metrics"
       class={`flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-colors duration-200 
              ${activeTab === 'dashboard' 
                 ? 'bg-arc-secondary text-white' 
@@ -31,7 +31,7 @@ const { activeTab } = Astro.props;
     </a>
 
     <a
-        href="/transfer"
+        href="/dashboard/transfer"
         class={`flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-colors duration-200 
              ${activeTab === 'transfer'
             ? 'bg-arc-secondary text-white'
@@ -45,7 +45,7 @@ const { activeTab } = Astro.props;
     </a>
 
     <a
-        href="/terminal"
+        href="/dashboard/terminal"
         class={`flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-colors duration-200 
              ${activeTab === 'terminal'
             ? 'bg-arc-secondary text-white'
@@ -59,7 +59,7 @@ const { activeTab } = Astro.props;
     </a>
 
     <a 
-      href="/settings" 
+      href="/dashboard/settings"
       class={`flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-colors duration-200 
              ${activeTab === 'settings' 
                 ? 'bg-arc-secondary text-white' 
@@ -105,7 +105,7 @@ const { activeTab } = Astro.props;
 <div id="mobile-menu" class="hidden md:hidden bg-black text-white p-4 border-t border-arc-secondary/30">
   <nav class="space-y-2">
     <a 
-      href="/dashboard" 
+      href="/project/src/pages/dashboard/metrics"
       class={`block px-4 py-2 rounded-lg text-sm font-medium 
              ${activeTab === 'dashboard' 
                 ? 'bg-arc-secondary text-white' 
@@ -115,7 +115,7 @@ const { activeTab } = Astro.props;
     </a>
 
     <a
-        href="/transfer"
+        href="/dashboard/transfer"
         class={`block px-4 py-2 rounded-lg text-sm font-medium 
              ${activeTab === 'transfer'
             ? 'bg-arc-secondary text-white'
@@ -125,7 +125,7 @@ const { activeTab } = Astro.props;
     </a>
 
     <a
-        href="/terminal"
+        href="/dashboard/terminal"
         class={`block px-4 py-2 rounded-lg text-sm font-medium 
              ${activeTab === 'terminal'
             ? 'bg-arc-secondary text-white'
@@ -135,7 +135,7 @@ const { activeTab } = Astro.props;
     </a>
 
     <a
-        href="/settings"
+        href="/dashboard/settings"
         class={`block px-4 py-2 rounded-lg text-sm font-medium 
              ${activeTab === 'settings'
             ? 'bg-arc-secondary text-white'

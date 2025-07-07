@@ -1,4 +1,7 @@
 ---
+export let host;
+export let username;
+export let password;
 ---
 
 <div>
@@ -6,56 +9,6 @@
 
     <div class="max-w-4xl">
         <div class="bg-arc-card rounded-2xl shadow-sm border border-gray-100 p-6">
-            <div class="mb-6 grid grid-cols-2 gap-4">
-                <div>
-                    <label for="host" class="block text-sm font-medium text-arc-text-light mb-1">Host</label>
-                    <input
-                            type="text"
-                            id="host"
-                            class="w-full rounded-lg border-gray-300 bg-gray-50 px-4 py-2 focus:border-arc-accent focus:ring-1 focus:ring-arc-accent"
-                            placeholder="192.168.1.100"
-                    />
-                </div>
-
-                <div>
-                    <label for="port" class="block text-sm font-medium text-arc-text-light mb-1">Port</label>
-                    <input
-                            type="number"
-                            id="port"
-                            class="w-full rounded-lg border-gray-300 bg-gray-50 px-4 py-2 focus:border-arc-accent focus:ring-1 focus:ring-arc-accent"
-                            value="22"
-                    />
-                </div>
-
-                <div>
-                    <label for="username" class="block text-sm font-medium text-arc-text-light mb-1">Username</label>
-                    <input
-                            type="text"
-                            id="username"
-                            class="w-full rounded-lg border-gray-300 bg-gray-50 px-4 py-2 focus:border-arc-accent focus:ring-1 focus:ring-arc-accent"
-                            placeholder="pi"
-                    />
-                </div>
-
-                <div>
-                    <label for="password" class="block text-sm font-medium text-arc-text-light mb-1">Password</label>
-                    <input
-                            type="password"
-                            id="password"
-                            class="w-full rounded-lg border-gray-300 bg-gray-50 px-4 py-2 focus:border-arc-accent focus:ring-1 focus:ring-arc-accent"
-                    />
-                </div>
-            </div>
-
-            <div class="flex justify-end mb-6">
-                <button
-                        id="connect-button"
-                        class="px-6 py-2 bg-arc-accent text-white rounded-lg hover:bg-arc-accent/90 transition-colors"
-                >
-                    Connect
-                </button>
-            </div>
-
             <div id="terminal-container" class="w-full h-[500px] rounded-lg bg-gray-900 overflow-hidden"></div>
         </div>
     </div>
@@ -110,18 +63,13 @@
 
     // Connect to SSH server
     function connect() {
-        const host = (document.getElementById('host') as HTMLInputElement).value;
-        const port = (document.getElementById('port') as HTMLInputElement).value;
-        const username = (document.getElementById('username') as HTMLInputElement).value;
-        const password = (document.getElementById('password') as HTMLInputElement).value;
-
-        if (!host || !port || !username || !password) {
-            alert('Please fill in all fields');
+        if (!host || !username || !password) {
+            term.write('\r\nMissing connection details...\r\n');
             return;
         }
 
         // Initialize WebSocket connection to SSH proxy server
-        ws = new WebSocket(`ws://${host}:${port}/ssh`);
+        ws = new WebSocket(`ws://${host}:22/ssh`);
 
         ws.onopen = () => {
             // Send authentication data
@@ -153,10 +101,6 @@
     // Initialize terminal when page loads
     document.addEventListener('DOMContentLoaded', () => {
         initTerminal();
-
-        const connectButton = document.getElementById('connect-button');
-        if (connectButton) {
-            connectButton.addEventListener('click', connect);
-        }
+        connect();
     });
 </script>

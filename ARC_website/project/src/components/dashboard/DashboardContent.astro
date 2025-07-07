@@ -4,128 +4,65 @@ import CircularProgress from './CircularProgress.astro';
 ---
 <div>
   <h1 class="text-3xl font-bold mb-8">System Dashboard</h1>
-
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    <!-- Memory Usage -->
-    <InfoCard
-        title="Memory Usage"
-        icon='<svg …memory-icon…/></svg>'
-        value="–"
-        subValue="–"
-        color="arc-accent"
-    >
-      <div class="flex justify-center">
-        <CircularProgress percentage={0} id="mem-chart" />
-      </div>
+    <InfoCard title="Memory Usage" icon="…" value="–" subValue="–" color="arc-accent">
+      <CircularProgress id="mem-chart" percentage={0} />
     </InfoCard>
-
     <!-- WiFi Strength -->
-    <InfoCard
-        title="WiFi Strength"
-        icon='<svg …wifi-icon…/></svg>'
-        value="–"
-        subValue="IP: –"
-        color="arc-accent"
-    >
-      <div class="flex justify-center items-end space-x-1 h-16 mb-2" id="wifi-bars">
-        <!-- bars updated in JS -->
-      </div>
+    <InfoCard title="WiFi Strength" icon="…" value="–" subValue="IP: –" color="arc-accent">
+      <div id="wifi-bars" class="flex justify-center items-end space-x-1 h-16 mb-2"></div>
     </InfoCard>
-
     <!-- CPU Load -->
-    <InfoCard
-        title="CPU Load"
-        icon='<svg …cpu-icon…/></svg>'
-        value="–"
-        subValue="per core"
-        color="arc-accent"
-    >
-      <div class="flex justify-center">
-        <CircularProgress percentage={0} id="cpu-chart" />
-      </div>
+    <InfoCard title="CPU Load" icon="…" value="–" subValue="per core" color="arc-accent">
+      <CircularProgress id="cpu-chart" percentage={0} />
     </InfoCard>
-
     <!-- Disk Usage -->
-    <InfoCard
-        title="Disk Usage"
-        icon='<svg …disk-icon…/></svg>'
-        value="–"
-        subValue="–"
-        color="arc-accent"
-    >
-      <div class="flex justify-center">
-        <CircularProgress percentage={0} id="disk-chart" />
-      </div>
+    <InfoCard title="Disk Usage" icon="…" value="–" subValue="–" color="arc-accent">
+      <CircularProgress id="disk-chart" percentage={0} />
     </InfoCard>
-
     <!-- Uptime -->
-    <InfoCard
-        title="System Uptime"
-        icon='<svg …uptime-icon…/></svg>'
-        value="–"
-        subValue=""
-        color="arc-accent"
-    >
+    <InfoCard title="System Uptime" icon="…" value="–" subValue="" color="arc-accent">
       <p id="uptime-text" class="text-xl font-mono"></p>
     </InfoCard>
-
     <!-- Temperature -->
-    <InfoCard
-        title="CPU Temp"
-        icon='<svg …thermometer-icon…/></svg>'
-        value="–°C"
-        subValue=""
-        color="arc-accent"
-    >
-      <div class="flex justify-center">
-        <CircularProgress percentage={0} id="temp-chart" />
-      </div>
+    <InfoCard title="CPU Temp" icon="…" value="–°C" subValue="" color="arc-accent">
+      <CircularProgress id="temp-chart" percentage={0} />
     </InfoCard>
   </div>
 </div>
 
-<script>
-  window.addEventListener('DOMContentLoaded', async () => {
-    const conn = JSON.parse(localStorage.getItem('arcConnection') || '{}');
-    if (!conn.ip) {
-      alert('Not connected – please connect first.');
-      return location.href = '/arc-connect';
-    }
-    const url = `http://${conn.ip}:5000/metrics`;
+<script is:inline client:load>
+  const conn = JSON.parse(localStorage.getItem('arcConnection') || '{}');
+  if (!conn.ip) {
+    alert('Not connected – please connect first.');
+    location.href = '/arc-connect';
+    throw new Error('No connection');
+  }
 
+  const metricsUrl = `http://${conn.ip}:5001/metrics`;
+
+  async function refresh() {
     try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('Fetch failed');
-      const m = await res.json();
+      const res = await fetch(metricsUrl);
+      const m   = await res.json();
 
       // Memory
       const memPct = Math.round((m.memory.used / m.memory.total) * 100);
       document.querySelector('InfoCard[title="Memory Usage"] .value').textContent =
           `${m.memory.used} GB / ${m.memory.total} GB`;
       document.querySelector('InfoCard[title="Memory Usage"] .subValue').textContent =
-          `${memPct}% of total memory`;
+          `${memPct}% used`;
       document.getElementById('mem-chart').update(memPct);
 
-      // WiFi
-      document.querySelector('InfoCard[title="WiFi Strength"] .value').textContent =
-          `${m.wifi.strength}%`;
+      // WiFi (just show IP)
       document.querySelector('InfoCard[title="WiFi Strength"] .subValue').textContent =
           `IP: ${conn.ip}`;
-      // render bars
-      const bars = document.getElementById('wifi-bars');
-      bars.innerHTML = '';
-      const level = Math.ceil((m.wifi.strength / 100) * 4);
-      for (let i = 1; i <= 4; i++) {
-        const div = document.createElement('div');
-        div.className = `w-3 rounded-sm ${i <= level ? 'bg-green-500' : 'bg-gray-400'}`;
-        div.style.height = `${i * 4}px`;
-        bars.append(div);
-      }
+      // (for actual RSSI you'd SSH into `iwconfig` etc.)
 
       // CPU
       const cpuPct = Math.round((m.cpu.load / m.cpu.cores) * 100);
       document.querySelector('InfoCard[title="CPU Load"] .value').textContent =
-          `${m.cpu.load.toFixed(2)}`;
+          m.cpu.load.toFixed(2);
       document.getElementById('cpu-chart').update(cpuPct);
 
       // Disk
@@ -140,13 +77,18 @@ import CircularProgress from './CircularProgress.astro';
       document.getElementById('uptime-text').textContent = m.uptime;
 
       // Temp
-      document.querySelector('InfoCard[title="CPU Temp"] .value').textContent =
-          `${m.temp.toFixed(1)}°C`;
-      document.getElementById('temp-chart').update(Math.round((m.temp / 100) * 100));
+      if (m.temp != null) {
+        document.querySelector('InfoCard[title="CPU Temp"] .value').textContent =
+            `${m.temp.toFixed(1)}°C`;
+        document.getElementById('temp-chart').update(Math.round((m.temp/100)*100));
+      } else {
+        document.querySelector('InfoCard[title="CPU Temp"] .value').textContent = 'N/A';
+      }
+    } catch (e) {
+      console.error('Could not fetch metrics', e);
     }
-    catch (err) {
-      console.error(err);
-      alert('Error fetching metrics');
-    }
-  });
+  }
+
+  refresh();
+  setInterval(refresh, 5000);
 </script>

@@ -2,11 +2,8 @@
 interface Props {
   activeTab: 'dashboard' | 'settings' | 'transfer' | 'terminal';
 }
-
 const { activeTab } = Astro.props;
 ---
-
-<aside class="hidden md:flex flex-col w-64 bg-gray-950 text-white">
 <aside class="hidden md:flex flex-col w-64 bg-gray-950 text-white">
   <div class="p-6">
     <div class="flex items-center">
@@ -14,72 +11,71 @@ const { activeTab } = Astro.props;
       <h1 class="ml-3 text-xl font-semibold">connect</h1>
     </div>
   </div>
-  
+
   <nav class="flex-1 px-4 py-4 space-y-2">
-    <a 
-      href="/project/src/pages/dashboard/metrics"
-      class={`flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-colors duration-200 
-             ${activeTab === 'dashboard' 
-                ? 'bg-arc-secondary text-white' 
-                : 'text-gray-300 hover:bg-arc-secondary/150 hover:text-white'}`}
+    <a
+        href="/dashboard/metrics"
+        class={`flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-colors duration-200
+        ${activeTab === 'dashboard'
+            ? 'bg-arc-secondary text-white'
+            : 'text-gray-300 hover:bg-arc-secondary/150 hover:text-white'}`}
     >
+      <!-- Dashboard Icon -->
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-              d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
       </svg>
       Dashboard
     </a>
 
     <a
         href="/dashboard/transfer"
-        class={`flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-colors duration-200 
-             ${activeTab === 'transfer'
+        class={`flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-colors duration-200
+        ${activeTab === 'transfer'
             ? 'bg-arc-secondary text-white'
             : 'text-gray-300 hover:bg-arc-secondary/50 hover:text-white'}`}
     >
+      <!-- Transfer Icon -->
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
       </svg>
       Transfer
     </a>
 
     <a
         href="/dashboard/terminal"
-        class={`flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-colors duration-200 
-             ${activeTab === 'terminal'
+        class={`flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-colors duration-200
+        ${activeTab === 'terminal'
             ? 'bg-arc-secondary text-white'
             : 'text-gray-300 hover:bg-arc-secondary/50 hover:text-white'}`}
     >
+      <!-- Terminal Icon -->
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
       </svg>
       Terminal
     </a>
 
-    <a 
-      href="/dashboard/settings"
-      class={`flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-colors duration-200 
-             ${activeTab === 'settings' 
-                ? 'bg-arc-secondary text-white' 
-                : 'text-gray-300 hover:bg-arc-secondary/50 hover:text-white'}`}
+    <a
+        href="/dashboard/settings"
+        class={`flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-colors duration-200
+        ${activeTab === 'settings'
+            ? 'bg-arc-secondary text-white'
+            : 'text-gray-300 hover:bg-arc-secondary/50 hover:text-white'}`}
     >
+      <!-- Settings Icon -->
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
       </svg>
       Settings
     </a>
   </nav>
 
-  <!--User name-->
+  <!-- User info -->
   <div class="p-4 border-t border-arc-secondary/30">
     <div class="flex items-center">
       <div class="ml-3">
-        <p class="text-sm font-medium text-white">USER</p>
+        <p id="sidebar-username" class="text-sm font-medium text-white">User</p>
         <p class="text-xs text-gray-400">Connected</p>
       </div>
     </div>
@@ -94,7 +90,7 @@ const { activeTab } = Astro.props;
     </div>
     <h1 class="ml-2 text-lg font-semibold">Connect</h1>
   </div>
-  
+
   <button id="mobile-menu-button" class="text-white focus:outline-none">
     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -104,20 +100,20 @@ const { activeTab } = Astro.props;
 
 <div id="mobile-menu" class="hidden md:hidden bg-black text-white p-4 border-t border-arc-secondary/30">
   <nav class="space-y-2">
-    <a 
-      href="/project/src/pages/dashboard/metrics"
-      class={`block px-4 py-2 rounded-lg text-sm font-medium 
-             ${activeTab === 'dashboard' 
-                ? 'bg-arc-secondary text-white' 
-                : 'text-gray-300 hover:bg-arc-secondary/50 hover:text-white'}`}
+    <a
+        href="/dashboard/metrics"
+        class={`block px-4 py-2 rounded-lg text-sm font-medium
+        ${activeTab === 'dashboard'
+            ? 'bg-arc-secondary text-white'
+            : 'text-gray-300 hover:bg-arc-secondary/50 hover:text-white'}`}
     >
       Dashboard
     </a>
 
     <a
         href="/dashboard/transfer"
-        class={`block px-4 py-2 rounded-lg text-sm font-medium 
-             ${activeTab === 'transfer'
+        class={`block px-4 py-2 rounded-lg text-sm font-medium
+        ${activeTab === 'transfer'
             ? 'bg-arc-secondary text-white'
             : 'text-gray-300 hover:bg-arc-secondary/50 hover:text-white'}`}
     >
@@ -126,8 +122,8 @@ const { activeTab } = Astro.props;
 
     <a
         href="/dashboard/terminal"
-        class={`block px-4 py-2 rounded-lg text-sm font-medium 
-             ${activeTab === 'terminal'
+        class={`block px-4 py-2 rounded-lg text-sm font-medium
+        ${activeTab === 'terminal'
             ? 'bg-arc-secondary text-white'
             : 'text-gray-300 hover:bg-arc-secondary/50 hover:text-white'}`}
     >
@@ -136,8 +132,8 @@ const { activeTab } = Astro.props;
 
     <a
         href="/dashboard/settings"
-        class={`block px-4 py-2 rounded-lg text-sm font-medium 
-             ${activeTab === 'settings'
+        class={`block px-4 py-2 rounded-lg text-sm font-medium
+        ${activeTab === 'settings'
             ? 'bg-arc-secondary text-white'
             : 'text-gray-300 hover:bg-arc-secondary/50 hover:text-white'}`}
     >
@@ -146,10 +142,21 @@ const { activeTab } = Astro.props;
   </nav>
 </div>
 
-<script>
+<script is:inline client:load>
+  const conn = localStorage.getItem('arcConnection');
+  if (conn) {
+    try {
+      const { user } = JSON.parse(conn);
+      document.getElementById('sidebar-username').textContent = user;
+    } catch (e) {
+      console.error('Failed to parse arcConnection', e);
+    }
+  } else {
+    document.getElementById('sidebar-username').textContent = 'Not connected';
+  }
+
   const mobileMenuButton = document.getElementById('mobile-menu-button');
   const mobileMenu = document.getElementById('mobile-menu');
-  
   if (mobileMenuButton && mobileMenu) {
     mobileMenuButton.addEventListener('click', () => {
       mobileMenu.classList.toggle('hidden');

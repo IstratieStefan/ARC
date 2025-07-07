@@ -1,34 +1,21 @@
 ---
 ---
-
 <div>
     <h1 class="text-3xl font-bold mb-8">File Transfer</h1>
 
     <div class="max-w-2xl">
         <div class="bg-arc-card rounded-2xl shadow-sm border border-gray-100 p-6">
-            <div class="mb-6">
-                <label for="pi-address" class="block text-sm font-medium text-arc-text-light mb-1">Raspberry Pi Address</label>
-                <div class="flex gap-2">
-                    <input
-                            type="text"
-                            id="pi-address"
-                            class="flex-1 rounded-lg border-gray-300 bg-gray-50 px-4 py-2 focus:border-arc-accent focus:ring-1 focus:ring-arc-accent"
-                            placeholder="http://192.168.1.100:8000"
-                    />
-                    <button
-                            id="connect-button"
-                            class="px-4 py-2 bg-arc-accent text-white rounded-lg hover:bg-arc-accent/90 transition-colors"
-                    >
-                        Connect
-                    </button>
-                </div>
-            </div>
 
+            <!-- File drop area -->
             <div class="mb-6">
-                <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center" id="drop-zone">
+                <div
+                        id="drop-zone"
+                        class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center transition-colors"
+                >
                     <div class="mb-4">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                         </svg>
                     </div>
                     <p class="text-arc-text-light mb-2">Drag and drop files here or</p>
@@ -39,128 +26,111 @@
                 </div>
             </div>
 
+            <!-- File list & progress bars -->
             <div id="file-list" class="space-y-3"></div>
         </div>
     </div>
 </div>
 
-<script>
-    let piAddress = '';
-    const connectButton = document.getElementById('connect-button');
-    const addressInput = document.getElementById('pi-address');
-    const dropZone = document.getElementById('drop-zone');
+<script is:inline client:load type="module">
+    // Pull connection info
+    const conn = localStorage.getItem('arcConnection');
+    if (!conn) {
+        alert('Not connected to ARC – please connect first.');
+        location.href = '/';
+        throw new Error('arcConnection missing');
+    }
+    const { ip, user, pass } = JSON.parse(conn);
+    const baseUrl = `http://${ip}:5000`;
+
+    // Grab DOM elements
+    const dropZone  = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
-    const fileList = document.getElementById('file-list');
+    const fileList  = document.getElementById('file-list');
 
-    // Connect button handler
-    connectButton?.addEventListener('click', () => {
-        if (addressInput instanceof HTMLInputElement) {
-            piAddress = addressInput.value;
-            // Test connection
-            fetch(piAddress + '/ping')
-                .then(response => {
-                    if (response.ok) {
-                        connectButton.textContent = 'Connected';
-                        connectButton.classList.add('bg-arc-success');
-                    }
-                })
-                .catch(() => {
-                    alert('Could not connect to Raspberry Pi');
-                });
-        }
-    });
-
-    // File drop handlers
-    dropZone?.addEventListener('dragover', (e) => {
+    // Highlight drop area
+    dropZone.addEventListener('dragover', e => {
         e.preventDefault();
         dropZone.classList.add('bg-gray-50');
     });
-
-    dropZone?.addEventListener('dragleave', () => {
+    dropZone.addEventListener('dragleave', () => {
         dropZone.classList.remove('bg-gray-50');
     });
 
-    dropZone?.addEventListener('drop', (e) => {
+    // Handle drop + browse
+    dropZone.addEventListener('drop', e => {
         e.preventDefault();
         dropZone.classList.remove('bg-gray-50');
-
-        if (e.dataTransfer?.files) {
-            handleFiles(Array.from(e.dataTransfer.files));
-        }
+        if (e.dataTransfer?.files) handleFiles([...e.dataTransfer.files]);
+    });
+    fileInput.addEventListener('change', e => {
+        const files = e.target.files ? [...e.target.files] : [];
+        handleFiles(files);
     });
 
-    fileInput?.addEventListener('change', (e) => {
-        const target = e.target as HTMLInputElement;
-        if (target.files) {
-            handleFiles(Array.from(target.files));
-        }
-    });
-
-    function handleFiles(files: File[]) {
-        if (!piAddress) {
-            alert('Please connect to a Raspberry Pi first');
-            return;
-        }
-
+    // Process files
+    function handleFiles(files) {
         files.forEach(file => {
-            const fileElement = document.createElement('div');
-            fileElement.className = 'flex items-center justify-between bg-gray-50 rounded-lg p-3';
+            // create list item
+            const item = document.createElement('div');
+            item.className = 'flex items-center justify-between bg-gray-50 rounded-lg p-3';
 
-            const fileInfo = document.createElement('div');
-            fileInfo.className = 'flex items-center space-x-3';
+            // file info
+            const info = document.createElement('div');
+            info.className = 'flex items-center space-x-3';
+            const name = document.createElement('span');
+            name.className = 'text-arc-text';
+            name.textContent = file.name;
+            const size = document.createElement('span');
+            size.className = 'text-arc-text-light text-sm';
+            size.textContent = formatFileSize(file.size);
+            info.append(name, size);
 
-            const fileName = document.createElement('span');
-            fileName.className = 'text-arc-text';
-            fileName.textContent = file.name;
+            // progress bar
+            const wrapper = document.createElement('div');
+            wrapper.className = 'w-24 bg-gray-200 rounded-full h-2 overflow-hidden';
+            const bar = document.createElement('div');
+            bar.className = 'bg-arc-accent h-2 rounded-full';
+            bar.style.width = '0%';
+            wrapper.append(bar);
 
-            const fileSize = document.createElement('span');
-            fileSize.className = 'text-arc-text-light text-sm';
-            fileSize.textContent = formatFileSize(file.size);
+            item.append(info, wrapper);
+            fileList.append(item);
 
-            fileInfo.appendChild(fileName);
-            fileInfo.appendChild(fileSize);
-
-            const progress = document.createElement('div');
-            progress.className = 'w-24 bg-gray-200 rounded-full h-2';
-            progress.innerHTML = '<div class="bg-arc-accent h-2 rounded-full" style="width: 0%"></div>';
-
-            fileElement.appendChild(fileInfo);
-            fileElement.appendChild(progress);
-
-            if (fileList) {
-                fileList.appendChild(fileElement);
-            }
-
-            uploadFile(file, progress.querySelector('div') as HTMLElement);
+            // start upload
+            uploadFile(file, bar);
         });
     }
 
-    function formatFileSize(bytes: number): string {
-        if (bytes === 0) return '0 B';
-        const k = 1024;
-        const sizes = ['B', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    // Upload with Basic Auth, target folder arc_connect
+    function uploadFile(file, progressBar) {
+        const url = `${baseUrl}/upload?dest=arc_connect`;
+        const auth = btoa(`${user}:${pass}`);
+        const form = new FormData();
+        form.append('file', file);
+
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Authorization': `Basic ${auth}` },
+            body: form
+        })
+            .then(res => {
+                if (!res.ok) throw new Error('Upload failed');
+                // animate to 100%
+                progressBar.style.width = '100%';
+                progressBar.classList.replace('bg-arc-accent', 'bg-arc-success');
+            })
+            .catch(() => {
+                progressBar.style.width = '100%';
+                progressBar.classList.replace('bg-arc-accent', 'bg-arc-danger');
+            });
     }
 
-    function uploadFile(file: File, progressBar: HTMLElement) {
-        const formData = new FormData();
-        formData.append('file', file);
-
-        fetch(piAddress + '/upload', {
-            method: 'POST',
-            body: formData
-        })
-            .then(response => {
-                if (!response.ok) throw new Error('Upload failed');
-                progressBar.style.width = '100%';
-                progressBar.classList.remove('bg-arc-accent');
-                progressBar.classList.add('bg-arc-success');
-            })
-            .catch(error => {
-                progressBar.style.width = '100%';
-                progressBar.classList.remove('bg-arc-accent');
-                progressBar.classList.add('bg-arc-danger');
-            });
+    // human-friendly file size
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024, sizes = ['B','KB','MB','GB'];
+        const i = Math.floor(Math.log(bytes)/Math.log(k));
+        return (bytes/Math.pow(k,i)).toFixed(2) + ' ' + sizes[i];
     }
 </script>

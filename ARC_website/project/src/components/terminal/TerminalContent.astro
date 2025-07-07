@@ -1,12 +1,9 @@
 ---
-export let host;
-export let username;
-export let password;
 ---
 
+<!-- Embeds an Xterm.js‐powered SSH terminal for your ARC device -->
 <div>
     <h1 class="text-3xl font-bold mb-8">SSH Terminal</h1>
-
     <div class="max-w-4xl">
         <div class="bg-arc-card rounded-2xl shadow-sm border border-gray-100 p-6">
             <div id="terminal-container" class="w-full h-[500px] rounded-lg bg-gray-900 overflow-hidden"></div>
@@ -14,19 +11,19 @@ export let password;
     </div>
 </div>
 
-<script>
+<script is:inline client:load type="module">
     import { Terminal } from 'xterm';
     import { FitAddon } from 'xterm-addon-fit';
     import { WebLinksAddon } from 'xterm-addon-web-links';
     import 'xterm/css/xterm.css';
 
-    let term: Terminal;
-    let ws: WebSocket;
+    let term;
+    let ws;
 
-    // Initialize terminal
+    // Initialize the Xterm.js terminal
     function initTerminal() {
-        const terminalContainer = document.getElementById('terminal-container');
-        if (!terminalContainer) return;
+        const container = document.getElementById('terminal-container');
+        if (!container) return;
 
         term = new Terminal({
             cursorBlink: true,
@@ -41,19 +38,13 @@ export let password;
 
         const fitAddon = new FitAddon();
         const webLinksAddon = new WebLinksAddon();
-
         term.loadAddon(fitAddon);
         term.loadAddon(webLinksAddon);
 
-        term.open(terminalContainer);
+        term.open(container);
         fitAddon.fit();
+        window.addEventListener('resize', () => fitAddon.fit());
 
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            fitAddon.fit();
-        });
-
-        // Handle terminal input
         term.onData(data => {
             if (ws && ws.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify({ type: 'input', data }));
@@ -61,46 +52,55 @@ export let password;
         });
     }
 
-    // Connect to SSH server
-    function connect() {
-        if (!host || !username || !password) {
-            term.write('\r\nMissing connection details...\r\n');
+    // Connect to your ARC via the WebSocket→Paramiko SSH proxy
+    function connectArc() {
+        const raw = localStorage.getItem('arcConnection');
+        if (!raw) {
+            term.write('\r\nNot connected – please run ARC Connect first.\r\n');
             return;
         }
+        const { ip, user, pass } = JSON.parse(raw);
+        const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        const wsUrl = `${protocol}://${ip}:5000`;
 
-        // Initialize WebSocket connection to SSH proxy server
-        ws = new WebSocket(`ws://${host}:22/ssh`);
+        ws = new WebSocket(wsUrl);
 
         ws.onopen = () => {
-            // Send authentication data
+            term.write('\r\nConnecting to SSH…\r\n');
             ws.send(JSON.stringify({
-                type: 'auth',
-                username,
-                password
+                type:     'auth',
+                host:     ip,
+                port:     22,
+                username: user,
+                password: pass
             }));
-
-            term.write('\r\nConnected to SSH server...\r\n');
         };
 
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            if (data.type === 'output') {
-                term.write(data.data);
+        ws.onmessage = ({ data }) => {
+            const msg = JSON.parse(data);
+            switch (msg.type) {
+                case 'auth-success':
+                    term.write('Authentication successful!\r\n');
+                    break;
+                case 'auth-failure':
+                    term.write('Authentication failed.\r\n');
+                    ws.close();
+                    break;
+                case 'output':
+                    term.write(msg.data);
+                    break;
+                case 'error':
+                    term.write(`[error] ${msg.message}\r\n`);
+                    break;
             }
         };
 
-        ws.onclose = () => {
-            term.write('\r\nConnection closed\r\n');
-        };
-
-        ws.onerror = () => {
-            term.write('\r\nConnection error\r\n');
-        };
+        ws.onerror = () => term.write('\r\nWebSocket error\r\n');
+        ws.onclose = () => term.write('\r\nConnection closed\r\n');
     }
 
-    // Initialize terminal when page loads
     document.addEventListener('DOMContentLoaded', () => {
         initTerminal();
-        connect();
+        connectArc();
     });
 </script>

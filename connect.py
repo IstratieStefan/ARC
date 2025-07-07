@@ -1,6 +1,6 @@
 import asyncio
-import websockets
 import json
+import websockets
 import paramiko
 
 HOST = "0.0.0.0"
@@ -8,11 +8,27 @@ PORT = 5000
 
 async def handle_connection(ws):
     ssh = None
+    chan = None
+    reader_task = None
+
+    async def ssh_reader():
+        # continuously read from the SSH channel and push to WS
+        try:
+            while True:
+                if chan.recv_ready():
+                    data = chan.recv(1024).decode(errors='ignore')
+                    await ws.send(json.dumps({"type": "output", "data": data}))
+                else:
+                    await asyncio.sleep(0.01)
+        except Exception:
+            pass
+
     try:
         async for msg in ws:
             data = json.loads(msg)
 
             if data["type"] == "auth":
+                # 1) Establish SSH + pty + shell
                 ssh_host = data.get("host", "localhost")
                 ssh_port = data.get("port", 22)
                 ssh = paramiko.SSHClient()
@@ -27,7 +43,6 @@ async def handle_connection(ws):
                         look_for_keys=False,
                         allow_agent=False
                     )
-                    await ws.send(json.dumps({"type": "auth-success"}))
                 except paramiko.AuthenticationException:
                     await ws.send(json.dumps({"type": "auth-failure"}))
                     return
@@ -38,25 +53,43 @@ async def handle_connection(ws):
                     }))
                     return
 
-            elif data["type"] == "input":
-                if not ssh:
-                    await ws.send(json.dumps({
-                        "type":    "error",
-                        "message": "Not authenticated"
-                    }))
-                    continue
-
+                # open an interactive shell
                 chan = ssh.get_transport().open_session()
-                chan.exec_command(data["data"])
-                out = chan.recv(65535).decode()
-                err = chan.recv_stderr(65535).decode()
-                await ws.send(json.dumps({
-                    "type": "output", "data": out + err
-                }))
+                # request a PTY of reasonable default size
+                chan.get_pty(term="xterm", width=80, height=24)
+                chan.invoke_shell()
+
+                # tell the client we're good
+                await ws.send(json.dumps({"type": "auth-success"}))
+
+                # start background reader
+                reader_task = asyncio.create_task(ssh_reader())
+
+            elif data["type"] == "input":
+                # send keypresses / commands straight into the shell
+                if chan and chan.send_ready():
+                    chan.send(data["data"])
+                else:
+                    await ws.send(json.dumps({
+                        "type": "error",
+                        "message": "Not authenticated or channel closed"
+                    }))
+
+            elif data["type"] == "resize":
+                # handle terminal resize events
+                if chan:
+                    cols = data.get("cols", 80)
+                    rows = data.get("rows", 24)
+                    chan.resize_pty(width=cols, height=rows)
 
     except websockets.exceptions.ConnectionClosed:
         pass
     finally:
+        # clean up
+        if reader_task:
+            reader_task.cancel()
+        if chan:
+            chan.close()
         if ssh:
             ssh.close()
 

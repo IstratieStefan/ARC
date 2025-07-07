@@ -2,10 +2,7 @@
 import DashboardLayout from '../../layouts/DashboardLayout.astro';
 import TerminalContent from '../../components/terminal/TerminalContent.astro';
 ---
-
 <DashboardLayout title="Terminal" activeTab="terminal">
-    <TerminalContent
-            host="{document.getElementById('ip').value}"
-            username="{document.getElementById('username').value}"
-            password="{document.getElementById('password').value}" />
+    <!-- client:load is required so this component runs in the browser -->
+    <TerminalContent client:load />
 </DashboardLayout>

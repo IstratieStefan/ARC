@@ -1,10 +1,53 @@
-import asyncio
-import json
-import websockets
-import paramiko
+import asyncio, json, websockets, paramiko, os, shutil
 
-HOST = "0.0.0.0"
-PORT = 5000
+HOST, PORT = "0.0.0.0", 5000
+
+def get_metrics():
+    # Memory usage from /proc/meminfo
+    meminfo = {}
+    with open('/proc/meminfo') as f:
+        for line in f:
+            key, val = line.split(':')
+            meminfo[key] = int(val.strip().split()[0])  # kB
+    total_kb = meminfo.get('MemTotal', 0)
+    free_kb = meminfo.get('MemFree', 0) + meminfo.get('Buffers', 0) + meminfo.get('Cached', 0)
+    used_kb = total_kb - free_kb
+    memory = {"used": round(used_kb / 1024**2, 2), "total": round(total_kb / 1024**2, 2)}
+
+    # Disk usage
+    du = shutil.disk_usage('/')
+    disk = {"used": round(du.used / 1024**3, 2), "total": round(du.total / 1024**3, 2)}
+
+    # CPU load (1 minute avg) and core count
+    load1, _, _ = os.getloadavg()
+    cpu = {"load": round(load1, 2), "cores": os.cpu_count() or 1}
+
+    # Uptime
+    with open('/proc/uptime') as f:
+        secs = float(f.read().split()[0])
+    days = int(secs // 86400)
+    hours = int((secs % 86400) // 3600)
+    mins = int((secs % 3600) // 60)
+    uptime = f"{days} days, {hours}:{mins:02d}"
+
+    # CPU temperature (if available)
+    temp_val = None
+    try:
+        with open('/sys/class/thermal/thermal_zone0/temp') as f:
+            temp_val = round(int(f.read()) / 1000, 1)
+    except:
+        pass
+
+    return {"memory": memory, "disk": disk, "cpu": cpu, "uptime": uptime, "temp": temp_val}
+
+async def process_request(path, request_headers):
+    # HTTP endpoint for metrics
+    if path == '/metrics':
+        metrics = get_metrics()
+        body = json.dumps(metrics).encode()
+        return 200, [("Content-Type", "application/json")], body
+    # proceed with WebSocket upgrade otherwise
+    return None
 
 async def handle_connection(ws):
     ssh = None
@@ -12,7 +55,6 @@ async def handle_connection(ws):
     reader_task = None
 
     async def ssh_reader():
-        # continuously read from the SSH channel and push to WS
         try:
             while True:
                 if chan.recv_ready():
@@ -20,72 +62,49 @@ async def handle_connection(ws):
                     await ws.send(json.dumps({"type": "output", "data": data}))
                 else:
                     await asyncio.sleep(0.01)
-        except Exception:
+        except:
             pass
 
     try:
         async for msg in ws:
             data = json.loads(msg)
 
-            if data["type"] == "auth":
-                # 1) Establish SSH + pty + shell
-                ssh_host = data.get("host", "localhost")
-                ssh_port = data.get("port", 22)
+            if data.get("type") == "auth":
                 ssh = paramiko.SSHClient()
                 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
                 try:
                     ssh.connect(
-                        ssh_host,
-                        port=ssh_port,
-                        username=data["username"],
-                        password=data["password"],
-                        timeout=5,
-                        look_for_keys=False,
-                        allow_agent=False
+                        data["host"], port=data["port"],
+                        username=data["username"], password=data["password"],
+                        look_for_keys=False, allow_agent=False
                     )
                 except paramiko.AuthenticationException:
                     await ws.send(json.dumps({"type": "auth-failure"}))
                     return
                 except Exception as e:
                     await ws.send(json.dumps({
-                        "type":    "auth-failure",
-                        "message": f"Could not reach {ssh_host}:{ssh_port}"
+                        "type": "auth-failure",
+                        "message": f"Could not reach {data['host']}:{data['port']}"
                     }))
                     return
 
-                # open an interactive shell
                 chan = ssh.get_transport().open_session()
-                # request a PTY of reasonable default size
                 chan.get_pty(term="xterm", width=80, height=24)
                 chan.invoke_shell()
-
-                # tell the client we're good
                 await ws.send(json.dumps({"type": "auth-success"}))
-
-                # start background reader
                 reader_task = asyncio.create_task(ssh_reader())
 
-            elif data["type"] == "input":
-                # send keypresses / commands straight into the shell
+            elif data.get("type") == "input":
                 if chan and chan.send_ready():
                     chan.send(data["data"])
-                else:
-                    await ws.send(json.dumps({
-                        "type": "error",
-                        "message": "Not authenticated or channel closed"
-                    }))
 
-            elif data["type"] == "resize":
-                # handle terminal resize events
+            elif data.get("type") == "resize":
                 if chan:
-                    cols = data.get("cols", 80)
-                    rows = data.get("rows", 24)
-                    chan.resize_pty(width=cols, height=rows)
+                    chan.resize_pty(width=data.get("cols", 80), height=data.get("rows", 24))
 
     except websockets.exceptions.ConnectionClosed:
         pass
     finally:
-        # clean up
         if reader_task:
             reader_task.cancel()
         if chan:
@@ -94,8 +113,13 @@ async def handle_connection(ws):
             ssh.close()
 
 async def main():
-    async with websockets.serve(handle_connection, HOST, PORT):
-        print(f"ARC WebSocket SSH proxy running on ws://{HOST}:{PORT}")
+    async with websockets.serve(
+        handle_connection,
+        HOST,
+        PORT,
+        process_request=process_request
+    ):
+        print(f"Server running on ws://{HOST}:{PORT} (and HTTP GET on /metrics)")
         await asyncio.Future()
 
 if __name__ == "__main__":

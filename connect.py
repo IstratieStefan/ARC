@@ -61,6 +61,7 @@ app = FastAPI()
 async def metrics():
     return JSONResponse(get_metrics())
 
+# 3) WebSocket SSH proxy
 async def ws_handler(ws: WebSocket):
     await ws.accept()
     ssh = None
@@ -126,7 +127,7 @@ async def main():
         HOST, WS_PORT
     )
     await asyncio.gather(
-        server.serve(),
+        server.serve(),  # HTTP /metrics + WebSocket at /ws on HTTP_PORT
         ws_server
     )
 

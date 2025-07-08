@@ -1,145 +1,144 @@
 import asyncio
-import json
-import time
-
+import os
+from fastapi import FastAPI, WebSocket, UploadFile, File, HTTPException
+from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 import psutil
-import websockets
-import paramiko
-from aiohttp import web
+import aiofiles
 
+app = FastAPI(title="PiCockpit")
 
-HOST = '0.0.0.0'
-WS_PORT = 5000
-HTTP_PORT = 5001
+# Serve static files (if you add assets to 'static/' directory)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
+@app.get("/")
+async def index():
+    html = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>PiCockpit Dashboard</title>
+      <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        pre { background: #f4f4f4; padding: 10px; overflow: auto; }
+        #terminal { width: 100%; height: 300px; background: #000; color: #0f0; padding: 10px; overflow-y: scroll; }
+        #cmd { width: calc(100% - 80px); }
+      </style>
+    </head>
+    <body>
+      <h1>PiCockpit Dashboard</h1>
+      <h2>System Info</h2>
+      <pre id="sysinfo">Loading...</pre>
 
-async def collect_metrics():
-    vm = psutil.virtual_memory()
-    du = psutil.disk_usage('/')
-    load1, _, _ = psutil.getloadavg()
-    cores = psutil.cpu_count(logical=True)
+      <h2>Terminal</h2>
+      <div id="terminal"></div>
+      <input type="text" id="cmd" placeholder="Enter command" />
+      <button onclick="sendCmd()">Send</button>
 
-    # Uptime
-    boot = psutil.boot_time()
-    uptime_secs = int(time.time() - boot)
-    h, rem = divmod(uptime_secs, 3600)
-    m, s = divmod(rem, 60)
-    uptime = f"{h}h {m}m {s}s"
+      <h2>File Transfer</h2>
+      <form id="uploadForm">
+        <input type="file" id="fileInput" />
+        <button type="button" onclick="uploadFile()">Upload</button>
+      </form>
+      <script>
+        // WebSocket for terminal
+        const ws = new WebSocket(`ws://${location.host}/ws/terminal`);
+        const term = document.getElementById('terminal');
+        ws.onmessage = e => { term.innerText += e.data; term.scrollTop = term.scrollHeight; };
+        function sendCmd() {
+          const input = document.getElementById('cmd');
+          ws.send(input.value + '\n');
+          input.value = '';
+        }
+        // Poll system info
+        async function loadSysInfo() {
+          const res = await fetch('/api/system');
+          const data = await res.json();
+          document.getElementById('sysinfo').innerText = JSON.stringify(data, null, 2);
+        }
+        setInterval(loadSysInfo, 2000);
+        loadSysInfo();
+        // File upload
+        async function uploadFile() {
+          const file = document.getElementById('fileInput').files[0];
+          if (!file) return;
+          const form = new FormData(); form.append('file', file);
+          const res = await fetch('/api/upload', { method: 'POST', body: form });
+          const txt = await res.json();
+          alert('Uploaded: ' + txt.filename);
+        }
+      </script>
+    </body>
+    </html>
+    """
+    return HTMLResponse(html)
 
-    # Temperature (if available)
-    temps = (psutil.sensors_temperatures().get('coretemp')
-             or psutil.sensors_temperatures().get('cpu-thermal')
-             or [])
-    temp = round(temps[0].current, 1) if temps else None
-
+@app.get("/api/system")
+async def system_info():
+    """Return CPU, memory, and disk usage."""
     return {
-        'memory': {
-            'total': round(vm.total / 2**30, 2),
-            'used':  round((vm.total - vm.available) / 2**30, 2)
+        "cpu_percent": psutil.cpu_percent(interval=None),
+        "mem": {
+            "total": psutil.virtual_memory().total,
+            "used": psutil.virtual_memory().used,
+            "percent": psutil.virtual_memory().percent,
         },
-        'cpu': {
-            'load':  load1,
-            'cores': cores
+        "disk": {
+            "total": psutil.disk_usage("/").total,
+            "used": psutil.disk_usage("/").used,
+            "percent": psutil.disk_usage("/").percent,
         },
-        'disk': {
-            'total': round(du.total / 2**30, 2),
-            'used':  round(du.used / 2**30, 2)
-        },
-        'uptime': uptime,
-        'temp':   temp
     }
 
-
-async def metrics(request):
-    data = await collect_metrics()
-    return web.json_response(data)
-
-
-async def handle_connection(ws, path):
-    ssh = None
-    chan = None
-    reader_task = None
-
-    async def ssh_reader():
-        try:
-            while True:
-                if chan and chan.recv_ready():
-                    data = chan.recv(1024).decode(errors='ignore')
-                    await ws.send(json.dumps({'type': 'output', 'data': data}))
-                else:
-                    await asyncio.sleep(0.01)
-        except asyncio.CancelledError:
-            pass
-
+@app.websocket("/ws/terminal")
+async def websocket_terminal(ws: WebSocket):
+    await ws.accept()
+    # Start a bash shell
+    proc = await asyncio.create_subprocess_shell(
+        '/bin/bash',
+        stdin=asyncio.subprocess.PIPE,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.STDOUT,
+    )
+    async def read_stdout():
+        while True:
+            data = await proc.stdout.read(1024)
+            if not data:
+                break
+            await ws.send_text(data.decode(errors='ignore'))
+    read_task = asyncio.create_task(read_stdout())
     try:
-        async for msg in ws:
-            data = json.loads(msg)
-            t = data.get('type')
-
-            if t == 'auth':
-                ssh_host = data.get('host', 'localhost')
-                ssh_port = data.get('port', 22)
-                ssh = paramiko.SSHClient()
-                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                try:
-                    ssh.connect(
-                        ssh_host,
-                        port=ssh_port,
-                        username=data['username'],
-                        password=data['password'],
-                        timeout=5,
-                        look_for_keys=False,
-                        allow_agent=False
-                    )
-                except paramiko.AuthenticationException:
-                    await ws.send(json.dumps({'type': 'auth-failure'}))
-                    return
-                except Exception as e:
-                    await ws.send(json.dumps({'type': 'auth-failure',
-                                               'message': f'Could not reach {ssh_host}:{ssh_port}'}))
-                    return
-
-                chan = ssh.get_transport().open_session()
-                chan.get_pty(term='xterm', width=80, height=24)
-                chan.invoke_shell()
-
-                await ws.send(json.dumps({'type': 'auth-success'}))
-                reader_task = asyncio.create_task(ssh_reader())
-
-            elif t == 'input' and chan and chan.send_ready():
-                chan.send(data['data'])
-
-            elif t == 'resize' and chan:
-                chan.resize_pty(width=data.get('cols', 80), height=data.get('rows', 24))
-
-    except websockets.exceptions.ConnectionClosed:
+        while True:
+            msg = await ws.receive_text()
+            proc.stdin.write(msg.encode())
+            await proc.stdin.drain()
+    except Exception:
         pass
     finally:
-        if reader_task:
-            reader_task.cancel()
-        if chan:
-            chan.close()
-        if ssh:
-            ssh.close()
+        read_task.cancel()
+        proc.kill()
+        await proc.wait()
 
+@app.post("/api/upload")
+async def upload_file(file: UploadFile = File(...)):
+    """Handle file uploads."""
+    upload_dir = 'uploads'
+    os.makedirs(upload_dir, exist_ok=True)
+    path = os.path.join(upload_dir, file.filename)
+    async with aiofiles.open(path, 'wb') as f:
+        await f.write(await file.read())
+    return {"filename": file.filename}
 
-async def main():
-    # HTTP metrics server
-    app = web.Application()
-    app.router.add_get('/metrics', metrics)
-    runner = web.AppRunner(app)
-    await runner.setup()
-    site = web.TCPSite(runner, HOST, HTTP_PORT)
-    await site.start()
-    print(f"Metrics HTTP server running on http://{HOST}:{HTTP_PORT}/metrics")
-
-    # WebSocket SSH proxy
-    ws_server = await websockets.serve(handle_connection, HOST, WS_PORT)
-    print(f"SSH WebSocket proxy running on ws://{HOST}:{WS_PORT}")
-
-    # run forever
-    await asyncio.Future()
+@app.get("/api/download/{filepath:path}")
+async def download_file(filepath: str):
+    """Serve uploaded files."""
+    full = os.path.join('uploads', filepath)
+    if not os.path.isfile(full):
+        raise HTTPException(status_code=404, detail='Not found')
+    return FileResponse(full)
 
 if __name__ == '__main__':
-    # Dependencies: aiohttp, psutil, websockets, paramiko
-    asyncio.run(main())
+    import uvicorn
+    uvicorn.run('main:app', host='0.0.0.0', port=5000)

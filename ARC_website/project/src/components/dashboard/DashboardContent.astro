@@ -5,27 +5,27 @@ import CircularProgress from './CircularProgress.astro';
 <div>
     <h1 class="text-3xl font-bold mb-8">System Dashboard</h1>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <InfoCard title="Memory Usage" icon="…" value="–" subValue="–" color="arc-accent">
+        <InfoCard data-metric="memory" title="Memory Usage" icon="…" value="–" subValue="–" color="arc-accent">
             <CircularProgress id="mem-chart" percentage={0} />
         </InfoCard>
-        <!-- WiFi Strength -->
-        <InfoCard title="WiFi Strength" icon="…" value="–" subValue="IP: –" color="arc-accent">
+
+        <InfoCard data-metric="wifi" title="WiFi Strength" icon="…" value="–" subValue="IP: –" color="arc-accent">
             <div id="wifi-bars" class="flex justify-center items-end space-x-1 h-16 mb-2"></div>
         </InfoCard>
-        <!-- CPU Load -->
-        <InfoCard title="CPU Load" icon="…" value="–" subValue="per core" color="arc-accent">
+
+        <InfoCard data-metric="cpu" title="CPU Load" icon="…" value="–" subValue="per core" color="arc-accent">
             <CircularProgress id="cpu-chart" percentage={0} />
         </InfoCard>
-        <!-- Disk Usage -->
-        <InfoCard title="Disk Usage" icon="…" value="–" subValue="–" color="arc-accent">
+
+        <InfoCard data-metric="disk" title="Disk Usage" icon="…" value="–" subValue="–" color="arc-accent">
             <CircularProgress id="disk-chart" percentage={0} />
         </InfoCard>
-        <!-- Uptime -->
-        <InfoCard title="System Uptime" icon="…" value="–" subValue="" color="arc-accent">
+
+        <InfoCard data-metric="uptime" title="System Uptime" icon="…" value="–" subValue="" color="arc-accent">
             <p id="uptime-text" class="text-xl font-mono"></p>
         </InfoCard>
-        <!-- Temperature -->
-        <InfoCard title="CPU Temp" icon="…" value="–°C" subValue="" color="arc-accent">
+
+        <InfoCard data-metric="temp" title="CPU Temp" icon="…" value="–°C" subValue="" color="arc-accent">
             <CircularProgress id="temp-chart" percentage={0} />
         </InfoCard>
     </div>
@@ -43,47 +43,57 @@ import CircularProgress from './CircularProgress.astro';
 
     async function refresh() {
         try {
-            const res = await fetch(metricsUrl);
-            const m   = await res.json();
+            const m = await (await fetch(metricsUrl)).json();
 
-            // Memory
-            const memPct = Math.round((m.memory.used / m.memory.total) * 100);
-            document.querySelector('InfoCard[title="Memory Usage"] .value').textContent =
-                `${m.memory.used} GB / ${m.memory.total} GB`;
-            document.querySelector('InfoCard[title="Memory Usage"] .subValue').textContent =
-                `${memPct}% used`;
-            document.getElementById('mem-chart').update(memPct);
-
-            // WiFi (just show IP)
-            document.querySelector('InfoCard[title="WiFi Strength"] .subValue').textContent =
-                `IP: ${conn.ip}`;
-            // (for actual RSSI you'd SSH into `iwconfig` etc.)
-
-            // CPU
-            const cpuPct = Math.round((m.cpu.load / m.cpu.cores) * 100);
-            document.querySelector('InfoCard[title="CPU Load"] .value').textContent =
-                m.cpu.load.toFixed(2);
-            document.getElementById('cpu-chart').update(cpuPct);
-
-            // Disk
-            const diskPct = Math.round((m.disk.used / m.disk.total) * 100);
-            document.querySelector('InfoCard[title="Disk Usage"] .value').textContent =
-                `${m.disk.used} GB / ${m.disk.total} GB`;
-            document.getElementById('disk-chart').update(diskPct);
-
-            // Uptime
-            document.querySelector('InfoCard[title="System Uptime"] .value').textContent =
-                m.uptime;
-            document.getElementById('uptime-text').textContent = m.uptime;
-
-            // Temp
-            if (m.temp != null) {
-                document.querySelector('InfoCard[title="CPU Temp"] .value').textContent =
-                    `${m.temp.toFixed(1)}°C`;
-                document.getElementById('temp-chart').update(Math.round((m.temp/100)*100));
-            } else {
-                document.querySelector('InfoCard[title="CPU Temp"] .value').textContent = 'N/A';
+            // — Memory —
+            {
+                const card = document.querySelector('[data-metric="memory"]');
+                const pct  = Math.round((m.memory.used / m.memory.total) * 100);
+                card.querySelector('.value').textContent    = `${m.memory.used} GB / ${m.memory.total} GB`;
+                card.querySelector('.subValue').textContent = `${pct}% used`;
+                document.getElementById('mem-chart').update(pct);
             }
+
+            // — WiFi (just IP) —
+            {
+                const card = document.querySelector('[data-metric="wifi"]');
+                card.querySelector('.subValue').textContent = `IP: ${conn.ip}`;
+            }
+
+            // — CPU —
+            {
+                const card = document.querySelector('[data-metric="cpu"]');
+                const pct  = Math.round((m.cpu.load / m.cpu.cores) * 100);
+                card.querySelector('.value').textContent    = m.cpu.load.toFixed(2);
+                document.getElementById('cpu-chart').update(pct);
+            }
+
+            // — Disk —
+            {
+                const card = document.querySelector('[data-metric="disk"]');
+                const pct  = Math.round((m.disk.used / m.disk.total) * 100);
+                card.querySelector('.value').textContent    = `${m.disk.used} GB / ${m.disk.total} GB`;
+                document.getElementById('disk-chart').update(pct);
+            }
+
+            // — Uptime —
+            {
+                const card = document.querySelector('[data-metric="uptime"]');
+                card.querySelector('.value').textContent    = m.uptime;
+                document.getElementById('uptime-text').textContent = m.uptime;
+            }
+
+            // — Temperature —
+            {
+                const card = document.querySelector('[data-metric="temp"]');
+                if (m.temp != null) {
+                    card.querySelector('.value').textContent = `${m.temp.toFixed(1)}°C`;
+                    document.getElementById('temp-chart').update(Math.round(m.temp));
+                } else {
+                    card.querySelector('.value').textContent = 'N/A';
+                }
+            }
+
         } catch (e) {
             console.error('Could not fetch metrics', e);
         }

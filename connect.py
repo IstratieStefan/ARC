@@ -77,7 +77,6 @@ async def index():
 
 @app.get("/api/system")
 async def system_info():
-    """Return CPU, memory, and disk usage."""
     return {
         "cpu_percent": psutil.cpu_percent(interval=None),
         "mem": {
@@ -123,7 +122,6 @@ async def websocket_terminal(ws: WebSocket):
 
 @app.post("/api/upload")
 async def upload_file(file: UploadFile = File(...)):
-    """Handle file uploads."""
     upload_dir = 'uploads'
     os.makedirs(upload_dir, exist_ok=True)
     path = os.path.join(upload_dir, file.filename)
@@ -133,7 +131,6 @@ async def upload_file(file: UploadFile = File(...)):
 
 @app.get("/api/download/{filepath:path}")
 async def download_file(filepath: str):
-    """Serve uploaded files."""
     full = os.path.join('uploads', filepath)
     if not os.path.isfile(full):
         raise HTTPException(status_code=404, detail='Not found')

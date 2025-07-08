@@ -17,10 +17,9 @@
     import { WebLinksAddon } from 'xterm-addon-web-links';
     import 'xterm/css/xterm.css';
 
-    let term;
-    let ws;
+    let term, ws, fitAddon;
 
-    // Initialize the Xterm.js terminal
+    // 1) Initialize the Xterm.js terminal and attach resize handler
     function initTerminal() {
         const container = document.getElementById('terminal-container');
         if (!container) return;
@@ -36,15 +35,27 @@
             }
         });
 
-        const fitAddon = new FitAddon();
+        fitAddon = new FitAddon();
         const webLinksAddon = new WebLinksAddon();
         term.loadAddon(fitAddon);
         term.loadAddon(webLinksAddon);
 
         term.open(container);
         fitAddon.fit();
-        window.addEventListener('resize', () => fitAddon.fit());
 
+        // On browser window resize: resize PTY on server as well
+        window.addEventListener('resize', () => {
+            fitAddon.fit();
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'resize',
+                    cols: term.cols,
+                    rows: term.rows
+                }));
+            }
+        });
+
+        // Send every keypress over WS
         term.onData(data => {
             if (ws && ws.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify({ type: 'input', data }));
@@ -52,7 +63,7 @@
         });
     }
 
-    // Connect to your ARC via the WebSocket→Paramiko SSH proxy
+    // 2) Connect & drive the SSH proxy
     function connectArc() {
         const raw = localStorage.getItem('arcConnection');
         if (!raw) {
@@ -81,6 +92,12 @@
             switch (msg.type) {
                 case 'auth-success':
                     term.write('Authentication successful!\r\n');
+                    // send initial resize now that shell is up
+                    ws.send(JSON.stringify({
+                        type: 'resize',
+                        cols: term.cols,
+                        rows: term.rows
+                    }));
                     break;
                 case 'auth-failure':
                     term.write('Authentication failed.\r\n');
@@ -99,6 +116,7 @@
         ws.onclose = () => term.write('\r\nConnection closed\r\n');
     }
 
+    // 3) Wire it all up on page load
     document.addEventListener('DOMContentLoaded', () => {
         initTerminal();
         connectArc();

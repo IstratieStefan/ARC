@@ -2,58 +2,93 @@
 import InfoCard from './InfoCard.astro';
 import CircularProgress from './CircularProgress.astro';
 ---
-
 <div>
-  <h1 class="text-3xl font-bold mb-8">System Dashboard</h1>
-
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <!-- Memory Usage Card -->
-    <InfoCard
-        title="Memory Usage"
-        icon='<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" /></svg>'
-        value="4.2 GB / 16 GB"
-        subValue="26% of total memory"
-        color="arc-accent"
-    >
-      <div class="flex justify-center">
-        <CircularProgress percentage={26} />
-      </div>
-    </InfoCard>
-
-    <!-- WiFi Strength Card -->
-    <InfoCard
-        title="WiFi Strength"
-        icon='<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.246-3.905 14.15 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" /></svg>'
-        value="86%"
-        subValue="IP: Loading..."
-        color="arc-accent"
-    >
-      <div class="flex justify-center items-end space-x-1 h-16 mb-2">
-        <div class="w-3 h-4 bg-green-500 rounded-sm"></div>
-        <div class="w-3 h-7 bg-green-500 rounded-sm"></div>
-        <div class="w-3 h-10 bg-green-500 rounded-sm"></div>
-        <div class="w-3 h-14 bg-green-500 rounded-sm"></div>
-      </div>
-    </InfoCard>
-  </div>
+    <h1 class="text-3xl font-bold mb-8">System Dashboard</h1>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <InfoCard title="Memory Usage" icon="…" value="–" subValue="–" color="arc-accent">
+            <CircularProgress id="mem-chart" percentage={0} />
+        </InfoCard>
+        <!-- WiFi Strength -->
+        <InfoCard title="WiFi Strength" icon="…" value="–" subValue="IP: –" color="arc-accent">
+            <div id="wifi-bars" class="flex justify-center items-end space-x-1 h-16 mb-2"></div>
+        </InfoCard>
+        <!-- CPU Load -->
+        <InfoCard title="CPU Load" icon="…" value="–" subValue="per core" color="arc-accent">
+            <CircularProgress id="cpu-chart" percentage={0} />
+        </InfoCard>
+        <!-- Disk Usage -->
+        <InfoCard title="Disk Usage" icon="…" value="–" subValue="–" color="arc-accent">
+            <CircularProgress id="disk-chart" percentage={0} />
+        </InfoCard>
+        <!-- Uptime -->
+        <InfoCard title="System Uptime" icon="…" value="–" subValue="" color="arc-accent">
+            <p id="uptime-text" class="text-xl font-mono"></p>
+        </InfoCard>
+        <!-- Temperature -->
+        <InfoCard title="CPU Temp" icon="…" value="–°C" subValue="" color="arc-accent">
+            <CircularProgress id="temp-chart" percentage={0} />
+        </InfoCard>
+    </div>
 </div>
 
-<script>
-  window.addEventListener('DOMContentLoaded', () => {
-    const connectionInfo = JSON.parse(localStorage.getItem('arcConnection'));
-    if (connectionInfo) {
-      const { ip, user } = connectionInfo;
-
-      // Update WiFi Strength Card with IP
-      const wifiCardSubValue = document.querySelector('[title="WiFi Strength"] .text-sm');
-      if (wifiCardSubValue) {
-        wifiCardSubValue.textContent = `IP: ${ip}`;
-      }
-
-      console.log(`Connected as ${user} to ${ip}`);
-    } else {
-      alert('No connection information found. Please connect first.');
-      window.location.href = '/arc-connect';
+<script is:inline client:load>
+    const conn = JSON.parse(localStorage.getItem('arcConnection') || '{}');
+    if (!conn.ip) {
+        alert('Not connected – please connect first.');
+        location.href = '/arc-connect';
+        throw new Error('No connection');
     }
-  });
+
+    const metricsUrl = `http://${conn.ip}:5001/metrics`;
+
+    async function refresh() {
+        try {
+            const res = await fetch(metricsUrl);
+            const m   = await res.json();
+
+            // Memory
+            const memPct = Math.round((m.memory.used / m.memory.total) * 100);
+            document.querySelector('InfoCard[title="Memory Usage"] .value').textContent =
+                `${m.memory.used} GB / ${m.memory.total} GB`;
+            document.querySelector('InfoCard[title="Memory Usage"] .subValue').textContent =
+                `${memPct}% used`;
+            document.getElementById('mem-chart').update(memPct);
+
+            // WiFi (just show IP)
+            document.querySelector('InfoCard[title="WiFi Strength"] .subValue').textContent =
+                `IP: ${conn.ip}`;
+            // (for actual RSSI you'd SSH into `iwconfig` etc.)
+
+            // CPU
+            const cpuPct = Math.round((m.cpu.load / m.cpu.cores) * 100);
+            document.querySelector('InfoCard[title="CPU Load"] .value').textContent =
+                m.cpu.load.toFixed(2);
+            document.getElementById('cpu-chart').update(cpuPct);
+
+            // Disk
+            const diskPct = Math.round((m.disk.used / m.disk.total) * 100);
+            document.querySelector('InfoCard[title="Disk Usage"] .value').textContent =
+                `${m.disk.used} GB / ${m.disk.total} GB`;
+            document.getElementById('disk-chart').update(diskPct);
+
+            // Uptime
+            document.querySelector('InfoCard[title="System Uptime"] .value').textContent =
+                m.uptime;
+            document.getElementById('uptime-text').textContent = m.uptime;
+
+            // Temp
+            if (m.temp != null) {
+                document.querySelector('InfoCard[title="CPU Temp"] .value').textContent =
+                    `${m.temp.toFixed(1)}°C`;
+                document.getElementById('temp-chart').update(Math.round((m.temp/100)*100));
+            } else {
+                document.querySelector('InfoCard[title="CPU Temp"] .value').textContent = 'N/A';
+            }
+        } catch (e) {
+            console.error('Could not fetch metrics', e);
+        }
+    }
+
+    refresh();
+    setInterval(refresh, 5000);
 </script>

@@ -40,13 +40,39 @@
         location.href = '/';
         throw new Error('arcConnection missing');
     }
-    const { ip, user, pass } = JSON.parse(conn);
-    const baseUrl = `http://${ip}:5000`;
+    const { ip, user, pass, metricsPort } = JSON.parse(conn);
+    const port = metricsPort || 5001;
+    const baseUrl = `http://${ip}:${port}`;
 
     // Grab DOM elements
     const dropZone  = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
     const fileList  = document.getElementById('file-list');
+
+    // Load list of existing files
+    async function refreshList() {
+        fileList.innerHTML = '';
+        try {
+            const res = await fetch(`${baseUrl}/files`);
+            if (!res.ok) return;
+            const files = await res.json();
+            files.forEach(name => addFileEntry(name));
+        } catch {}
+    }
+
+    function addFileEntry(name) {
+        const item = document.createElement('div');
+        item.className = 'flex items-center justify-between bg-gray-50 rounded-lg p-3';
+        const info = document.createElement('span');
+        info.className = 'text-arc-text';
+        info.textContent = name;
+        const link = document.createElement('a');
+        link.href = `${baseUrl}/download/${encodeURIComponent(name)}`;
+        link.textContent = 'Download';
+        link.className = 'text-arc-accent text-sm';
+        item.append(info, link);
+        fileList.append(item);
+    }
 
     // Highlight drop area
     dropZone.addEventListener('dragover', e => {
@@ -116,9 +142,9 @@
         })
             .then(res => {
                 if (!res.ok) throw new Error('Upload failed');
-                // animate to 100%
                 progressBar.style.width = '100%';
                 progressBar.classList.replace('bg-arc-accent', 'bg-arc-success');
+                refreshList();
             })
             .catch(() => {
                 progressBar.style.width = '100%';
@@ -133,4 +159,5 @@
         const i = Math.floor(Math.log(bytes)/Math.log(k));
         return (bytes/Math.pow(k,i)).toFixed(2) + ' ' + sizes[i];
     }
-</script>
+
+    document.addEventListener('DOMContentLoaded', refreshList);</script>

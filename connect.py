@@ -6,11 +6,15 @@ import psutil
 import websockets
 import paramiko
 from aiohttp import web
+from pathlib import Path
+import os
 
 
 HOST = '0.0.0.0'
 WS_PORT = 5000
 HTTP_PORT = 5001
+UPLOAD_DIR = Path('/home/pi/uploads')
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 
 async def collect_metrics():
@@ -53,6 +57,34 @@ async def collect_metrics():
 async def metrics(request):
     data = await collect_metrics()
     return web.json_response(data)
+
+
+async def upload(request):
+    reader = await request.multipart()
+    field = await reader.next()
+    if not field or field.name != 'file':
+        return web.Response(text='No file', status=400)
+    filepath = UPLOAD_DIR / field.filename
+    with open(filepath, 'wb') as f:
+        while True:
+            chunk = await field.read_chunk()
+            if not chunk:
+                break
+            f.write(chunk)
+    return web.Response(text='File uploaded')
+
+
+async def list_files(request):
+    files = [f.name for f in UPLOAD_DIR.iterdir() if f.is_file()]
+    return web.json_response(files)
+
+
+async def download(request):
+    name = request.match_info.get('name')
+    path = UPLOAD_DIR / name
+    if not path.exists() or not path.is_file():
+        raise web.HTTPNotFound()
+    return web.FileResponse(path)
 
 
 async def handle_connection(ws, path):
@@ -127,11 +159,14 @@ async def main():
     # HTTP metrics server
     app = web.Application()
     app.router.add_get('/metrics', metrics)
+    app.router.add_post('/upload', upload)
+    app.router.add_get('/files', list_files)
+    app.router.add_get('/download/{name}', download)
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, HOST, HTTP_PORT)
     await site.start()
-    print(f"Metrics HTTP server running on http://{HOST}:{HTTP_PORT}/metrics")
+    print(f"API server running on http://{HOST}:{HTTP_PORT}")
 
     # WebSocket SSH proxy
     ws_server = await websockets.serve(handle_connection, HOST, WS_PORT)

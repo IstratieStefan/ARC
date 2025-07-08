@@ -3,6 +3,7 @@ import json
 import websockets
 import paramiko
 
+#Ports
 HOST = "0.0.0.0"
 PORT = 5000
 

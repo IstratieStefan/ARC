@@ -2,6 +2,7 @@
 import InfoCard from './InfoCard.astro';
 import CircularProgress from './CircularProgress.astro';
 ---
+
 <div>
     <h1 class="text-3xl font-bold mb-8">System Dashboard</h1>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -32,6 +33,7 @@ import CircularProgress from './CircularProgress.astro';
 </div>
 
 <script is:inline client:load>
+    // Retrieve saved connection info
     const conn = JSON.parse(localStorage.getItem('arcConnection') || '{}');
     if (!conn.ip) {
         alert('Not connected – please connect first.');
@@ -39,66 +41,71 @@ import CircularProgress from './CircularProgress.astro';
         throw new Error('No connection');
     }
 
+    // Metrics API on port 5001
     const metricsUrl = `http://${conn.ip}:5001/metrics`;
 
     async function refresh() {
         try {
-            const m = await (await fetch(metricsUrl)).json();
+            const response = await fetch(metricsUrl);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const m = await response.json();
 
-            // — Memory —
+            // Memory
             {
                 const card = document.querySelector('[data-metric="memory"]');
-                const pct  = Math.round((m.memory.used / m.memory.total) * 100);
-                card.querySelector('.value').textContent    = `${m.memory.used} GB / ${m.memory.total} GB`;
+                const pct = Math.round((m.memory.used / m.memory.total) * 100);
+                card.querySelector('.value').textContent = `${m.memory.used} GB / ${m.memory.total} GB`;
                 card.querySelector('.subValue').textContent = `${pct}% used`;
                 document.getElementById('mem-chart').update(pct);
             }
 
-            // — WiFi (just IP) —
+            // WiFi (display IP)
             {
                 const card = document.querySelector('[data-metric="wifi"]');
                 card.querySelector('.subValue').textContent = `IP: ${conn.ip}`;
             }
 
-            // — CPU —
+            // CPU
             {
                 const card = document.querySelector('[data-metric="cpu"]');
-                const pct  = Math.round((m.cpu.load / m.cpu.cores) * 100);
-                card.querySelector('.value').textContent    = m.cpu.load.toFixed(2);
+                const pct = Math.round((m.cpu.load / m.cpu.cores) * 100);
+                card.querySelector('.value').textContent = m.cpu.load.toFixed(2);
                 document.getElementById('cpu-chart').update(pct);
             }
 
-            // — Disk —
+            // Disk
             {
                 const card = document.querySelector('[data-metric="disk"]');
-                const pct  = Math.round((m.disk.used / m.disk.total) * 100);
-                card.querySelector('.value').textContent    = `${m.disk.used} GB / ${m.disk.total} GB`;
+                const pct = Math.round((m.disk.used / m.disk.total) * 100);
+                card.querySelector('.value').textContent = `${m.disk.used} GB / ${m.disk.total} GB`;
                 document.getElementById('disk-chart').update(pct);
             }
 
-            // — Uptime —
+            // Uptime
             {
                 const card = document.querySelector('[data-metric="uptime"]');
-                card.querySelector('.value').textContent    = m.uptime;
+                card.querySelector('.value').textContent = m.uptime;
                 document.getElementById('uptime-text').textContent = m.uptime;
             }
 
-            // — Temperature —
+            // Temperature
             {
                 const card = document.querySelector('[data-metric="temp"]');
                 if (m.temp != null) {
                     card.querySelector('.value').textContent = `${m.temp.toFixed(1)}°C`;
+                    // Assume 100°C max for the chart
                     document.getElementById('temp-chart').update(Math.round(m.temp));
                 } else {
                     card.querySelector('.value').textContent = 'N/A';
                 }
             }
 
-        } catch (e) {
-            console.error('Could not fetch metrics', e);
+        } catch (err) {
+            console.error('Could not fetch metrics:', err);
         }
     }
 
+    // Initial load and polling
     refresh();
     setInterval(refresh, 5000);
 </script>

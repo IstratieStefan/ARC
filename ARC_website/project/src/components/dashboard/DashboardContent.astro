@@ -41,14 +41,31 @@ import CircularProgress from './CircularProgress.astro';
         throw new Error('No connection');
     }
 
-    // Metrics API on port 5001
-    const metricsUrl = `http://${conn.ip}:5001/metrics`;
+    // Possible metrics endpoints (try 5001 first, then 5000)
+    const ports = [5001, 5000];
+
+    async function fetchMetrics() {
+        for (const p of ports) {
+            const url = `http://${conn.ip}:${p}/metrics`;
+            try {
+                const res = await fetch(url);
+                if (res.ok) {
+                    const data = await res.json();
+                    // remember working port
+                    conn.metricsPort = p;
+                    localStorage.setItem('arcConnection', JSON.stringify(conn));
+                    return data;
+                }
+            } catch (err) {
+                // try next port
+            }
+        }
+        throw new Error('Could not reach metrics API on any port');
+    }
 
     async function refresh() {
         try {
-            const response = await fetch(metricsUrl);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            const m = await response.json();
+            const m = await fetchMetrics();
 
             // Memory
             {
@@ -93,7 +110,6 @@ import CircularProgress from './CircularProgress.astro';
                 const card = document.querySelector('[data-metric="temp"]');
                 if (m.temp != null) {
                     card.querySelector('.value').textContent = `${m.temp.toFixed(1)}°C`;
-                    // Assume 100°C max for the chart
                     document.getElementById('temp-chart').update(Math.round(m.temp));
                 } else {
                     card.querySelector('.value').textContent = 'N/A';
@@ -101,7 +117,7 @@ import CircularProgress from './CircularProgress.astro';
             }
 
         } catch (err) {
-            console.error('Could not fetch metrics:', err);
+            console.error('Metrics refresh failed:', err);
         }
     }
 

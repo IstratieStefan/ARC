@@ -4,20 +4,36 @@ import time
 import socket
 import asyncio
 import threading
+import json
+from typing import Optional
 
 import paramiko
 import psutil
 import aiofiles
 
-from fastapi import FastAPI, WebSocket, UploadFile, File, HTTPException
+from fastapi import FastAPI, WebSocket, UploadFile, File, HTTPException, Request
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.websockets import WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
 
 # configure basic logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
 app = FastAPI(title="ARC connect")
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Store active SSH connections globally
+ssh_connections = {}
+current_credentials = {}  # Store current session credentials
 
 # Ensure static directory exists
 os.makedirs("static", exist_ok=True)
@@ -25,20 +41,23 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 async def get_wifi_strength():
-    proc = await asyncio.create_subprocess_shell(
-        "iwconfig wlan0",
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.DEVNULL
-    )
-    out, _ = await proc.communicate()
-    text = out.decode(errors="ignore")
-    for part in text.split():
-        if 'Signal' in part and '=' in part:
-            try:
-                lvl = int(part.split('=')[1])
-                return max(0, min(100, 2 * (lvl + 100)))
-            except ValueError:
-                continue
+    try:
+        proc = await asyncio.create_subprocess_shell(
+            "iwconfig wlan0",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.DEVNULL
+        )
+        out, _ = await proc.communicate()
+        text = out.decode(errors="ignore")
+        for part in text.split():
+            if 'Signal' in part and '=' in part:
+                try:
+                    lvl = int(part.split('=')[1])
+                    return max(0, min(100, 2 * (lvl + 100)))
+                except ValueError:
+                    continue
+    except Exception:
+        pass
     return 0
 
 
@@ -48,7 +67,7 @@ async def get_ip_address():
         s.connect(("8.8.8.8", 80))
         ip = s.getsockname()[0]
     except OSError:
-        ip = "-"
+        ip = "127.0.0.1"
     finally:
         s.close()
     return ip
@@ -60,7 +79,69 @@ async def get_cpu_temp():
             t = int(f.read()) / 1000.0
         return f"{t:.1f}°C"
     except FileNotFoundError:
-        return "-"
+        return "N/A"
+
+
+# Store credentials endpoint
+@app.post("/api/store-credentials")
+async def store_credentials(request: Request):
+    """Store credentials for the current session"""
+    global current_credentials
+    data = await request.json()
+    current_credentials = {
+        "ip": data.get("ip"),
+        "user": data.get("user"),
+        "pass": data.get("pass")
+    }
+    return {"status": "success"}
+
+
+# Get stored credentials endpoint
+@app.get("/api/get-credentials")
+async def get_credentials():
+    """Get stored credentials for the current session"""
+    global current_credentials
+    if current_credentials:
+        return current_credentials
+    return {"error": "No credentials stored"}
+
+
+# Test SSH connection endpoint
+@app.post("/test-ssh")
+async def test_ssh_connection(request: Request):
+    """Test SSH connection without WebSocket"""
+    data = await request.json()
+    host = data.get("host")
+    port = data.get("port", 22)
+    username = data.get("username")
+    password = data.get("password")
+
+    if not all([host, username, password]):
+        raise HTTPException(status_code=400, detail="Missing required fields")
+
+    try:
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+        client.connect(
+            hostname=host,
+            port=port,
+            username=username,
+            password=password,
+            look_for_keys=False,
+            allow_agent=False,
+            timeout=10
+        )
+
+        client.close()
+        return {"status": "success", "message": f"Successfully connected to {username}@{host}"}
+
+    except paramiko.AuthenticationException:
+        raise HTTPException(status_code=401, detail="Authentication failed")
+    except paramiko.SSHException as e:
+        raise HTTPException(status_code=500, detail=f"SSH connection failed: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Connection error: {str(e)}")
 
 
 @app.get("/")
@@ -91,7 +172,7 @@ async def index():
     .gauge circle.fg { fill:none; stroke:#0a84ff; stroke-width:8; stroke-linecap:round; transition:stroke-dashoffset 0.6s ease; }
     .gauge-value, .card-value { margin-left:12px; font-size:1.4em; font-weight:bold; color:#333; }
     .card .info { text-align:center; margin-top:6px; color:#555; font-size:0.9em; }
-    #xterm { width:100%; min-height:0; height:100%; background:#000; border-radius:8px; }
+    #xterm { width:100%; min-height:500px; height:70vh; background:#000; border-radius:8px; }
     .drop-zone { border:2px dashed #0a84ff; padding:80px; text-align:center; color:#555; border-radius:8px; cursor:pointer; transition:background 0.2s; }
     .drop-zone.dragover { background:rgba(10,132,255,0.1); }
     #fileList { list-style:none; padding:0; margin:10px 0; max-height:200px; overflow-y:auto; }
@@ -100,19 +181,40 @@ async def index():
     .progress-bar .progress { height:100%; width:0; background:#0a84ff; transition:width 0.2s; }
     #uploadBtn { margin-top:10px; padding:10px 20px; border:none; background:#0a84ff; color:#fff; border-radius:4px; cursor:pointer; }
     #uploadBtn:disabled { background:#ccc; cursor:not-allowed; }
+    .connection-info { background:#e8f4fd; padding:10px; border-radius:4px; margin-bottom:10px; font-size:0.9em; }
+    .connection-info.error { background:#fee; color:#c53030; }
+    .connection-info.success { background:#e6fffa; color:#2d7d32; }
+    .reconnect-btn { margin-top:10px; padding:8px 16px; border:none; background:#0a84ff; color:#fff; border-radius:4px; cursor:pointer; }
+    .credential-form { background:#f9f9f9; padding:15px; border-radius:4px; margin-bottom:15px; }
+    .credential-form input { width:100%; padding:8px; margin:5px 0; border:1px solid #ddd; border-radius:4px; }
+    .credential-form button { padding:8px 16px; background:#0a84ff; color:white; border:none; border-radius:4px; cursor:pointer; }
     @media (max-width:768px) {
-      body { flex-direction:column; }
-      .sidebar { width:100%; flex-direction:row; overflow-x:auto; justify-content:center;}
-      .nav-item { flex:1; text-align:center; }
-      .content { padding:10px; }
-      .grid { grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px; }
-      .card { padding:15px; }
-      #xterm { height:250px; }
-    }
-    @media (max-width:480px) {
-      .grid { grid-template-columns:1fr; gap:8px; }
-      .gauge { width:120px; height:120px; }
-    }
+  body { flex-direction:column; }
+  .sidebar { width:100%; flex-direction:row; overflow-x:auto; justify-content:center;}
+  .nav-item { flex:1; text-align:center; }
+  .content { padding:10px; }
+  .grid { grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px; }
+  .card { padding:15px; }
+  #xterm { 
+    height:60vh; 
+    min-height:400px; 
+  }
+  #ssh .card {
+    min-height:70vh;
+  }
+}
+
+@media (max-width:480px) {
+  .grid { grid-template-columns:1fr; gap:8px; }
+  .gauge { width:120px; height:120px; }
+  #xterm { 
+    height:50vh; 
+    min-height:300px; 
+  }
+  #ssh .card {
+    min-height:60vh;
+  }
+}
   </style>
 </head>
 <body>
@@ -174,7 +276,22 @@ async def index():
     </div>
 
     <div id="ssh" class="view" style="display:none;">
-      <div id="xterm"></div>
+      <div class="card">
+        <h2>SSH Terminal</h2>
+        <div id="connectionInfo" class="connection-info"></div>
+
+        <!-- Credential form for manual entry -->
+        <div id="credentialForm" class="credential-form" style="display:none;">
+          <h3>Enter SSH Credentials</h3>
+          <input type="text" id="manualIp" placeholder="IP Address (e.g., 127.0.0.1)" />
+          <input type="text" id="manualUser" placeholder="Username" />
+          <input type="password" id="manualPass" placeholder="Password" />
+          <button onclick="connectWithManualCredentials()">Connect</button>
+        </div>
+
+        <div id="xterm"></div>
+        <button id="reconnectBtn" class="reconnect-btn" style="display:none;">Reconnect</button>
+      </div>
     </div>
 
     <div id="files" class="view" style="display:none;">
@@ -192,11 +309,165 @@ async def index():
   <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit/lib/xterm-addon-fit.js"></script>
   <script>
     // Terminal setup
-    const term = new Terminal({ cursorBlink: true });
+    const term = new Terminal({ 
+      cursorBlink: true,
+      fontSize: 14,
+      fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
+      theme: {
+        background: '#000000',
+        foreground: '#ffffff',
+        cursor: '#ffffff',
+        selection: '#ffffff33'
+      }
+    });
     const fitAddon = new FitAddon.FitAddon();
     term.loadAddon(fitAddon);
     term.open(document.getElementById("xterm"));
     fitAddon.fit();
+
+    // Connection management
+    let sshWs = null;
+    let isConnected = false;
+    const connectionInfo = document.getElementById('connectionInfo');
+    const reconnectBtn = document.getElementById('reconnectBtn');
+    const credentialForm = document.getElementById('credentialForm');
+
+    function updateConnectionStatus(message, type = 'info') {
+      connectionInfo.textContent = message;
+      connectionInfo.className = `connection-info ${type}`;
+      reconnectBtn.style.display = type === 'error' ? 'block' : 'none';
+    }
+
+    // Try to get credentials from server-side storage first, then localStorage
+    async function getCredentials() {
+      try {
+        // First try to get from server
+        const response = await fetch('/api/get-credentials');
+        if (response.ok) {
+          const serverCreds = await response.json();
+          if (serverCreds && !serverCreds.error) {
+            return serverCreds;
+          }
+        }
+      } catch (e) {
+        console.log('No server credentials found');
+      }
+
+      // Fall back to localStorage
+      const saved = localStorage.getItem('arcConnection');
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          console.log('Error parsing localStorage credentials:', e);
+        }
+      }
+
+      return null;
+    }
+
+    async function connectSSH() {
+      const credentials = await getCredentials();
+
+      if (!credentials || !credentials.ip || !credentials.user || !credentials.pass) {
+        updateConnectionStatus('No saved credentials found.', 'error');
+        credentialForm.style.display = 'block';
+        return;
+      }
+
+      credentialForm.style.display = 'none';
+      updateConnectionStatus(`Connecting to ${credentials.user}@${credentials.ip}...`, 'info');
+
+      // Connect to WebSocket endpoint
+      sshWs = new WebSocket(`ws://localhost:5000/ws/ssh`);
+
+      sshWs.onopen = () => {
+        updateConnectionStatus('Connected to proxy, authenticating...', 'info');
+        sshWs.send(JSON.stringify({
+          host: credentials.ip,
+          port: 22,
+          username: credentials.user,
+          password: credentials.pass
+        }));
+      };
+
+      sshWs.onmessage = (event) => {
+        if (event.data === 'SSH_READY') {
+          updateConnectionStatus(`Connected to ${credentials.user}@${credentials.ip}`, 'success');
+          isConnected = true;
+          term.focus();
+        } else if (event.data.startsWith('ERROR:')) {
+          updateConnectionStatus(event.data, 'error');
+          isConnected = false;
+          credentialForm.style.display = 'block';
+        } else {
+          term.write(event.data);
+        }
+      };
+
+      sshWs.onerror = (error) => {
+        updateConnectionStatus('Connection error occurred', 'error');
+        isConnected = false;
+        credentialForm.style.display = 'block';
+      };
+
+      sshWs.onclose = () => {
+        if (isConnected) {
+          updateConnectionStatus('Connection closed', 'error');
+        }
+        isConnected = false;
+      };
+    }
+
+    // Manual credential connection
+    async function connectWithManualCredentials() {
+      const ip = document.getElementById('manualIp').value.trim();
+      const user = document.getElementById('manualUser').value.trim();
+      const pass = document.getElementById('manualPass').value;
+
+      if (!ip || !user || !pass) {
+        alert('Please fill in all fields');
+        return;
+      }
+
+      // Store credentials in localStorage and server
+      const credentials = { ip, user, pass };
+      localStorage.setItem('arcConnection', JSON.stringify(credentials));
+
+      try {
+        await fetch('/api/store-credentials', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(credentials)
+        });
+      } catch (e) {
+        console.log('Failed to store credentials on server:', e);
+      }
+
+      // Clear form
+      document.getElementById('manualIp').value = '';
+      document.getElementById('manualUser').value = '';
+      document.getElementById('manualPass').value = '';
+
+      // Connect
+      connectSSH();
+    }
+
+    // Terminal input handling
+    term.onData((data) => {
+      if (sshWs && isConnected) {
+        sshWs.send(data);
+      }
+    });
+
+    // Reconnect button handler
+    reconnectBtn.addEventListener('click', () => {
+      if (sshWs) {
+        sshWs.close();
+      }
+      term.clear();
+      connectSSH();
+    });
 
     // Navigation
     const views = document.querySelectorAll('.view'),
@@ -206,7 +477,12 @@ async def index():
       n.classList.add('active');
       views.forEach(v => v.style.display = 'none');
       document.getElementById(n.dataset.target).style.display = 'block';
-      if (n.dataset.target === 'ssh') fitAddon.fit();
+      if (n.dataset.target === 'ssh') {
+        fitAddon.fit();
+        if (!isConnected) {
+          connectSSH();
+        }
+      }
     });
 
     // Gauges
@@ -217,32 +493,38 @@ async def index():
       c.style.strokeDasharray = circ;
       c.style.strokeDashoffset = circ*(1-pct/100);
     }
-    async function load(){
-      const d = await (await fetch('/api/system')).json();
-      document.getElementById('ram').innerText = d.ram.percent+'%';
-      setGauge('ram',d.ram.percent);
-      document.getElementById('ram-info').innerText =
-        `${(d.ram.used/1024/1024).toFixed(1)} MiB / ${(d.ram.total/1024/1024).toFixed(1)} MiB`;
-      document.getElementById('wifi').innerText = d.wifi+'%';
-      document.getElementById('ip').innerText   = d.ip;
-      setGauge('wifi',d.wifi);
-      document.getElementById('cpu').innerText  = d.cpu_percent+'%';
-      setGauge('cpu',d.cpu_percent);
-      document.getElementById('disk').innerText = d.disk.percent+'%';
-      setGauge('disk',d.disk.percent);
-      document.getElementById('disk-info').innerText =
-        `${(d.disk.used/1024/1024/1024).toFixed(1)} GiB / ${(d.disk.total/1024/1024/1024).toFixed(1)} GiB`;
-      document.getElementById('uptime').innerText = d.uptime;
-      document.getElementById('temp').innerText   = d.temp;
-      setGauge('temp',parseFloat(d.temp)||0);
-    }
-    load(); setInterval(load,5000);
 
-    // SSH proxy WebSocket (login happens on the login page)
-    const ws = new WebSocket(`ws://${location.host}/ws/ssh`);
-    term.onData(d=>ws.send(d));
-    ws.onmessage = e=>term.write(e.data);
-    window.addEventListener('resize',()=>fitAddon.fit());
+    async function loadSystemInfo(){
+      try {
+        const d = await (await fetch('/api/system')).json();
+        document.getElementById('ram').innerText = d.ram.percent+'%';
+        setGauge('ram',d.ram.percent);
+        document.getElementById('ram-info').innerText =
+          `${(d.ram.used/1024/1024).toFixed(1)} MiB / ${(d.ram.total/1024/1024).toFixed(1)} MiB`;
+        document.getElementById('wifi').innerText = d.wifi+'%';
+        document.getElementById('ip').innerText   = d.ip;
+        setGauge('wifi',d.wifi);
+        document.getElementById('cpu').innerText  = d.cpu_percent+'%';
+        setGauge('cpu',d.cpu_percent);
+        document.getElementById('disk').innerText = d.disk.percent+'%';
+        setGauge('disk',d.disk.percent);
+        document.getElementById('disk-info').innerText =
+          `${(d.disk.used/1024/1024/1024).toFixed(1)} GiB / ${(d.disk.total/1024/1024/1024).toFixed(1)} GiB`;
+        document.getElementById('uptime').innerText = d.uptime;
+        document.getElementById('temp').innerText   = d.temp;
+        setGauge('temp',parseFloat(d.temp)||0);
+      } catch (error) {
+        console.error('Failed to load system info:', error);
+      }
+    }
+
+    loadSystemInfo(); 
+    setInterval(loadSystemInfo, 5000);
+
+    // Resize handler
+    window.addEventListener('resize', () => {
+      fitAddon.fit();
+    });
 
     // File transfer logic
     const dropZone   = document.getElementById('dropZone');
@@ -340,7 +622,7 @@ async def system_info():
         "disk": {"total": disk.total, "used": disk.used, "percent": disk.percent},
         "wifi": wifi,
         "ip": ip,
-        "uptime": f"{int(upt//3600)}h{int((upt%3600)//60)}m",
+        "uptime": f"{int(upt // 3600)}h{int((upt % 3600) // 60)}m",
         "temp": temp
     }
 
@@ -348,62 +630,96 @@ async def system_info():
 @app.websocket("/ws/ssh")
 async def ws_ssh(ws: WebSocket):
     await ws.accept()
+    logging.info("🔌 WebSocket connection accepted")
 
-    auth = await ws.receive_json()
-    host     = auth["host"]
-    port     = auth.get("port", 22)
-    username = auth["username"]
-    password = auth["password"]
-
-    logging.info(f"🔐 Incoming SSH auth: {username}@{host}:{port}")
-
-    client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
-        client.connect(
-            hostname=host,
-            port=port,
-            username=username,
-            password=password,
-            look_for_keys=False,
-            allow_agent=False,
-            timeout=10
-        )
-        logging.info("✅ SSH connection established")
-    except Exception as e:
-        logging.error("❌ SSH connection failed", exc_info=True)
-        await ws.send_text(f"ERROR: {type(e).__name__}: {e}")
-        await ws.close()
-        return
+        # Wait for authentication data
+        auth_data = await ws.receive_json()
+        host = auth_data["host"]
+        port = auth_data.get("port", 22)
+        username = auth_data["username"]
+        password = auth_data["password"]
 
-    chan = client.invoke_shell(term='xterm', width=100, height=40)
-    chan.send("exec $SHELL -l -i\n")
-    chan.send('export PS1="\\u@\\h:\\w\\$ "\n')
+        logging.info(f"🔐 SSH connection attempt: {username}@{host}:{port}")
 
-    await ws.send_text("SSH_READY")
+        # Create SSH client
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
-    loop = asyncio.get_event_loop()
-    def pump_ssh_to_ws():
         try:
+            # Connect to SSH server
+            client.connect(
+                hostname=host,
+                port=port,
+                username=username,
+                password=password,
+                look_for_keys=False,
+                allow_agent=False,
+                timeout=10
+            )
+            logging.info(f"✅ SSH connection established to {host}")
+
+            # Create interactive shell
+            chan = client.invoke_shell(term='xterm-256color', width=80, height=24)
+
+            # Send ready signal
+            await ws.send_text("SSH_READY")
+
+            # Set up bidirectional communication
+            loop = asyncio.get_event_loop()
+
+            def ssh_to_websocket():
+                """Read from SSH and send to WebSocket"""
+                try:
+                    while True:
+                        if chan.recv_ready():
+                            data = chan.recv(1024)
+                            if not data:
+                                break
+                            asyncio.run_coroutine_threadsafe(
+                                ws.send_text(data.decode('utf-8', errors='ignore')),
+                                loop
+                            )
+                        time.sleep(0.01)
+                except Exception as e:
+                    logging.error(f"SSH read error: {e}")
+
+            # Start SSH reader thread
+            ssh_thread = threading.Thread(target=ssh_to_websocket, daemon=True)
+            ssh_thread.start()
+
+            # Handle WebSocket messages (user input)
             while True:
-                data = chan.recv(1024)
-                if not data:
+                try:
+                    message = await ws.receive_text()
+                    if chan.send_ready():
+                        chan.send(message)
+                except WebSocketDisconnect:
+                    logging.info("🔌 WebSocket disconnected")
                     break
-                asyncio.run_coroutine_threadsafe(ws.send_text(data.decode(errors="ignore")), loop)
-        except Exception:
-            pass
+                except Exception as e:
+                    logging.error(f"WebSocket error: {e}")
+                    break
 
-    threading.Thread(target=pump_ssh_to_ws, daemon=True).start()
+        except paramiko.AuthenticationException:
+            await ws.send_text("ERROR: Authentication failed")
+            logging.error("❌ SSH authentication failed")
+        except paramiko.SSHException as e:
+            await ws.send_text(f"ERROR: SSH connection failed: {str(e)}")
+            logging.error(f"❌ SSH connection failed: {e}")
+        except Exception as e:
+            await ws.send_text(f"ERROR: Connection error: {str(e)}")
+            logging.error(f"❌ Connection error: {e}")
+        finally:
+            if 'chan' in locals():
+                chan.close()
+            client.close()
 
-    try:
-        while True:
-            msg = await ws.receive_text()
-            chan.send(msg)
-    except WebSocketDisconnect:
-        logging.info("🔌 WebSocket disconnected")
+    except Exception as e:
+        logging.error(f"❌ WebSocket error: {e}")
+        await ws.send_text(f"ERROR: {str(e)}")
     finally:
-        chan.close()
-        client.close()
+        await ws.close()
 
 
 @app.post("/api_upload")
@@ -420,10 +736,11 @@ async def api_upload(file: UploadFile = File(...)):
 async def api_download(path: str):
     full = os.path.join("uploads", path)
     if not os.path.isfile(full):
-        raise HTTPException(404)
+        raise HTTPException(404, detail="File not found")
     return FileResponse(full)
 
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=5000)
+
+    uvicorn.run(app, host="0.0.0.0", port=5000, log_level="info")

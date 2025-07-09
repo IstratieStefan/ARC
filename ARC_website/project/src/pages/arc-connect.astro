@@ -98,7 +98,7 @@ import Hero from '../components/Hero';
                 let ws;
                 try {
                     // connect to FastAPI’s SSH proxy endpoint
-                    ws = new WebSocket(`${scheme}://${window.location.hostname}:8000/ws/ssh`);
+                    ws = new WebSocket(`${scheme}://${window.location.hostname}:5000/ws/ssh`);
                 } catch (err) {
                     formError.textContent = '❌ Cannot connect to proxy server.';
                     console.error(err);
@@ -133,7 +133,9 @@ import Hero from '../components/Hero';
                         'arcConnection',
                         JSON.stringify({ ip, user, pass })
                     );
-                    window.location.href = '/dashboard/ssh';
+                    const proto = window.location.protocol;
+                    const host  = window.location.hostname;
+                    window.location.href = `http://${location.hostname}:5000/`
                 };
             });
 

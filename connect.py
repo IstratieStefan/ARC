@@ -1,12 +1,11 @@
+import logging
 import os
 import time
 import socket
 import asyncio
-import pty
-import subprocess
 import threading
-import paramiko
 
+import paramiko
 import psutil
 import aiofiles
 
@@ -14,6 +13,9 @@ from fastapi import FastAPI, WebSocket, UploadFile, File, HTTPException
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.websockets import WebSocketDisconnect
+
+# configure basic logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
 app = FastAPI(title="ARC connect")
 
@@ -98,7 +100,6 @@ async def index():
     .progress-bar .progress { height:100%; width:0; background:#0a84ff; transition:width 0.2s; }
     #uploadBtn { margin-top:10px; padding:10px 20px; border:none; background:#0a84ff; color:#fff; border-radius:4px; cursor:pointer; }
     #uploadBtn:disabled { background:#ccc; cursor:not-allowed; }
-
     @media (max-width:768px) {
       body { flex-direction:column; }
       .sidebar { width:100%; flex-direction:row; overflow-x:auto; justify-content:center;}
@@ -123,67 +124,48 @@ async def index():
   </div>
 
   <div class="content">
-    <!-- Dashboard View -->
     <div id="dashboard" class="view">
       <div class="grid">
-        <!-- Memory Card -->
         <div class="card">
           <h2>Memory Usage <span class="ellipsis">⋯</span></h2>
           <div class="gauge-container">
-            <div class="gauge" id="ram-gauge">
-              <svg><circle class="bg" cx="50" cy="50" r="45"/><circle class="fg" cx="50" cy="50" r="45"/></svg>
-            </div>
+            <div class="gauge" id="ram-gauge"><svg><circle class="bg" cx="50" cy="50" r="45"/><circle class="fg" cx="50" cy="50" r="45"/></svg></div>
             <div class="gauge-value" id="ram">0%</div>
           </div>
           <div class="info" id="ram-info">-</div>
         </div>
-        <!-- Wi-Fi Card -->
         <div class="card">
           <h2>WiFi Strength <span class="ellipsis">⋯</span></h2>
           <div class="gauge-container">
-            <div class="gauge" id="wifi-gauge">
-              <svg><circle class="bg" cx="50" cy="50" r="45"/><circle class="fg" cx="50" cy="50" r="45"/></svg>
-            </div>
+            <div class="gauge" id="wifi-gauge"><svg><circle class="bg" cx="50" cy="50" r="45"/><circle class="fg" cx="50" cy="50" r="45"/></svg></div>
             <div class="gauge-value" id="wifi">0%</div>
           </div>
           <div class="info">IP: <span id="ip">-</span></div>
         </div>
-        <!-- CPU Card -->
         <div class="card">
           <h2>CPU Load <span class="ellipsis">⋯</span></h2>
           <div class="gauge-container">
-            <div class="gauge" id="cpu-gauge">
-              <svg><circle class="bg" cx="50" cy="50" r="45"/><circle class="fg" cx="50" cy="50" r="45"/></svg>
-            </div>
+            <div class="gauge" id="cpu-gauge"><svg><circle class="bg" cx="50" cy="50" r="45"/><circle class="fg" cx="50" cy="50" r="45"/></svg></div>
             <div class="gauge-value" id="cpu">0%</div>
           </div>
           <div class="info">per core</div>
         </div>
-        <!-- Disk Card -->
         <div class="card">
           <h2>Disk Usage <span class="ellipsis">⋯</span></h2>
           <div class="gauge-container">
-            <div class="gauge" id="disk-gauge">
-              <svg><circle class="bg" cx="50" cy="50" r="45"/><circle class="fg" cx="50" cy="50" r="45"/></svg>
-            </div>
+            <div class="gauge" id="disk-gauge"><svg><circle class="bg" cx="50" cy="50" r="45"/><circle class="fg" cx="50" cy="50" r="45"/></svg></div>
             <div class="gauge-value" id="disk">0%</div>
           </div>
           <div class="info" id="disk-info">-</div>
         </div>
-        <!-- Uptime Card -->
         <div class="card">
           <h2>System Uptime <span class="ellipsis">⋯</span></h2>
-          <div class="gauge-container">
-            <div class="card-value" id="uptime">-</div>
-          </div>
+          <div class="gauge-container"><div class="card-value" id="uptime">-</div></div>
         </div>
-        <!-- Temperature Card -->
         <div class="card">
           <h2>CPU Temp <span class="ellipsis">⋯</span></h2>
           <div class="gauge-container">
-            <div class="gauge" id="temp-gauge">
-              <svg><circle class="bg" cx="50" cy="50" r="45"/><circle class="fg" cx="50" cy="50" r="45"/></svg>
-            </div>
+            <div class="gauge" id="temp-gauge"><svg><circle class="bg" cx="50" cy="50" r="45"/><circle class="fg" cx="50" cy="50" r="45"/></svg></div>
             <div class="gauge-value" id="temp">0°C</div>
           </div>
           <div class="info" id="temp-info">-</div>
@@ -191,12 +173,10 @@ async def index():
       </div>
     </div>
 
-    <!-- SSH terminal View -->
     <div id="ssh" class="view" style="display:none;">
       <div id="xterm"></div>
     </div>
 
-    <!-- File transfer View -->
     <div id="files" class="view" style="display:none;">
       <div class="card">
         <h2>File Transfer</h2>
@@ -211,12 +191,14 @@ async def index():
   <script src="https://cdn.jsdelivr.net/npm/xterm/lib/xterm.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit/lib/xterm-addon-fit.js"></script>
   <script>
+    // Terminal setup
     const term = new Terminal({ cursorBlink: true });
     const fitAddon = new FitAddon.FitAddon();
     term.loadAddon(fitAddon);
     term.open(document.getElementById("xterm"));
     fitAddon.fit();
 
+    // Navigation
     const views = document.querySelectorAll('.view'),
           navs  = document.querySelectorAll('.nav-item');
     navs.forEach(n => n.onclick = () => {
@@ -227,6 +209,7 @@ async def index():
       if (n.dataset.target === 'ssh') fitAddon.fit();
     });
 
+    // Gauges
     function setGauge(id,pct){
       const c = document.querySelector(`#${id}-gauge .fg`),
             r = +c.getAttribute('r'),
@@ -234,7 +217,6 @@ async def index():
       c.style.strokeDasharray = circ;
       c.style.strokeDashoffset = circ*(1-pct/100);
     }
-
     async function load(){
       const d = await (await fetch('/api/system')).json();
       document.getElementById('ram').innerText = d.ram.percent+'%';
@@ -256,12 +238,85 @@ async def index():
     }
     load(); setInterval(load,5000);
 
+    // SSH proxy WebSocket (login happens on the login page)
     const ws = new WebSocket(`ws://${location.host}/ws/ssh`);
     term.onData(d=>ws.send(d));
     ws.onmessage = e=>term.write(e.data);
     window.addEventListener('resize',()=>fitAddon.fit());
 
-    // File transfer logic unchanged...
+    // File transfer logic
+    const dropZone   = document.getElementById('dropZone');
+    const fileInput  = document.getElementById('fileInput');
+    const fileList   = document.getElementById('fileList');
+    const uploadBtn  = document.getElementById('uploadBtn');
+    let   files      = [];
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    ['dragover','dragenter'].forEach(evt =>
+      dropZone.addEventListener(evt, e => { e.preventDefault(); dropZone.classList.add('dragover'); })
+    );
+    ['dragleave','drop'].forEach(evt =>
+      dropZone.addEventListener(evt, e => { e.preventDefault(); dropZone.classList.remove('dragover'); })
+    );
+    dropZone.addEventListener('drop', e => handleFiles(e.dataTransfer.files));
+    fileInput.addEventListener('change', e => { handleFiles(e.target.files); fileInput.value = ''; });
+
+    function handleFiles(selected) {
+      for (const f of selected) {
+        if (!files.some(x => x.name===f.name && x.size===f.size)) files.push(f);
+      }
+      renderFileList();
+    }
+
+    function renderFileList() {
+      fileList.innerHTML = '';
+      files.forEach((file, idx) => {
+        const li = document.createElement('li');
+        li.className = 'flex justify-between items-center';
+        const name = document.createElement('span');
+        name.textContent = file.name;
+        li.appendChild(name);
+        const remove = document.createElement('button');
+        remove.textContent = '✖';
+        remove.className = 'ml-2';
+        remove.onclick = () => { files.splice(idx,1); renderFileList(); };
+        li.appendChild(remove);
+        const pb = document.createElement('div'); pb.className = 'progress-bar';
+        const p  = document.createElement('div'); p.className = 'progress';
+        pb.appendChild(p); li.appendChild(pb);
+        file._progressElem = p;
+        fileList.appendChild(li);
+      });
+      uploadBtn.disabled = !files.length;
+    }
+
+    function uploadFile(file) {
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api_upload');
+        xhr.upload.addEventListener('progress', e => {
+          if (e.lengthComputable) file._progressElem.style.width = (e.loaded/e.total*100)+'%';
+        });
+        xhr.onreadystatechange = () => {
+          if (xhr.readyState === 4) {
+            if (xhr.status === 200) resolve(JSON.parse(xhr.response).filename);
+            else reject(xhr.statusText);
+          }
+        };
+        const form = new FormData();
+        form.append('file', file);
+        xhr.send(form);
+      });
+    }
+
+    uploadBtn.addEventListener('click', async () => {
+      uploadBtn.disabled = true;
+      for (const f of files) {
+        try { await uploadFile(f); }
+        catch (err) { console.error('Upload failed for', f.name, err); }
+      }
+      files = []; renderFileList();
+    });
   </script>
 </body>
 </html>
@@ -300,46 +355,55 @@ async def ws_ssh(ws: WebSocket):
     username = auth["username"]
     password = auth["password"]
 
+    logging.info(f"🔐 Incoming SSH auth: {username}@{host}:{port}")
+
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.connect(
-        hostname=host,
-        port=port,
-        username=username,
-        password=password,
-        look_for_keys=False,
-        allow_agent=False
-    )
+    try:
+        client.connect(
+            hostname=host,
+            port=port,
+            username=username,
+            password=password,
+            look_for_keys=False,
+            allow_agent=False,
+            timeout=10
+        )
+        logging.info("✅ SSH connection established")
+    except Exception as e:
+        logging.error("❌ SSH connection failed", exc_info=True)
+        await ws.send_text(f"ERROR: {type(e).__name__}: {e}")
+        await ws.close()
+        return
 
-    chan = client.invoke_shell()
+    chan = client.invoke_shell(term='xterm', width=100, height=40)
+    chan.send("exec $SHELL -l -i\n")
+    chan.send('export PS1="\\u@\\h:\\w\\$ "\n')
+
+    await ws.send_text("SSH_READY")
+
     loop = asyncio.get_event_loop()
-
-    def ssh_to_ws():
+    def pump_ssh_to_ws():
         try:
             while True:
                 data = chan.recv(1024)
                 if not data:
                     break
-                asyncio.run_coroutine_threadsafe(
-                    ws.send_text(data.decode(errors="ignore")),
-                    loop
-                )
+                asyncio.run_coroutine_threadsafe(ws.send_text(data.decode(errors="ignore")), loop)
         except Exception:
             pass
 
-    thread = threading.Thread(target=ssh_to_ws, daemon=True)
-    thread.start()
+    threading.Thread(target=pump_ssh_to_ws, daemon=True).start()
 
     try:
         while True:
             msg = await ws.receive_text()
             chan.send(msg)
     except WebSocketDisconnect:
-        pass
+        logging.info("🔌 WebSocket disconnected")
     finally:
         chan.close()
         client.close()
-
 
 
 @app.post("/api_upload")

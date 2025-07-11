@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import html2canvas from 'html2canvas';
+import LanguageSelector from './LanguageSelector';
 
 const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -95,6 +96,9 @@ const Navbar: React.FC = () => {
                     {link.name}
                   </a>
               ))}
+              <LanguageSelector
+                  textColor={isScrolled || (!isScrolled && isLightUnderlay) ? "text-gray-900" : "text-white"}
+              />
             </nav>
 
             <button
@@ -135,6 +139,9 @@ const Navbar: React.FC = () => {
                         {link.name}
                       </a>
                   ))}
+                  <div className="pt-2">
+                    <LanguageSelector textColor="text-gray-900" />
+                  </div>
                 </nav>
               </div>
             </div>

@@ -3,229 +3,224 @@
 [![Designed in - California](https://img.shields.io/badge/Designed_in-California-2ea44f)](https://)
 [![Built in - Romania](https://img.shields.io/badge/Built_in-Romania-3876fc)](https://)
 
-[Documentație 🇷🇴](https://github.com/IstratieStefan/ARC/blob/main/Docs/ARC%20Documentation.pdf) 
+[Documentation 🇷🇴](https://github.com/IstratieStefan/ARC/blob/main/Docs/ARC%20Documentation.pdf)
 
-[Documentation 🇺🇸](https://github.com/IstratieStefan/ARC/blob/main/Docs/ARC%20Documentation%20English.pdf) 
+[Documentation 🇺🇸](https://github.com/IstratieStefan/ARC/blob/main/Docs/ARC%20Documentation%20English.pdf)
 
-[Pagină oficială](https://arc.istratiestefan.com)  
+[Official Page](https://arc.istratiestefan.com)
 
-[Cod sursă](https://github.com/IstratieStefan/ARC)  
+[Source Code](https://github.com/IstratieStefan/ARC)
 
 [Hardware Repo](https://github.com/IstratieStefan/ARC-Hardware)
 
 ---
 
-### **Capitolul I. Utilitate practică**
+### **Chapter I. Practical Utility**
 
-ARC este un dispozitiv portabil, construit pentru dezvoltatori, cercetători și ingineri care au nevoie de unelte de depanare, comunicație și analiză RF/NFC în teren. Acesta combină un mini calculator cu Linux (Orange Pi Zero 2 W) cu o placă de bază personalizată ce include o tastatură, ecran SPI de 3.5", ieșire audio I²S, baterie și circuite de alimentare.
+ARC is a portable device built for developers, researchers, and engineers who need debugging, communication, and RF/NFC analysis tools in the field. It combines a Linux-based mini-computer (Orange Pi Zero 2 W) with a custom motherboard that includes a keyboard, a 3.5" SPI screen, I²S audio output, a battery, and power circuits.
 
-**Problema rezolvată**: autonom, compact, multifuncțional pentru teste și operații de comunicații în teren (ex. pentesting, sniffing RF, citire/emulare NFC).
+**Problem Solved**: It's an autonomous, compact, and multifunctional device for field testing and communication operations (e.g., pentesting, RF sniffing, NFC reading/emulation).
 
-**Eficiență față de alternative**: Spre deosebire de un laptop și adaptoare externe, ARC este mult mai portabil, are interfață tactilă și tastatură proprie, fiind gândit pentru sesiuni rapide de lucru sau depanare pe teren.
-
----
-
-### **Capitolul II. Mecanică**
-
-#### **Secțiunea II.1. Complexitate**
-
-- Nu include componente mecanice active (motoare).
-- Componentele mecanice includ: carcasă compactă, tastatură tactilă cu 39 de taste (QWERTY), sistem de fixare pentru display, porturi externe (16 pini (alimentare, uart, SPI, I²C, GPIO), USB-C, jack 3.5mm).
-
-#### **Secțiunea II.2. Eficiență în construcție**
-
-- Carcasă proiectată în Fusion360 printată 3d.
-- PCB proiectat în KiCad.
-- Autonomie de până la 6-7h în utilizare mixtă.
-- Nu are sursă de energie regenerabilă, dar oferă management eficient al consumului (power switch, sleep button, etc.).
----
-
-### **Capitolul III. Electronică**
-
-#### PCB  
-
-#### **Arhitectură**
-
-- **Microprocesor**: Orange Pi Zero 2 W cu procesor quad-core Cortex-A53 1.5 Ghz și 4gb ram.
-- **Microcontroller**: RP2040 (Waveshare Pico Mini) pentru tastatură, conectată prin  I²C
-- **Circuite auxiliare**:
-  - Circuit de alimentare (MCP73833 pentru încărcare, TPS61032PWP pentru ridicarea tensiunii la 5v)
-  - Circuit audio (PCM5102A pentru transformarea semnalelor digitale transmise prin protocolul i2s în semnale analog, PAM8302 pentru amplificare și difuzorul pentru redarea sunetului)
-
-- **Module**:
-  - Modul NFC (ESP32 S3 Mini + modul PN532 NFC)
-  - Modul RF (ESP32 S3 Mini + modul RF sub-GHz CC1101)
-  - Modul IR
-  - Conexiuni:  I²S (DAC),  I²C (Tastatura, Touch ecran, Module), UART (Module), SPI (Ecran, Module)
-
-#### Componente active
-
-|Nr. Crt.|Denumire|Descriere|
-|---|---|---|
-|1|Orange pi zero 2w|SBC|
-|2|Waveshare 3.5’’ display|Display spi 480x320px|
-|3|Buton tactil 4x4mm|Buton tastatura|
-|4|MCP73833|IC incarcare Li-ion|
-|5|TPS61032PWP|IC 5v boost|
-|6|RP2040-tiny|Modul Microcontroller pentru tastatură|
-|7|PCM5102A|IC DAC i2s|
-|8|PAM8302|IC Amplificator difuzor|
-|9|Difuzor 8Ω|Difuzor|
-|10|Baterie|Baterie|
-
-#### Conectori
-
-|Nr. Crt.|Denumire|Descriere|
-|---|---|---|
-|1|Port type c|Alimentare|
-|2|Port type c|Date|
-|3|Jack 3.5mm|Mufă căști, folosește pinul de detecție pentru a schimba intre audio prin jack sau difuzor|
-|4|Headeri IO|2 seturi de pini pentru alimentarea modulelor externe si pentru interfață|
-|5|Mini Hdmi|Output Video|
-
-#### Header Stânga
-
-|  **Pin** |  **Net**    |  **Semnal SBC** |  **Funcție**                     |
-| ----------- | -------------- | ------------------ | ----------------------------------- |
-|  **1**   |  **GND**    |  **GND**        |  **Masă comună pentru extensii** |
-|  **2**   |  **+5 V**   |  **5 V out**    |  **Alimentare 5 V neregulată**   |
-|  **3**   |  **GPIO12** |  **GPIO12**     |  **GPIO general**                |
-|  **4**   |  **GPIO21** |  **GPIO21**     |  **GPIO general**                |
-|  **5**   |  **GPIO22** |  **GPIO22**     |  **GPIO general**                |
-|  **6**   |  **MOSI**   |  **SPI0 MOSI**  |  **SPI master-out**              |
-|  **7**   |  **MISO**   |  **SPI0 MISO**  |  **SPI master-in**               |
-|  **8**   |  **SCLK**   |  **SPI0 SCLK**  |  **Clock SPI**                   |
-
-####  Header Dreapta
-
-|### **Pin**| **Net**| **Semnal SBC**| **Funcție**|
-|---|---|---|---|
-| **1**| **GND**| **GND**| **Masă comună pentru extensii**|
-| **2**| **+3.3 V**| **3.3 V out**| **Alimentare 3.3 V neregulată**|
-| **3**| **+5 V**| **5 V out**| **Alimentare 5 V neregulată**|
-| **4**| **GPIO16**| **GPIO16**| **GPIO general**|
-| **5**| **RXD**| **UART0 RX**| **Date seriale IN**|
-| **6**| **TXD**| **UART0 TX**| **Date seriale OUT**|
-| **7**| **SDA**| **I²C SDA**| **Linie date I²C**|
-| **8**| **SCL**| **I²C SCL**| **Linie ceas I²C**|
-
- 
-#### **Secțiunea III.1. Complexitate**
-
-- Dispozitiv semi-autonom, dar poate executa taskuri complet independent (ex: scan WiFi, Sniff RF, etc.) prin interfața grafică.
+**Efficiency Compared to Alternatives**: Unlike a laptop with external adapters, ARC is much more portable, has a tactile interface and its own keyboard, and is designed for quick work or debugging sessions in the field.
 
 ---
 
-### **Capitolul IV. Software**
+### **Chapter II. Mechanics**
 
-- Sistemul de operare este o distribuție personalizată bazată pe Armbian cu Openbox + un mediu desktop minimal realizat în python (ARC Desktop Environment).
-- Interfața este realizată în Python folosind Pygame.
-- Fiecare aplicație este modulară și rulează izolat.
-- Fiecare element de ui, aplicațiile integrate, path-uri folosite pentru scripturi și multe altele pot fi modificate prin editarea fisierului _‘arc.yaml’_ care se aflat în  _/.config_
-- Firmware-ul tastaturii este realizat în **circuitpython** și transmite codurile matricei de butoane către un script python de pe SBC pentru a emula apăsarea tastelor. Pentru a oferi funcționalitate completă tastaturii, folosim un sistem de layere similar telefoanelor. Layout-ul tastaturii poate fi modificat din scriptul python care interpretează key code-urile.
-- Tipuri de aplicații:
-  - Terminal
-  - Calendar
-  - WiFi tools
-  - Bluetooth tools
-  - Ir tools
-  - Rf tools
-  - Nfc tools
-  - Music player
-  - Game launcher
+#### **Section II.1. Complexity**
 
-+      alte aplicații linux
+- Does not include active mechanical components (motors).
+- Mechanical components include: a compact enclosure, a 39-key tactile keyboard (QWERTY), a mounting system for the display, and external ports (16-pin for power, UART, SPI, I²C, GPIO; USB-C; 3.5mm jack).
 
-#### WiFi Tools – Suport analiză și atac pentru rețele wireless
+#### **Section II.2. Construction Efficiency**
 
-**WiFi Tools** este o suită grafică de instrumente pentru scanarea, monitorizarea și testarea rețelelor WiFi, concepută pentru sisteme Linux cu interfețe compatibile cu modul monitor. Interfața este realizată în Python folosind pygame, iar funcționalitățile sunt construite peste utilitare clasice precum iwlist, airodump-ng, aireplay-ng și aircrack-ng.
+- The enclosure is designed in Fusion360 and 3D printed.
+- The PCB is designed in KiCad.
+- Up to 6-7 hours of battery life in mixed use.
+- It does not have a renewable energy source but offers efficient power management (power switch, sleep button, etc.).
 
-|**Utilitar**|**Pachet**|**Descriere**|
-|---|---|---|
-|iw|iw|Utilitar modern pentru configurarea interfețelor wireless (moduri, info)|
-|iwlist|wireless-tools|Utilitar mai vechi pentru scanarea rețelelor WiFi|
-|aircrack-ng|aircrack-ng|Suită completă pentru audit WiFi: handshake capture, cracking, deauth etc.|
-|airodump-ng|aircrack-ng|Parte din aircrack-ng: monitorizare rețele și capturare handshake-uri|
-|aireplay-ng|aircrack-ng|Parte din aircrack-ng: trimitere pachete de deautentificare (deauth attack)|
-|airmon-ng|aircrack-ng|Parte din aircrack-ng: activare/dezactivare mod monitor|
-|ip|iproute2|Utilitar standard pentru configurarea interfețelor de rețea|
+---
 
-#### Bluetooth Tools – Utilitare pentru scanare, conectare și testare dispozitive Bluetooth
+### **Chapter III. Electronics**
 
-**Bluetooth Tools** este o interfață grafică care oferă acces rapid la funcții de scanare, conectare, gestionare și testare a dispozitivelor Bluetooth, utilizând bluetoothctl și l2ping în fundal.
+#### PCB
 
-|**Utilitar**|**Pachet**|**Descriere**|
-|---|---|---|
-|bluetoothctl|bluez|Utilitar CLI pentru managementul Bluetooth (scanare, conectare, pairing etc.)|
-|l2ping|bluez|Trimite pachete L2CAP către dispozitive Bluetooth (folosit pentru DoS demo)|
-|timeout|coreutils|Folosit pentru a limita durata scanărilor cu bluetoothctl scan on|
+#### **Architecture**
 
-#### IR, NFC, RF Tools – Interfețe grafice pentru comunicație cu module externe
+- **Microprocessor**: Orange Pi Zero 2 W with a quad-core Cortex-A53 1.5 GHz processor and 4GB of RAM.
+- **Microcontroller**: RP2040 (Waveshare Pico Mini) for the keyboard, connected via I²C.
+- **Auxiliary Circuits**:
+    - Power circuit (MCP73833 for charging, TPS61032PWP for boosting the voltage to 5V).
+    - Audio circuit (PCM5102A to convert digital signals transmitted via the I2S protocol into analog signals, PAM8302 for amplification, and a speaker for sound output).
+- **Modules**:
+    - NFC Module (ESP32 S3 Mini + PN532 NFC module).
+    - RF Module (ESP32 S3 Mini + Sub-GHz CC1101 RF module).
+    - IR Module.
+- **Connections**: I²S (DAC), I²C (Keyboard, Screen Touch, Modules), UART (Modules), SPI (Screen, Modules).
 
-**IR, NFC și RF Tools** sunt aplicații cu interfață grafică (GUI) care facilitează comunicarea cu module specializate conectate prin UART, precum:
+#### Active Components
 
-- **Module IR** – pentru transmiterea sau înregistrarea semnalelor infraroșu;
-- **Module NFC** – pentru citirea și emularea tagurilor NFC(posibiliități limitate);
-- **Module RF** – pentru scanare, captură sau transmitere de semnale radio în frecvențe variate.
+| No. | Name | Description |
+| --- | --- | --- |
+| 1 | Orange Pi Zero 2W | SBC |
+| 2 | Waveshare 3.5’’ display | 480x320px SPI Display |
+| 3 | 4x4mm Tactile Button | Keyboard button |
+| 4 | MCP73833 | Li-ion charging IC |
+| 5 | TPS61032PWP | 5V boost IC |
+| 6 | RP2040-tiny | Microcontroller Module for keyboard |
+| 7 | PCM5102A | I²S DAC IC |
+| 8 | PAM8302 | Speaker Amplifier IC |
+| 9 | 8Ω Speaker | Speaker |
+| 10 | Battery | Battery |
 
-#### Music Player – Redare și organizare fișiere audio locale
+#### Connectors
 
-**Music Player** este o aplicație care permite redarea fișierelor audio locale în formatele .mp3 și .flac, oferind o interfață simplă pentru navigare și control al redării.
+| No. | Name | Description |
+| --- | --- | --- |
+| 1 | Type-C Port | Power |
+| 2 | Type-C Port | Data |
+| 3 | 3.5mm Jack | Headphone jack, uses the detection pin to switch between jack and speaker audio |
+| 4 | IO Headers | 2 sets of pins for powering external modules and for interface |
+| 5 | Mini HDMI | Video Output |
 
-**Funcționalități principale:**
+#### Left Header
 
-- **Sortare după album sau artist** – melodiile sunt organizate automat folosind metadatele din fișiere.
-- **Configurare folder muzical** – locația fișierelor audio este specificată în fișierul _arc.yaml_, aflat în directorul _/.config_ al sistemului.
--  **Afișare metadate** – titlul, durata și coperta albumului sunt extrase din metadatele fișierelor folosind biblioteca mutagen.
--  **Interfață de selecție** – utilizatorul poate naviga printre melodii și selecta fișiere pentru redare.
-- **Meniu de redare** – permite controlul redării prin funcțiile Play/Pause, Skip Forward și Skip Backward, precum și vizualizarea progresului redării (timpul curent).
-- **Afișare copertă album** – imaginea melodiei este afișată în ecranul de redare dacă este disponibilă în metadate.
+| **Pin** | **Net** | **SBC Signal** | **Function** |
+| :---: | :---: | :---: | :---: |
+| **1** | **GND** | **GND** | **Common ground for extensions** |
+| **2** | **+5 V** | **5 V out** | **Unregulated 5V power supply** |
+| **3** | **GPIO12** | **GPIO12** | **General Purpose GPIO** |
+| **4** | **GPIO21** | **GPIO21** | **General Purpose GPIO** |
+| **5** | **GPIO22** | **GPIO22** | **General Purpose GPIO** |
+| **6** | **MOSI** | **SPI0 MOSI** | **SPI master-out** |
+| **7** | **MISO** | **SPI0 MISO** | **SPI master-in** |
+| **8** | **SCLK** | **SPI0 SCLK** | **SPI clock** |
 
-#### Game Launcher – Lansator de jocuri personalizabil
+#### Right Header
 
-**Game Launcher** este o aplicație care oferă o interfață grafică simplă pentru lansarea jocurilor instalate local, folosind comenzi Bash definite de utilizator.
+| **Pin** | **Net** | **SBC Signal** | **Function** |
+| :---: | :---: | :---: | :---: |
+| **1** | **GND** | **GND** | **Common ground for extensions** |
+| **2** | **+3.3 V** | **3.3 V out** | **Unregulated 3.3V power supply** |
+| **3** | **+5 V** | **5 V out** | **Unregulated 5V power supply** |
+| **4** | **GPIO16** | **GPIO16** | **General Purpose GPIO** |
+| **5** | **RXD** | **UART0 RX** | **Serial Data IN** |
+| **6** | **TXD** | **UART0 TX** | **Serial Data OUT** |
+| **7** | **SDA** | **I²C SDA** | **I²C Data line** |
+| **8** | **SCL** | **I²C SCL** | **I²C Clock line** |
 
-Funcționalități principale:
+#### **Section III.1. Complexity**
 
-- **Lansare rapidă a jocurilor** – fiecare joc este asociat cu o comandă Bash care va fi executată la selecție.
-- **Configurare flexibilă** – jocurile sunt definite într-un fișier games.json, care conține numele și comanda de lansare pentru fiecare joc.
-- **Personalizare locație fișier** – locația fișierului games.json poate fi specificată în fișierul arc.yaml, aflat în directorul .config al sistemului.
--  **Interfață simplă** – utilizatorul poate naviga și selecta jocul dorit dintr-o listă interactivă.
+- Semi-autonomous device, but it can execute tasks completely independently (e.g., WiFi scanning, RF Sniffing, etc.) through its graphical interface.
 
-Aplicația permite integrarea ușoară a oricărui joc sau emulator instalat pe sistem.
+---
+
+### **Chapter IV. Software**
+
+- The operating system is a custom distribution based on Armbian with Openbox + a minimal desktop environment built in Python (ARC Desktop Environment).
+- The interface is created in Python using Pygame.
+- Each application is modular and runs in isolation.
+- Every UI element, integrated application, script path, and more can be modified by editing the *'arc.yaml'* file located in */.config*.
+- The keyboard firmware is written in **CircuitPython** and transmits the button matrix codes to a Python script on the SBC to emulate key presses. To provide full functionality, the keyboard uses a layer system similar to smartphones. The keyboard layout can be modified from the Python script that interprets the key codes.
+- Application Types:
+    - Terminal
+    - Calendar
+    - WiFi tools
+    - Bluetooth tools
+    - IR tools
+    - RF tools
+    - NFC tools
+    - Music player
+    - Game launcher
+    - Other Linux applications
+
+#### WiFi Tools – Support for Wireless Network Analysis and Attacks
+
+**WiFi Tools** is a graphical suite of tools for scanning, monitoring, and testing WiFi networks, designed for Linux systems with interfaces compatible with monitor mode. The interface is built in Python using Pygame, and the functionalities are built on top of classic utilities like `iwlist`, `airodump-ng`, `aireplay-ng`, and `aircrack-ng`.
+
+| **Utility** | **Package** | **Description** |
+| --- | --- | --- |
+| iw | iw | Modern utility for configuring wireless interfaces (modes, info) |
+| iwlist | wireless-tools | Older utility for scanning WiFi networks |
+| aircrack-ng | aircrack-ng | Complete suite for WiFi auditing: handshake capture, cracking, deauth, etc. |
+| airodump-ng | aircrack-ng | Part of aircrack-ng: monitors networks and captures handshakes |
+| aireplay-ng | aircrack-ng | Part of aircrack-ng: sends deauthentication packets (deauth attack) |
+| airmon-ng | aircrack-ng | Part of aircrack-ng: enables/disables monitor mode |
+| ip | iproute2 | Standard utility for configuring network interfaces |
+
+#### Bluetooth Tools – Utilities for Scanning, Connecting, and Testing Bluetooth Devices
+
+**Bluetooth Tools** is a graphical interface that provides quick access to functions for scanning, connecting, managing, and testing Bluetooth devices, using `bluetoothctl` and `l2ping` in the background.
+
+| **Utility** | **Package** | **Description** |
+| --- | --- | --- |
+| bluetoothctl | bluez | CLI utility for Bluetooth management (scanning, connecting, pairing, etc.) |
+| l2ping | bluez | Sends L2CAP packets to Bluetooth devices (used for DoS demo) |
+| timeout | coreutils | Used to limit the duration of scans with `bluetoothctl scan on` |
+
+#### IR, NFC, RF Tools – Graphical Interfaces for Communication with External Modules
+
+**IR, NFC, and RF Tools** are applications with a graphical user interface (GUI) that facilitate communication with specialized modules connected via UART, such as:
+
+- **IR Modules** – for transmitting or recording infrared signals.
+- **NFC Modules** – for reading and emulating NFC tags (with limited capabilities).
+- **RF Modules** – for scanning, capturing, or transmitting radio signals in various frequencies.
+
+#### Music Player – Play and Organize Local Audio Files
+
+**Music Player** is an application that allows playing local audio files in .mp3 and .flac formats, offering a simple interface for navigation and playback control.
+
+**Main Features:**
+
+- **Sort by album or artist** – songs are automatically organized using metadata from the files.
+- **Configure music folder** – the location of the audio files is specified in the *arc.yaml* file, located in the */.config* directory.
+- **Display metadata** – title, duration, and album art are extracted from file metadata using the `mutagen` library.
+- **Selection interface** – the user can browse through songs and select files for playback.
+- **Playback menu** – allows control over playback with Play/Pause, Skip Forward, and Skip Backward functions, as well as viewing playback progress (current time).
+- **Display album art** – the song's cover image is displayed on the playback screen if available in the metadata.
+
+#### Game Launcher – Customizable Game Launcher
+
+**Game Launcher** is an application that provides a simple graphical interface for launching locally installed games using user-defined Bash commands.
+
+**Main Features:**
+
+- **Quick game launching** – each game is associated with a Bash command that will be executed upon selection.
+- **Flexible configuration** – games are defined in a `games.json` file, which contains the name and launch command for each game.
+- **Custom file location** – the location of the `games.json` file can be specified in the *arc.yaml* file, located in the system's `.config` directory.
+- **Simple interface** – the user can browse and select the desired game from an interactive list.
+
+The application allows for easy integration of any game or emulator installed on the system.
 
 #### ARC Connect
 
-*Nu este forma finala, imaginile sunt pentru a arata design-ul*
+*This is not the final version; the images are to show the design concept.*
 
-**[ARC]** poate fi conectat la o interfață web (server FastApi) unde putem:
-- monitoriza utilizarea resurselor, uptime-ul, adresa ip și spațiul de stocare valabil
-- utiliza un terminal ssh web (putem rula comenzi direct dintr-un browser)
-- transmite fișiere în folderul /uploads
+**[ARC]** can be connected to a web interface (FastAPI server) where we can:
+- Monitor resource usage, uptime, IP address, and available storage space.
+- Use a web-based SSH terminal (we can run commands directly from a browser).
+- Transfer files to the `/uploads` folder.
 
-Pentru a ne conecta la acest server trebuie sa fim conectati cu laptopul/telefonul pe aceeași rețea de internet ca și dispozitivul **[ARC]** și să introducem ip-ul, username-ul și parola pe pagina [https://arc.istratiestefan.com/arc-connect](https://arc.istratiestefan.com/arc-connect)
+To connect to this server, you must be connected with your laptop/phone to the same network as the **[ARC]** device and enter the IP, username, and password on the page [https://arc.istratiestefan.com/arc-connect](https://arc.istratiestefan.com/arc-connect).
 
 ---
 
-### **Capitolul V. Design industrial**
-- Carcasa este realizata din 2 bucăți șii poate fi asamblată folosind doar 4 șuruburi, fiind astfel ușor de montat sau reparat.
-- Tematica de culori și elementele de design precum grilajul difuzorului sunt inspirate din lucrările lui Dieter Rams
-- Circuitul este compact, cu un PCB de 4 straturi, tastatură integrată și circuite de alimentare și audio integrate.
-- Poate fi asamblat în regim semi-industrial, cu componente SMD standard.
-- Documentația include toate fișierele necesare: schemă, layout PCB, 3D STEP, BOM, etc.
+### **Chapter V. Industrial Design**
+- The enclosure is made of 2 parts and can be assembled using only 4 screws, making it easy to assemble or repair.
+- The color scheme and design elements, such as the speaker grille, are inspired by the works of Dieter Rams.
+- The circuit is compact, with a 4-layer PCB, an integrated keyboard, and integrated power and audio circuits.
+- It can be assembled in a semi-industrial setting with standard SMD components.
+- The documentation includes all necessary files: schematic, PCB layout, 3D STEP, BOM, etc.
 
-**Cerințe de sistem:**
-- 512mb RAM
-- Procesor 1Ghz
-- Sistem de operare bazat pe linux
+**System Requirements:**
+- 512MB RAM
+- 1Ghz Processor
+- Linux-based operating system
 
-**Cerințe de sistem [ARC] connect:**
+**[ARC] Connect System Requirements:**
+- A (functional) browser for [ARC] connect
 
-- Un browser (funcțional) pentru [ARC] connect
-
-**Linkuri utile:**
-
-- Site proiect: [](https://arc.istratiestefan.com)[https://arc.istratiestefan.com](https://arc.istratiestefan.com)
-- Cod sursă: [https://github.com/IstratieStefan/ARC](https://github.com/IstratieStefan/ARC)
-- Hardware repo: [https://github.com/IstratieStefan/ARC-Hardware](https://github.com/IstratieStefan/ARC-Hardware)
----
+**Useful Links:**
+- Project Site: [https://arc.istratiestefan.com](https://arc.istratiestefan.com)
+- Source Code: [https://github.com/IstratieStefan/ARC](https://github.com/IstratieStefan/ARC)
+- Hardware Repo: [https://github.com/IstratieStefan/ARC-Hardware](https://github.com/IstratieStefan/ARC-Hardware)

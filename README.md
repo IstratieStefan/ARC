@@ -1,7 +1,11 @@
 ![Render](https://github.com/IstratieStefan/ARC/blob/main/ARC_website/project/public/HeroRender.PNG)
 # ARC – All-in-one Remote Console
+[![Designed in - California](https://img.shields.io/badge/Designed_in-California-2ea44f)](https://)
+[![Built in - Romania](https://img.shields.io/badge/Built_in-Romania-3876fc)](https://)
 
 [Documentație 🇷🇴](https://github.com/IstratieStefan/ARC/blob/main/Docs/ARC%20Documentation.pdf) 
+
+[Documentation 🇺🇸](https://github.com/IstratieStefan/ARC/blob/main/Docs/ARC%20Documentation%20English.pdf) 
 
 [Pagină oficială](https://arc.istratiestefan.com)  
 

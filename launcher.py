@@ -1,4 +1,4 @@
-import pygame, os, json, subprocess
+import pygame, os, json, subprocess, time
 from ARC_DE.loading_screen import show_loading_screen
 import ui_elements
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
@@ -11,7 +11,65 @@ from ARC_DE.bluetooth_menu import BluetoothMenu
 from ARC_DE.status_poller import StatusPoller
 from ARC_DE.arc_status import get_wifi_strength, get_bt_status
 
-# Main launcher code
+# Volume widget
+def get_alsa_volume():
+    try:
+        output = subprocess.check_output(
+            ["amixer", "get", "Master"], stderr=subprocess.DEVNULL
+        ).decode()
+        import re
+        m = re.search(r'\[(\d+)%\]', output)
+        if m:
+            return int(m.group(1))
+    except Exception:
+        pass
+    return 50
+
+def set_alsa_volume(val):
+    try:
+        val = max(0, min(100, int(val)))
+        subprocess.call(["amixer", "set", "Master", f"{val}%"], stderr=subprocess.DEVNULL)
+    except Exception:
+        pass
+
+volume_overlay = {
+    "visible": False,
+    "level": get_alsa_volume(),
+    "last_shown": 0,
+}
+VOLUME_OVERLAY_DURATION = 0.5 # seconds
+
+def draw_volume_overlay(screen, level):
+    width, height = 350, 40
+    x = (config.screen.width - width) // 2
+    y = 40
+
+    # Background rectangle with shadow
+    overlay = pygame.Surface((width, height), pygame.SRCALPHA)
+
+    # Main rounded rectangle (background)
+    pygame.draw.rect(overlay, (32,32,32,230), overlay.get_rect(), border_radius=20)
+
+    # Volume bar background
+    bar_margin = 14
+    bar_height = 12
+    bar_rect = pygame.Rect(bar_margin, (height-bar_height)//2, width-2*bar_margin, bar_height)
+    pygame.draw.rect(overlay, (60,60,60), bar_rect, border_radius=6)
+
+    # Volume bar foreground
+    filled_width = int(bar_rect.width * level/100)
+    fg_rect = pygame.Rect(bar_rect.left, bar_rect.top, filled_width, bar_rect.height)
+    pygame.draw.rect(overlay, config.colors.accent, fg_rect, border_radius=6)
+
+    icon_rect = pygame.Rect(bar_rect.left-28, bar_rect.top-4, 20, 20)
+    pygame.draw.polygon(overlay, (200,200,200), [
+        (icon_rect.left, icon_rect.top+icon_rect.height//2),
+        (icon_rect.left+8, icon_rect.top),
+        (icon_rect.left+8, icon_rect.bottom),
+    ])
+
+    screen.blit(overlay, (x, y))
+
 pygame.init()
 screen = pygame.display.set_mode(
     (config.screen.width, config.screen.height),
@@ -21,12 +79,14 @@ clock = pygame.time.Clock()
 pygame.display.set_caption('ARC Launcher')
 
 def on_volume_change(val):
-    # Set volume somewhere if needed; this is not in your config anymore
-    pass
+    set_alsa_volume(val)
+    volume_overlay["level"] = val
+    volume_overlay["visible"] = True
+    volume_overlay["last_shown"] = time.time()
 
 volume_slider = Slider(
     rect=(50, config.screen.height - 60, 300, 8),
-    min_val=0, max_val=100, init_val=50, callback=on_volume_change
+    min_val=0, max_val=100, init_val=get_alsa_volume(), callback=on_volume_change
 )
 
 CACHE_PATH = os.path.expanduser(os.path.join('~', '.cache', 'launcher_apps.json'))
@@ -38,7 +98,6 @@ def load_apps():
                 return json.load(f)
         except Exception:
             pass
-    # Use the list from YAML
     apps = list(config.builtin_apps)
     apps_dir = config.apps_dir
     if os.path.isdir(apps_dir):
@@ -88,7 +147,6 @@ def build_page_icons(app_list):
         ))
     return icons
 
-# Initialize data
 all_apps = load_apps()
 pages = paginate_apps(all_apps)
 pages_icons = [build_page_icons(p) for p in pages]
@@ -100,7 +158,6 @@ bt_menu.active = False
 current_page = 0
 sel_index = 0
 
-# Top bar icon pollers with change detection
 import time
 class ChangeDetectingPoller(StatusPoller):
     def __init__(self, func, interval=2):
@@ -117,7 +174,7 @@ class ChangeDetectingPoller(StatusPoller):
                 self.last_val = val
             time.sleep(self.interval)
 
-need_redraw = True  # Initial redraw
+need_redraw = True
 
 def trigger_redraw(_=None):
     global need_redraw
@@ -138,6 +195,27 @@ while running:
         if ev.type == pygame.QUIT:
             running = False
             break
+
+        # --- Volume key handling ---
+        if ev.type == pygame.KEYDOWN:
+            if ev.key == pygame.K_z:
+                vol = get_alsa_volume()
+                vol = min(100, vol + 5)
+                set_alsa_volume(vol)
+                volume_overlay["level"] = vol
+                volume_overlay["visible"] = True
+                volume_overlay["last_shown"] = time.time()
+                need_redraw = True
+                continue
+            elif ev.key == pygame.K_x:
+                vol = get_alsa_volume()
+                vol = max(0, vol - 5)
+                set_alsa_volume(vol)
+                volume_overlay["level"] = vol
+                volume_overlay["visible"] = True
+                volume_overlay["last_shown"] = time.time()
+                need_redraw = True
+                continue
 
         if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 1:
             if topbar.wifi_rect and topbar.wifi_rect.collidepoint(ev.pos):
@@ -176,7 +254,6 @@ while running:
             need_redraw = True
             continue
 
-        # Otherwise, grid navigation
         current_page = tab_manager.get_active_index()
         current_icons = pages_icons[current_page] if pages_icons else []
         sel_index = max(0, min(sel_index, len(current_icons)-1))
@@ -219,7 +296,6 @@ while running:
             icon.handle_event(ev)
         need_redraw = True
 
-    # --- Only redraw if necessary ---
     if need_redraw:
         screen.fill(config.colors.background)
         if wifi_menu.active:
@@ -234,6 +310,11 @@ while running:
             for idx, icon in enumerate(current_icons):
                 icon.hovered = (idx == sel_index)
                 icon.draw(screen)
+        if (volume_overlay["visible"] and
+            (time.time() - volume_overlay["last_shown"]) < VOLUME_OVERLAY_DURATION):
+            draw_volume_overlay(screen, volume_overlay["level"])
+        else:
+            volume_overlay["visible"] = False
         pygame.display.flip()
         need_redraw = False
 

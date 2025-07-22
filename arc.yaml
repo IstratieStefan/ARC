@@ -43,9 +43,9 @@ builtin_apps:
   - name: Terminal
     icon: ./ARC_DE/icons/terminal.png
     exec: "kitty --directory=~"
-  - name: Web browser
-    icon: ./ARC_DE/icons/browser.png
-    exec: "python3 ./web_apps/browser.py"
+  - name: AI Chatbot
+    icon: ./ARC_DE/icons/AI.png
+    exec: "python3 -m Chatbot.main"
   - name: Calendar
     icon: ./ARC_DE/icons/calendar.png
     exec: "python3 -m Calendar_app.main"
@@ -148,5 +148,8 @@ font:
 
 music_dir: ~/Music
 game_json: ~/Games/games.json
+
+api:
+  gemini_key: "your api key"
 
 warning_duration: 2000

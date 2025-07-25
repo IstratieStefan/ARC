@@ -12,3 +12,4 @@ flask-cors
 websockets
 paramiko
 pyyaml
+smbus2

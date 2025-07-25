@@ -147,6 +147,7 @@ font:
   size: 20
 
 music_dir: ~/Music
+badusb_dir: ~/BadUsbScripts
 game_json: ~/Games/games.json
 
 api:

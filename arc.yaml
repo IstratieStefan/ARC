@@ -43,45 +43,54 @@ builtin_apps:
   - name: Terminal
     icon: ./ARC_DE/icons/terminal.png
     exec: "kitty --directory=~"
+
   - name: AI Chatbot
     icon: ./ARC_DE/icons/AI.png
-    exec: "python3 -m Chatbot.main"
+    exec: "/bin/bash -c '/home/$USER/ARC/venv/bin/python -m Chatbot.main'"
+
   - name: Calendar
     icon: ./ARC_DE/icons/calendar.png
-    exec: "python3 -m Calendar_app.main"
+    exec: "/bin/bash -c '/home/$USER/ARC/venv/bin/python -m Calendar_app.main'"
+
   - name: RF tools
     icon: ./ARC_DE/icons/rf.png
-    exec: "python3 -m RF_tools.main"
+    exec: "/bin/bash -c '/home/$USER/ARC/venv/bin/python -m RF_tools.main'"
+
   - name: IR tools
     icon: ./ARC_DE/icons/ir.png
-    exec: "python3 -m IR_tools.main"
+    exec: "/bin/bash -c '/home/$USER/ARC/venv/bin/python -m IR_tools.main'"
+
   - name: NFC tools
     icon: ./ARC_DE/icons/nfc.png
-    exec: "python3 -m NFC_tools.main"
+    exec: "/bin/bash -c '/home/$USER/ARC/venv/bin/python -m NFC_tools.main'"
+
   - name: WiFi tools
     icon: ./ARC_DE/icons/wifi_tools.png
-    exec: "python3 -m WIFI_tools.main"
+    exec: "/bin/bash -c '/home/$USER/ARC/venv/bin/python -m WIFI_tools.main'"
+
   - name: Bluetooth tools
     icon: ./ARC_DE/icons/bluetooth_tools.png
-    exec: "python3 -m BT_tools.main"
+    exec: "/bin/bash -c '/home/$USER/ARC/venv/bin/python -m BT_tools.main'"
+
   - name: Files
     icon: ./ARC_DE/icons/files.png
     exec: "pcmanfm"
+
   - name: Text editor
     icon: ./ARC_DE/icons/editor.png
-    exec: "python3 -m Notes_app.main"
+    exec: "/bin/bash -c '/home/$USER/ARC/venv/bin/python -m Notes_app.main'"
+
   - name: Music
     icon: ./ARC_DE/icons/music.png
-    exec: "python3 -m music_player.main"
+    exec: "/bin/bash -c '/home/$USER/ARC/venv/bin/python -m music_player.main'"
+
   - name: Games
     icon: ./ARC_DE/icons/games.png
-    exec: "python3 -m Games.main"
-  - name: Settings
-    icon: ./ARC_DE/icons/settings.png
-    exec: "python -m Settings.main"
+    exec: "/bin/bash -c '/home/$USER/ARC/venv/bin/python -m Games.main'"
+
   - name: ARC connect
     icon: ./ARC_DE/icons/arc_connect.png
-    exec: "python3 -m ARC_connect.ip"
+    exec: "/bin/bash -c '/home/$USER/ARC/venv/bin/python -m ARC_connect.ip'"
 
 apps_dir: ./apps
 packages_dir: ./packages

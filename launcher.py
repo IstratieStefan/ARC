@@ -195,10 +195,10 @@ while running:
         if ev.type == pygame.QUIT:
             running = False
             break
-
+        keys = pygame.key.get_pressed()
         # --- Volume key handling ---
         if ev.type == pygame.KEYDOWN:
-            if ev.key == pygame.K_z:
+            if keys[pygame.K_LCTRL] and keys[pygame.K_LALT] and keys[pygame.K_UP]:
                 vol = get_alsa_volume()
                 vol = min(100, vol + 5)
                 set_alsa_volume(vol)
@@ -207,7 +207,7 @@ while running:
                 volume_overlay["last_shown"] = time.time()
                 need_redraw = True
                 continue
-            elif ev.key == pygame.K_x:
+            elif keys[pygame.K_LCTRL] and keys[pygame.K_LALT] and keys[pygame.K_DOWN]:
                 vol = get_alsa_volume()
                 vol = max(0, vol - 5)
                 set_alsa_volume(vol)

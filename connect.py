@@ -379,7 +379,7 @@ async def index():
       updateConnectionStatus(`Connecting to ${credentials.user}@${credentials.ip}...`, 'info');
 
       // Connect to WebSocket endpoint
-      sshWs = new WebSocket(`ws://localhost:5001/ws/ssh`);
+      sshWs = new WebSocket(`ws://${credentials.ip}:5001/ws/ssh`);
 
       sshWs.onopen = () => {
         updateConnectionStatus('Connected to proxy, authenticating...', 'info');

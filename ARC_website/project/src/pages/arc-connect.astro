@@ -111,26 +111,26 @@ import Hero from '../components/Hero';
     </div>
 
     <script>
-        // DOM elements
-        const ipInput = document.getElementById('ip');
-        const userInput = document.getElementById('user');
-        const passInput = document.getElementById('pass');
-        const form = document.getElementById('connectForm');
-        const formError = document.getElementById('formError');
-        const formSuccess = document.getElementById('formSuccess');
-        const toggleBtn = document.getElementById('togglePassword');
-        const eyeIcon = document.getElementById('eyeIcon');
-        const connectBtn = document.getElementById('connectBtn');
-        const connectText = document.getElementById('connectText');
-        const loadingSpinner = document.getElementById('loadingSpinner');
-        const statusDot = document.getElementById('statusDot');
-        const statusText = document.getElementById('statusText');
-        const saveCredentials = document.getElementById('saveCredentials');
+        // DOM elements with proper type casting
+        const ipInput = document.getElementById('ip') as HTMLInputElement;
+        const userInput = document.getElementById('user') as HTMLInputElement;
+        const passInput = document.getElementById('pass') as HTMLInputElement;
+        const form = document.getElementById('connectForm') as HTMLFormElement;
+        const formError = document.getElementById('formError') as HTMLElement;
+        const formSuccess = document.getElementById('formSuccess') as HTMLElement;
+        const toggleBtn = document.getElementById('togglePassword') as HTMLButtonElement;
+        const eyeIcon = document.getElementById('eyeIcon') as HTMLElement;
+        const connectBtn = document.getElementById('connectBtn') as HTMLButtonElement;
+        const connectText = document.getElementById('connectText') as HTMLElement;
+        const loadingSpinner = document.getElementById('loadingSpinner') as HTMLElement;
+        const statusDot = document.getElementById('statusDot') as HTMLElement;
+        const statusText = document.getElementById('statusText') as HTMLElement;
+        const saveCredentials = document.getElementById('saveCredentials') as HTMLInputElement;
 
         // Load saved credentials if available
-        function loadSavedCredentials() {
+        function loadSavedCredentials(): void {
             const saved = localStorage.getItem('arcConnection');
-            if (saved) {
+            if (saved && ipInput && userInput && saveCredentials) {
                 try {
                     const creds = JSON.parse(saved);
                     ipInput.value = creds.ip || '';
@@ -144,8 +144,8 @@ import Hero from '../components/Hero';
         }
 
         // Save credentials to localStorage
-        function saveCredentialsToStorage(ip, user, pass) {
-            if (saveCredentials.checked) {
+        function saveCredentialsToStorage(ip: string, user: string, pass: string): void {
+            if (saveCredentials?.checked) {
                 localStorage.setItem('arcConnection', JSON.stringify({
                     ip: ip,
                     user: user,
@@ -157,163 +157,196 @@ import Hero from '../components/Hero';
         }
 
         // Show/hide messages
-        function showError(message) {
-            formError.textContent = message;
-            formError.classList.remove('hidden');
-            formSuccess.classList.add('hidden');
+        function showError(message: string): void {
+            if (formError && formSuccess) {
+                formError.textContent = message;
+                formError.classList.remove('hidden');
+                formSuccess.classList.add('hidden');
+            }
         }
 
-        function showSuccess(message) {
-            formSuccess.textContent = message;
-            formSuccess.classList.remove('hidden');
-            formError.classList.add('hidden');
+        function showSuccess(message: string): void {
+            if (formSuccess && formError) {
+                formSuccess.textContent = message;
+                formSuccess.classList.remove('hidden');
+                formError.classList.add('hidden');
+            }
         }
 
-        function hideMessages() {
-            formError.classList.add('hidden');
-            formSuccess.classList.add('hidden');
+        function hideMessages(): void {
+            if (formError && formSuccess) {
+                formError.classList.add('hidden');
+                formSuccess.classList.add('hidden');
+            }
         }
 
         // Update connection status
-        function updateStatus(status, message) {
-            statusText.textContent = message;
-            statusDot.className = `w-3 h-3 rounded-full ${
-                status === 'connected' ? 'bg-green-500' :
-                    status === 'connecting' ? 'bg-yellow-500' :
-                        status === 'error' ? 'bg-red-500' : 'bg-gray-400'
-            }`;
+        function updateStatus(status: string, message: string): void {
+            if (statusText) {
+                statusText.textContent = message;
+            }
+            if (statusDot) {
+                statusDot.className = `w-3 h-3 rounded-full ${
+                    status === 'connected' ? 'bg-green-500' :
+                        status === 'connecting' ? 'bg-yellow-500' :
+                            status === 'error' ? 'bg-red-500' : 'bg-gray-400'
+                }`;
+            }
         }
 
         // Toggle password visibility
-        toggleBtn.addEventListener('click', () => {
-            const isPassword = passInput.type === 'password';
-            passInput.type = isPassword ? 'text' : 'password';
-            eyeIcon.textContent = isPassword ? '🙈' : '👁️';
-        });
-
-        // Set loading state
-        function setLoadingState(loading) {
-            connectBtn.disabled = loading;
-            if (loading) {
-                connectText.classList.add('hidden');
-                loadingSpinner.classList.remove('hidden');
-            } else {
-                connectText.classList.remove('hidden');
-                loadingSpinner.classList.add('hidden');
-            }
-        }
-
-        // Test SSH connection
-        async function testConnection(ip, user, pass) {
-            return new Promise((resolve, reject) => {
-                const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-                const ws = new WebSocket(`${wsProtocol}//${window.location.hostname}:5000/ws/ssh`);
-
-                let connectionTimeout = setTimeout(() => {
-                    ws.close();
-                    reject(new Error('Connection timeout'));
-                }, 15000);
-
-                ws.onopen = () => {
-                    updateStatus('connecting', 'Testing connection...');
-                    ws.send(JSON.stringify({
-                        host: ip,
-                        port: 22,  // ✅ Fixed: Use SSH port 22, not 5000
-                        username: user,
-                        password: pass
-                    }));
-                };
-
-                ws.onmessage = (event) => {
-                    clearTimeout(connectionTimeout);
-                    if (event.data === 'SSH_READY') {
-                        ws.close();
-                        resolve('Connection successful');
-                    } else if (event.data.startsWith('ERROR:')) {
-                        ws.close();
-                        reject(new Error(event.data.replace('ERROR: ', '')));
-                    }
-                };
-
-                ws.onerror = (error) => {
-                    clearTimeout(connectionTimeout);
-                    ws.close();
-                    reject(new Error('Failed to connect to proxy server'));
-                };
-
-                ws.onclose = (event) => {
-                    clearTimeout(connectionTimeout);
-                    if (event.code !== 1000) {
-                        reject(new Error('Connection closed unexpectedly'));
-                    }
-                };
+        if (toggleBtn && passInput && eyeIcon) {
+            toggleBtn.addEventListener('click', () => {
+                const isPassword = passInput.type === 'password';
+                passInput.type = isPassword ? 'text' : 'password';
+                eyeIcon.textContent = isPassword ? '🙈' : '👁️';
             });
         }
 
-        // Form submission handler
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            hideMessages();
-
-            const ip = ipInput.value.trim();
-            const user = userInput.value.trim();
-            const pass = passInput.value;
-
-            // Validation
-            if (!ip || !user || !pass) {
-                showError('Please fill in all fields.');
-                return;
+        // Set loading state
+        function setLoadingState(loading: boolean): void {
+            if (connectBtn) {
+                connectBtn.disabled = loading;
             }
-
-            // Basic IP validation (allow localhost)
-            const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-            if (!ipRegex.test(ip) && ip !== 'localhost' && ip !== '127.0.0.1') {
-                showError('Please enter a valid IP address.');
-                return;
+            if (loading) {
+                connectText?.classList.add('hidden');
+                loadingSpinner?.classList.remove('hidden');
+            } else {
+                connectText?.classList.remove('hidden');
+                loadingSpinner?.classList.add('hidden');
             }
+        }
 
-            setLoadingState(true);
-            updateStatus('connecting', 'Connecting to ARC device...');
-
+        // Test connection using HTTP request instead of WebSocket
+        async function testConnection(ip: string, user: string, pass: string): Promise<string> {
             try {
-                await testConnection(ip, user, pass);
+                // First, try to ping the server to see if it's reachable
+                const response = await fetch(`http://${ip}:5001/health`, {
+                    method: 'GET',
+                    mode: 'no-cors',
+                    signal: AbortSignal.timeout(10000)
+                });
 
-                // Save credentials if requested
-                saveCredentialsToStorage(ip, user, pass);
-
-                updateStatus('connected', `Connected to ${user}@${ip}`);
-                showSuccess('Connection successful! Redirecting to terminal...');
-
-                // Redirect to terminal after short delay
-                setTimeout(() => {
-                    window.location.href = `http://${window.location.hostname}:5000/`;
-                }, 1500);
-
+                return 'Connection successful';
             } catch (error) {
-                updateStatus('error', 'Connection failed');
-                showError(`Connection failed: ${error.message}`);
-                console.error('Connection error:', error);
-            } finally {
-                setLoadingState(false);
+                // If direct connection fails, try WebSocket approach
+                return new Promise((resolve, reject) => {
+                    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                    const ws = new WebSocket(`${wsProtocol}//${ip}:5001/ws/ssh`);
+
+                    let connectionTimeout = setTimeout(() => {
+                        ws.close();
+                        reject(new Error('Connection timeout - make sure your ARC device is reachable'));
+                    }, 15000);
+
+                    ws.onopen = () => {
+                        updateStatus('connecting', 'Testing connection...');
+                        ws.send(JSON.stringify({
+                            host: ip,
+                            port: 22,
+                            username: user,
+                            password: pass
+                        }));
+                    };
+
+                    ws.onmessage = (event) => {
+                        clearTimeout(connectionTimeout);
+                        if (event.data === 'SSH_READY') {
+                            ws.close();
+                            resolve('Connection successful');
+                        } else if (event.data.startsWith('ERROR:')) {
+                            ws.close();
+                            reject(new Error(event.data.replace('ERROR: ', '')));
+                        }
+                    };
+
+                    ws.onerror = (error) => {
+                        clearTimeout(connectionTimeout);
+                        ws.close();
+                        reject(new Error(`Failed to connect to ${ip}:5001 - check if the server is running`));
+                    };
+
+                    ws.onclose = (event) => {
+                        clearTimeout(connectionTimeout);
+                        if (event.code !== 1000) {
+                            reject(new Error('Connection closed unexpectedly'));
+                        }
+                    };
+                });
             }
-        });
+        }
+
+        // Form submission handler
+        if (form) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                hideMessages();
+
+                const ip = ipInput?.value.trim() || '';
+                const user = userInput?.value.trim() || '';
+                const pass = passInput?.value || '';
+
+                // Validation
+                if (!ip || !user || !pass) {
+                    showError('Please fill in all fields.');
+                    return;
+                }
+
+                // Basic IP validation (allow localhost)
+                const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+                if (!ipRegex.test(ip) && ip !== 'localhost' && ip !== '127.0.0.1') {
+                    showError('Please enter a valid IP address.');
+                    return;
+                }
+
+                setLoadingState(true);
+                updateStatus('connecting', 'Connecting to ARC device...');
+
+                try {
+                    await testConnection(ip, user, pass);
+
+                    // Save credentials if requested
+                    saveCredentialsToStorage(ip, user, pass);
+
+                    updateStatus('connected', `Connected to ${user}@${ip}`);
+                    showSuccess('Connection successful! Redirecting to terminal...');
+
+                    // Redirect to terminal after short delay
+                    setTimeout(() => {
+                        window.location.href = `http://${ip}:5001/`;
+                    }, 1500);
+
+                } catch (error) {
+                    updateStatus('error', 'Connection failed');
+                    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+                    showError(`Connection failed: ${errorMessage}`);
+                    console.error('Connection error:', error);
+                } finally {
+                    setLoadingState(false);
+                }
+            });
+        }
 
         // Input validation and real-time feedback
-        ipInput.addEventListener('input', () => {
-            const ip = ipInput.value.trim();
-            if (ip && !/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ip) && ip !== 'localhost' && ip !== '127.0.0.1') {
-                ipInput.setCustomValidity('Please enter a valid IP address');
-            } else {
-                ipInput.setCustomValidity('');
-            }
-        });
+        if (ipInput) {
+            ipInput.addEventListener('input', () => {
+                const ip = ipInput.value.trim();
+                if (ip && !/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ip) && ip !== 'localhost' && ip !== '127.0.0.1') {
+                    ipInput.setCustomValidity('Please enter a valid IP address');
+                } else {
+                    ipInput.setCustomValidity('');
+                }
+            });
+        }
 
         // Clear credentials when checkbox is unchecked
-        saveCredentials.addEventListener('change', () => {
-            if (!saveCredentials.checked) {
-                localStorage.removeItem('arcConnection');
-            }
-        });
+        if (saveCredentials) {
+            saveCredentials.addEventListener('change', () => {
+                if (!saveCredentials.checked) {
+                    localStorage.removeItem('arcConnection');
+                }
+            });
+        }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
@@ -325,23 +358,25 @@ import Hero from '../components/Hero';
                 try {
                     const creds = JSON.parse(saved);
                     if (creds.ip && creds.user) {
-                        passInput.focus();
+                        passInput?.focus();
                     } else {
-                        ipInput.focus();
+                        ipInput?.focus();
                     }
                 } catch (e) {
-                    ipInput.focus();
+                    ipInput?.focus();
                 }
             } else {
-                ipInput.focus();
+                ipInput?.focus();
             }
         });
 
         // Handle Enter key in password field
-        passInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                form.dispatchEvent(new Event('submit'));
-            }
-        });
+        if (passInput && form) {
+            passInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    form.dispatchEvent(new Event('submit'));
+                }
+            });
+        }
     </script>
 </Layout>

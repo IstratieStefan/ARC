@@ -199,7 +199,7 @@ while running:
         # --- Volume key handling ---
         if ev.type == pygame.KEYDOWN:
             mods = pygame.key.get_mods()
-            if ev.key == pygame.K_UP and mods & pygame.KMOD_CTRL and mods & pygame.KMOD_ALT:
+            if ev.key == pygame.K_UP and mods & pygame.KMOD_ALT:
                 vol = get_alsa_volume()
                 vol = min(100, vol + 5)
                 set_alsa_volume(vol)
@@ -208,7 +208,7 @@ while running:
                 volume_overlay["last_shown"] = time.time()
                 need_redraw = True
                 continue
-            if ev.key == pygame.K_DOWN and mods & pygame.KMOD_CTRL and mods & pygame.KMOD_ALT:
+            if ev.key == pygame.K_DOWN and ev.key == pygame.KMOD_ALT:
                 vol = get_alsa_volume()
                 vol = max(0, vol - 5)
                 set_alsa_volume(vol)

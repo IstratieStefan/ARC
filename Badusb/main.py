@@ -22,7 +22,7 @@ SUCCESS_COLOR = (100, 255, 150)
 WARNING_COLOR = (255, 200, 100)
 
 pygame.init()
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption('BadUSB Script Loader')
 clock = pygame.time.Clock()
 
@@ -37,7 +37,7 @@ except:
     SMALL_FONT = pygame.font.SysFont("Arial", 14)
 
 # Script directory
-SCRIPT_DIR = os.path.expanduser("config.BadUsbScripts")
+SCRIPT_DIR = os.path.expanduser(config.badusb_dir)
 if not os.path.exists(SCRIPT_DIR):
     os.makedirs(SCRIPT_DIR)
 

@@ -4,21 +4,19 @@ import time
 import socket
 import asyncio
 import threading
-import json
-from typing import Optional
+from typing import Dict
 
 import paramiko
 import psutil
 import aiofiles
-
-from fastapi import FastAPI, WebSocket, UploadFile, File, HTTPException, Request
+from fastapi import FastAPI, WebSocket, UploadFile, File, HTTPException, Request, Depends
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.websockets import WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
-# configure basic logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+# Configure basic logging
+type(logging.basicConfig)(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
 app = FastAPI(title="ARC connect")
 
@@ -31,16 +29,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Store active SSH connections globally
-ssh_connections = {}
-current_credentials = {}  # Store current session credentials
+# Store current session credentials
+current_credentials: Dict[str, str] = {}
+
+# Dependency to enforce credentials
+
+def require_credentials() -> Dict[str, str]:
+    if not current_credentials or not all(k in current_credentials for k in ("ip", "user", "pass")):
+        raise HTTPException(status_code=401, detail="Unauthorized: No credentials stored")
+    return current_credentials
 
 # Ensure static directory exists
 os.makedirs("static", exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-
-async def get_wifi_strength():
+# Helper functions
+async def get_wifi_strength() -> int:
     try:
         proc = await asyncio.create_subprocess_shell(
             "iwconfig wlan0",
@@ -51,17 +55,13 @@ async def get_wifi_strength():
         text = out.decode(errors="ignore")
         for part in text.split():
             if 'Signal' in part and '=' in part:
-                try:
-                    lvl = int(part.split('=')[1])
-                    return max(0, min(100, 2 * (lvl + 100)))
-                except ValueError:
-                    continue
+                lvl = int(part.split('=')[1])
+                return max(0, min(100, 2 * (lvl + 100)))
     except Exception:
         pass
     return 0
 
-
-async def get_ip_address():
+async def get_ip_address() -> str:
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
         s.connect(("8.8.8.8", 80))
@@ -72,8 +72,7 @@ async def get_ip_address():
         s.close()
     return ip
 
-
-async def get_cpu_temp():
+async def get_cpu_temp() -> str:
     try:
         with open("/sys/class/thermal/thermal_zone0/temp") as f:
             t = int(f.read()) / 1000.0
@@ -81,67 +80,25 @@ async def get_cpu_temp():
     except FileNotFoundError:
         return "N/A"
 
-
 # Store credentials endpoint
 @app.post("/api/store-credentials")
 async def store_credentials(request: Request):
-    """Store credentials for the current session"""
-    global current_credentials
     data = await request.json()
-    current_credentials = {
-        "ip": data.get("ip"),
-        "user": data.get("user"),
-        "pass": data.get("pass")
-    }
+    ip = data.get("ip")
+    user = data.get("user")
+    pw = data.get("pass")
+    if not ip or not user or not pw:
+        raise HTTPException(status_code=400, detail="Missing credentials fields")
+    current_credentials.clear()
+    current_credentials.update({"ip": ip, "user": user, "pass": pw})
     return {"status": "success"}
 
-
-# Get stored credentials endpoint
+# Get credentials
 @app.get("/api/get-credentials")
 async def get_credentials():
-    """Get stored credentials for the current session"""
-    global current_credentials
     if current_credentials:
         return current_credentials
-    return {"error": "No credentials stored"}
-
-
-# Test SSH connection endpoint
-@app.post("/test-ssh")
-async def test_ssh_connection(request: Request):
-    """Test SSH connection without WebSocket"""
-    data = await request.json()
-    host = data.get("host")
-    port = data.get("port", 22)
-    username = data.get("username")
-    password = data.get("password")
-
-    if not all([host, username, password]):
-        raise HTTPException(status_code=400, detail="Missing required fields")
-
-    try:
-        client = paramiko.SSHClient()
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
-        client.connect(
-            hostname=host,
-            port=port,
-            username=username,
-            password=password,
-            look_for_keys=False,
-            allow_agent=False,
-            timeout=10
-        )
-
-        client.close()
-        return {"status": "success", "message": f"Successfully connected to {username}@{host}"}
-
-    except paramiko.AuthenticationException:
-        raise HTTPException(status_code=401, detail="Authentication failed")
-    except paramiko.SSHException as e:
-        raise HTTPException(status_code=500, detail=f"SSH connection failed: {str(e)}")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Connection error: {str(e)}")
+    raise HTTPException(status_code=404, detail="No credentials stored")
 
 
 @app.get("/")
@@ -379,7 +336,7 @@ async def index():
       updateConnectionStatus(`Connecting to ${credentials.user}@${credentials.ip}...`, 'info');
 
       // Connect to WebSocket endpoint
-      sshWs = new WebSocket(`ws://localhost:5000/ws/ssh`);
+      sshWs = new WebSocket(`ws://${credentials.ip}:5001/ws/ssh`);
 
       sshWs.onopen = () => {
         updateConnectionStatus('Connected to proxy, authenticating...', 'info');
@@ -608,139 +565,70 @@ async def index():
 
 @app.get("/api/system")
 async def system_info():
-    cpu = psutil.cpu_percent(interval=0.1)
-    vm = psutil.virtual_memory()
-    disk = psutil.disk_usage("/")
-    upt = time.time() - psutil.boot_time()
-    wifi = await get_wifi_strength()
-    ip = await get_ip_address()
-    temp = await get_cpu_temp()
-
     return {
-        "cpu_percent": cpu,
-        "ram": {"total": vm.total, "used": vm.used, "percent": vm.percent},
-        "disk": {"total": disk.total, "used": disk.used, "percent": disk.percent},
-        "wifi": wifi,
-        "ip": ip,
-        "uptime": f"{int(upt // 3600)}h{int((upt % 3600) // 60)}m",
-        "temp": temp
+        "cpu_percent": psutil.cpu_percent(interval=0.1),
+        "ram": {"total": psutil.virtual_memory().total, "used": psutil.virtual_memory().used, "percent": psutil.virtual_memory().percent},
+        "disk": {"total": psutil.disk_usage("/").total, "used": psutil.disk_usage("/").used, "percent": psutil.disk_usage("/").percent},
+        "wifi": await get_wifi_strength(),
+        "ip": await get_ip_address(),
+        "uptime": f"{int((time.time() - psutil.boot_time()) // 3600)}h{int(((time.time() - psutil.boot_time()) % 3600) // 60)}m",
+        "temp": await get_cpu_temp()
     }
 
-
+# SSH WebSocket
 @app.websocket("/ws/ssh")
 async def ws_ssh(ws: WebSocket):
+    creds = require_credentials()
     await ws.accept()
     logging.info("🔌 WebSocket connection accepted")
-
+    host = creds["ip"]
+    user = creds["user"]
+    pw = creds["pass"]
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
-        # Wait for authentication data
-        auth_data = await ws.receive_json()
-        host = auth_data["host"]
-        port = auth_data.get("port", 22)
-        username = auth_data["username"]
-        password = auth_data["password"]
-
-        logging.info(f"🔐 SSH connection attempt: {username}@{host}:{port}")
-
-        # Create SSH client
-        client = paramiko.SSHClient()
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
-        try:
-            # Connect to SSH server
-            client.connect(
-                hostname=host,
-                port=port,
-                username=username,
-                password=password,
-                look_for_keys=False,
-                allow_agent=False,
-                timeout=10
-            )
-            logging.info(f"✅ SSH connection established to {host}")
-
-            # Create interactive shell
-            chan = client.invoke_shell(term='xterm-256color', width=80, height=24)
-
-            # Send ready signal
-            await ws.send_text("SSH_READY")
-
-            # Set up bidirectional communication
-            loop = asyncio.get_event_loop()
-
-            def ssh_to_websocket():
-                """Read from SSH and send to WebSocket"""
-                try:
-                    while True:
-                        if chan.recv_ready():
-                            data = chan.recv(1024)
-                            if not data:
-                                break
-                            asyncio.run_coroutine_threadsafe(
-                                ws.send_text(data.decode('utf-8', errors='ignore')),
-                                loop
-                            )
-                        time.sleep(0.01)
-                except Exception as e:
-                    logging.error(f"SSH read error: {e}")
-
-            # Start SSH reader thread
-            ssh_thread = threading.Thread(target=ssh_to_websocket, daemon=True)
-            ssh_thread.start()
-
-            # Handle WebSocket messages (user input)
+        client.connect(hostname=host, port=22, username=user, password=pw, look_for_keys=False, allow_agent=False, timeout=10)
+        chan = client.invoke_shell(term='xterm-256color', width=80, height=24)
+        await ws.send_text("SSH_READY")
+        loop = asyncio.get_event_loop()
+        def ssh_to_ws():
             while True:
-                try:
-                    message = await ws.receive_text()
-                    if chan.send_ready():
-                        chan.send(message)
-                except WebSocketDisconnect:
-                    logging.info("🔌 WebSocket disconnected")
-                    break
-                except Exception as e:
-                    logging.error(f"WebSocket error: {e}")
-                    break
-
-        except paramiko.AuthenticationException:
-            await ws.send_text("ERROR: Authentication failed")
-            logging.error("❌ SSH authentication failed")
-        except paramiko.SSHException as e:
-            await ws.send_text(f"ERROR: SSH connection failed: {str(e)}")
-            logging.error(f"❌ SSH connection failed: {e}")
-        except Exception as e:
-            await ws.send_text(f"ERROR: Connection error: {str(e)}")
-            logging.error(f"❌ Connection error: {e}")
-        finally:
-            if 'chan' in locals():
-                chan.close()
-            client.close()
-
+                if chan.recv_ready():
+                    data = chan.recv(1024)
+                    if not data: break
+                    asyncio.run_coroutine_threadsafe(ws.send_text(data.decode('utf-8', errors='ignore')), loop)
+                time.sleep(0.01)
+        threading.Thread(target=ssh_to_ws, daemon=True).start()
+        while True:
+            try:
+                msg = await ws.receive_text()
+                if chan.send_ready(): chan.send(msg)
+            except WebSocketDisconnect:
+                break
     except Exception as e:
-        logging.error(f"❌ WebSocket error: {e}")
+        logging.error(f"❌ SSH error: {e}")
         await ws.send_text(f"ERROR: {str(e)}")
     finally:
         await ws.close()
+        client.close()
 
-
+# File upload (authenticated)
 @app.post("/api_upload")
-async def api_upload(file: UploadFile = File(...)):
-    uploads = "uploads"
-    os.makedirs(uploads, exist_ok=True)
-    path = os.path.join(uploads, file.filename)
+async def api_upload(file: UploadFile = File(...), creds: Dict[str, str] = Depends(require_credentials)):
+    os.makedirs("uploads", exist_ok=True)
+    path = os.path.join("uploads", file.filename)
     async with aiofiles.open(path, "wb") as f:
         await f.write(await file.read())
     return {"filename": file.filename}
 
-
+# File download (authenticated)
 @app.get("/api/download/{path:path}")
-async def api_download(path: str):
+async def api_download(path: str, creds: Dict[str, str] = Depends(require_credentials)):
     full = os.path.join("uploads", path)
     if not os.path.isfile(full):
         raise HTTPException(404, detail="File not found")
     return FileResponse(full)
 
-
 if __name__ == "__main__":
     import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=5000, log_level="info")
+    uvicorn.run(app, host="0.0.0.0", port=5001, log_level="info")

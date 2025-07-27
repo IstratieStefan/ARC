@@ -72,9 +72,6 @@ class GameMenu:
                 sys.exit()
         for i, btn in enumerate(self.btns):
             btn.handle_event(event)
-            if getattr(btn, "hovered", False):
-                self.selected_idx = i
-                self.tabmgr.active = i // self.ITEMS_PER_TAB
 
     def update(self):
         self.warning.update()

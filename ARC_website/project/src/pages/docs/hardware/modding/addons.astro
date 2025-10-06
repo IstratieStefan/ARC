@@ -1,0 +1,52 @@
+---
+import Layout from '../../../../layouts/Layout.astro';
+import MarkdownRenderer from '../../../../components/MarkdownRenderer.jsx';
+
+// Define your markdown content inside the frontmatter
+const doc = `
+# ARC Modules and Add-ons
+
+## Modular Communication Backpacks
+
+ARC supports a range of modular communication add-ons—known as "backpacks"—which connect directly to the GPIO header on the back of the device. These modules enable powerful wireless and proximity features while maintaining a portable, upgradeable design.
+
+### Supported Modules
+
+- **LoRa (SX1276):**  
+  Enables long-range, low-power communication for IoT and custom radio networks. Perfect for off-grid messaging, telemetry, and mesh networking experiments.
+
+- **RF (CC1101, NRF24):**  
+  Allows versatile sub-GHz (315/433/868/915 MHz) and 2.4 GHz wireless operations for device control, signal analysis, and penetration testing.
+
+- **NFC (PN532):**  
+  Offers support for NFC reading/writing, MIFARE Classic/Ultralight, and peer-to-peer applications. Ideal for access control projects and RFID research.
+
+- **IR (Infrared):**  
+  For learning, sending, and emulating IR remote control signals—great for smart home and AV automation.
+
+### Expansion Port Details
+
+- **Connector:** Standard 2.54mm GPIO header on ARC's back side.
+- **Interfaces:**  
+  - **UART**
+  - **I2C**
+  - **SPI**
+- **Power:** 5V and GND pins are available for module power.
+- **Mounting:**  
+  Modules are designed to stack securely like a backpack, with custom or off-the-shelf PCBs.
+
+### Key Features
+
+- **Hot-swappable:** Attach or detach modules without opening the main enclosure.
+- **Auto-detection:** ARC’s software can detect and initialize supported modules at boot or on demand.
+- **Open architecture:** Supports both official and DIY add-ons, with full access to communication buses and power rails.
+
+> **Tip:** Example wiring diagrams and supported backpack pinouts are available in the [Schematics](#) section.
+
+* more coming soon! *
+`;
+---
+
+<Layout title="ARC assembly guide">
+    <MarkdownRenderer client:load content={doc} />
+</Layout>

@@ -1,0 +1,248 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import MarkdownRenderer from '../../../components/MarkdownRenderer.jsx';
+
+// Define your markdown content inside the frontmatter
+const doc = `
+# ARC Circuit Documentation 
+
+---
+
+## Table of Contents
+
+1. Introduction
+2. System Block Diagram
+3. Power Management
+    - Li-Po Charger (MCP73831)
+    - Boost/Charge Supervisor (TPS61321)
+    - Power Switch & Reset
+4. Processing & Display
+    - Raspberry Pi Zero 2 W
+    - SPI-Driven LCD
+5. Keyboard Matrix
+6. I²S Audio & Amplifier
+    - I²S DAC (PCM5102A)
+    - Line-Level Filter & Amplifier (PAM8610)
+7. GPIO & Side Controls
+8. Connectors & Interfaces
+---
+
+## 1. Introduction
+
+The ARC schematic integrates a Raspberry Pi Zero 2 W or Orange Pi Zero 2 W core with:
+
+- A rechargeable Li-Po power subsystem
+- A 39-key QWERTY matrix keyboard
+- SPI LCD display interface
+- High-quality I²S audio (DAC + amplifier)
+- Exposed GPIO headers and side-mounted controls
+
+The pcb is a 4 layer design
+
+- Stackup:
+\t- Front (signal)
+\t- Layer 1 (signal)
+\t- Layer 2 (Ground copper pour with Power lines)
+\t- Layer 3 (signal)
+
+This document explains each functional block, key components, and interconnections.
+
+---
+
+## 2. System Block Diagram
+
+\`\`\`
+   ┌────────────────────────┐     ┌──────────────────────┐
+   │   Li-Po Battery (+3.7 V) ──►│  MCP73831 Charger    │
+   └────────────────────────┘     └──────────────────────┘
+          │                                   │
+          ▼                                   ▼
+   ┌────────────────────────┐     ┌──────────────────────┐
+   │  TPS61321 Boost Regulator│    │  5 V / 3.3 V Rails  │
+   └────────────────────────┘     └──────────────────────┘
+          │                                   │
+          │                                   ├─► Raspberry Pi Zero 2 W  
+          │                                   ├─► Keyboard Matrix Scan  
+          ▼                                   ├─► I²S DAC  
+   ┌────────────────────────┐                   └─► GPIO / Side Controls
+   │   Power Switch & FET  │
+   └────────────────────────┘
+\`\`\`
+
+---
+
+## 3. Power Management
+
+### 3.1 Li-Po Charger (MCP73831)
+
+- **U8 (MCP73831)**: Single-cell Li-Po charger
+- **D4**: Reverse-battery protection
+- **C24, C26, C28**: Input/output decoupling (2.2 µF – 10 µF)
+- **STAT / PROG pins**: Charge-status LED & current program resistor (R19)
+
+### 3.2 Boost / Charge Supervisor (TPS61321)
+
+- **U5 (TPS61321)**: 3.7 V Li-Po to 5 V boost converter with integrated load switch
+- **L1**: 4.7 µH inductor for boost topology
+- **C6–C11**: Input/output filtering
+- **ENA pin**: Enables boost when power button is pressed
+
+### 3.3 Power Switch & Reset
+
+- **Q2 (MOSFET)**: P-channel FET controlled by the power button
+- **R8 (100 kΩ)** and **R9 (150 kΩ)**: Pull-ups/pull-downs for gate control
+- **SW4**: Power on/off switch
+- **JTAG / Debug**: TP3 (Power­_EN) and TP4 (SYS_ON) testpoints
+
+---
+
+## 4. Processing & Display
+
+### 4.1 SBC
+
+- **U2**: Raspberry/Orange Pi Zero 2 W module footprint
+- Specs:
+\t- Orange Pi zero 2w: 1.5 GHz processor, 4 GB ram
+\t- Raspberry Pi zero 2w: 1 GHz processor, 512 Mb ram
+- Os: Armbian
+- Exposes:
+    - CPU/GPU interfaces (SPI, I²C, UART)
+    - USB-OTG port (via USB-A jack X1)
+    - Mini HDMI
+    - 40-pin GPIO header
+
+### 4.2 SPI-Driven LCD
+
+- **LCD**: 3.5″ SPI TFT display
+- **R1 (33 Ω)**: Series resistor on RESET line
+- **R2 (100 Ω)**: Backlight enable gating via transistor Q1
+---
+
+## 5. Keyboard Matrix
+
+- **Matrix layout**: 5 rows × 10 columns (using 39 keys )
+- **D1–D40**: Steering diodes (1 N4148) per key to prevent ghosting
+- **SW1–SW39**: Tactile switches
+- **MCU lines**:
+    - Columns driven as outputs (via GPIO expander or Pi GPIO)
+    - Rows read as inputs with pull-ups
+
+---
+
+## 6. I²S Audio & Amplifier
+
+### 6.1 I²S DAC (PCM5102A)
+
+- **U4**: PCM5102A I²S DAC
+### 6.2 Line-Level Filter & Amplifier (PAM8610)
+
+- **U9 (PAM8610)**: 2×5 W Class-D amplifier
+- Connected to the 3.5mm jack detect pin to switch between speaker and headphones
+---
+
+## 7. GPIO & Side Controls
+
+#### Left Header
+
+- **Pin 1**
+    - **Net:** GND
+    - **SBC signal:** GROUND
+    - **Function:** Common ground for add-ons
+        
+- **Pin 2**
+    - **Net:** +5 V
+    - **SBC signal:** 5 V out
+    - **Function:** Unregulated 5 V rail
+        
+- **Pin 3**
+    - **Net:** GPIO12
+    - **SBC signal:** GPIO12
+    - **Function:** General-purpose I/O
+        
+- **Pin 4**
+    - **Net:** GPIO21
+    - **SBC signal:** GPIO21
+    - **Function:** General-purpose I/O
+        
+- **Pin 5**
+    - **Net:** GPIO22
+    - **SBC signal:** GPIO22
+    - **Function:** General-purpose I/O
+        
+- **Pin 6**
+    - **Net:** MOSI
+    - **SBC signal:** SPI0 MOSI
+    - **Function:** SPI master-out, slave-in
+        
+- **Pin 7**
+    - **Net:** MISO
+    - **SBC signal:** SPI0 MISO
+    - **Function:** SPI master-in, slave-out
+        
+- **Pin 8**
+    - **Net:** SCLK
+    - **SBC signal:** SPI0 SCLK
+    - **Function:** SPI clock
+        
+
+#### Right Header
+
+- **Pin 1**
+    - **Net:** GND
+    - **SBC signal:** GROUND 
+    - **Function:** Common ground for add-ons
+        
+- **Pin 2**
+    - **Net:** +3.3 V
+    - **SBC signal:** 3.3 V out
+    - **Function:** Unregulated 3.3 V rail
+        
+- **Pin 3**
+    - **Net:** +5 V
+    - **SBC signal:** 5 V out
+    - **Function:** Unregulated 5 V rail
+        
+- **Pin 4**
+    - **Net:** GPIO16
+    - **SBC signal:** GPIO16
+    - **Function:** General-purpose I/O
+        
+- **Pin 5**
+    - **Net:** RXD
+    - **SBC signal:** UART0 RX
+    - **Function:** Serial data in
+        
+- **Pin 6**
+    - **Net:** TXD
+    - **SBC signal:** UART0 TX 
+    - **Function:** Serial data out
+        
+- **Pin 7**
+    - **Net:** SDA 
+    - **SBC signal:** I²C SDA 
+    - **Function:** I²C data line
+        
+- **Pin 8**
+    - **Net:** SCL
+    - **SBC signal:** I²C SCL
+    - **Function:** I²C clock line
+
+
+- **Side controls**:
+    - Volume Up
+    - Volume Down
+    - Power Button
+---
+
+## 8. Connectors & Interfaces
+
+- X1 – USB-A Power: 5 V USB supply
+- J2 – Li-Po Battery: JST PH-2 2-pin connector
+- J7 – Headphone / Line-out Jack: switchable via detect pin
+- J8 – Speaker: 8 Ω speaker output
+`;
+---
+
+<Layout title="ARC Hardware Specifications">
+    <MarkdownRenderer client:load content={doc} />
+</Layout>

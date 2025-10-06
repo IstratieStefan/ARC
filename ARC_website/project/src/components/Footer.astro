@@ -1,0 +1,129 @@
+---
+const currentYear = new Date().getFullYear();
+
+const footerLinks = {
+  product: [
+    { name: 'Features', href: '/#features' },
+    { name: 'Specifications', href: '/#specs' },
+    { name: 'Releases', href: '/download' },
+  ],
+  resources: [
+    { name: 'Documentation', href: '/docs' },
+    { name: 'Hardware Docs', href: '/docs/hardware' },
+    { name: 'Software Docs', href: '/docs/software' },
+    { name: 'App Store', href: '/app-store' },
+  ],
+  community: [
+    { name: 'GitHub', href: 'https://github.com/IstratieStefan/ARC' },
+    { name: 'Discord', href: 'https://discord.com' },
+  ],
+};
+---
+
+<footer class="bg-gray-100 border-t border-gray-200">
+  <div class="container-custom py-12">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <!-- Brand -->
+      <div class="col-span-1">
+        <a href="/">
+          <img src="/logo.svg" alt="ARC Logo" class="h-16 w-48" />
+        </a>
+        <p class="mt-4 text-gray-600 max-w-xs">
+          An open source handheld console that empowers makers, hackers, and tinkerers to explore, create, and control their digital world.
+        </p>
+      </div>
+
+      <!-- Links -->
+      <div>
+        <h3 class="font-semibold text-gray-900 mb-4">Product</h3>
+        <ul class="space-y-2">
+          {footerLinks.product.map((link) => (
+            <li>
+              <a href={link.href} class="text-gray-600 hover:text-accent transition-colors">
+                {link.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="font-semibold text-gray-900 mb-4">Resources</h3>
+        <ul class="space-y-2">
+          {footerLinks.resources.map((link) => (
+            <li>
+              <a href={link.href} class="text-gray-600 hover:text-accent transition-colors">
+                {link.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="font-semibold text-gray-900 mb-4">Community</h3>
+        <ul class="space-y-2">
+          {footerLinks.community.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-gray-600 hover:text-accent transition-colors"
+              >
+                {link.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="mt-12 pt-8 border-t border-gray-200">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+          <h3 class="font-semibold text-gray-900 mb-4">Contact Us</h3>
+          <div class="flex items-center space-x-2 text-gray-600 mb-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+              <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+            </svg>
+            <a href="mailto:istratie.stefan.work@gmail.com" class="hover:text-accent transition-colors">
+              istratie.stefan.work@gmail.com
+            </a>
+          </div>
+          <div class="flex items-center space-x-2 text-gray-600">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+            </svg>
+            <span>Brașov, Romania</span>
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="font-semibold text-gray-900 mb-4">Subscribe to Newsletter</h3>
+          <form class="flex max-w-md">
+            <input
+              type="email"
+              placeholder="Enter your email"
+              class="flex-grow px-4 py-2 rounded-l-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+              required
+            />
+            <button
+              type="submit"
+              class="bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-r-md transition-colors"
+            >
+              Subscribe
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Copyright -->
+    <div class="mt-12 pt-8 border-t border-gray-200 text-center text-gray-500 text-sm">
+      <p>&copy; {currentYear} Istratie Stefan. All rights reserved.</p>
+    </div>
+  </div>
+</footer>

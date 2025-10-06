@@ -1,0 +1,382 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero';
+---
+<Layout title="ARC configuration">
+    <Hero
+            client:load
+            title="ARC connect"
+            subtitle="Connect your ARC device to the network"
+            image="/Download.JPG"
+    />
+    <div class="max-w-xl mx-auto mt-20 mb-16 p-6 py-8 bg-gray-50 dark:bg-gray-900 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Connect to ARC</h2>
+
+        <form id="connectForm" class="space-y-4">
+            <div>
+                <label for="ip" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    ARC IP Address:
+                </label>
+                <input
+                        type="text"
+                        id="ip"
+                        name="ip"
+                        placeholder="192.168.x.xxx"
+                        class="w-full p-3 mt-1 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:arc-accent focus:arc-accent focus:border-transparent"
+                        required
+                />
+            </div>
+            <div>
+                <label for="user" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Username:
+                </label>
+                <input
+                        type="text"
+                        id="user"
+                        name="user"
+                        placeholder="root"
+                        class="w-full p-3 mt-1 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:arc-accent focus:arc-accent focus:border-transparent"
+                        required
+                />
+            </div>
+            <div>
+                <label for="pass" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Password:
+                </label>
+                <div class="relative">
+                    <input
+                            type="password"
+                            id="pass"
+                            name="pass"
+                            placeholder="Enter your password"
+                            class="w-full p-3 mt-1 pr-12 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:accent focus:ring-blue-500 focus:border-transparent"
+                            required
+                    />
+                    <button
+                            type="button"
+                            id="togglePassword"
+                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white focus:outline-none"
+                    >
+                        <span id="eyeIcon">👁️</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex items-center">
+                <input
+                        type="checkbox"
+                        id="saveCredentials"
+                        class="mr-2 text-blue-600 focus:ring-blue-500"
+                />
+                <label for="saveCredentials" class="text-sm text-gray-700 dark:text-gray-300">
+                    Remember credentials (stored locally)
+                </label>
+            </div>
+
+            <button
+                    type="submit"
+                    id="connectBtn"
+                    class="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+                <span id="connectText">Connect to ARC</span>
+                <span id="loadingSpinner" class="hidden">
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Connecting...
+                </span>
+            </button>
+        </form>
+
+        <div id="formError" class="mt-4 p-3 bg-red-100 border border-red-300 text-red-700 rounded-md hidden"></div>
+        <div id="formSuccess" class="mt-4 p-3 bg-green-100 border border-green-300 text-green-700 rounded-md hidden"></div>
+
+        <div id="connectionStatus" class="mt-4">
+            <div id="statusIndicator" class="flex items-center space-x-2">
+                <div id="statusDot" class="w-3 h-3 bg-gray-400 rounded-full"></div>
+                <span id="statusText" class="text-sm text-gray-600 dark:text-gray-400">Not connected</span>
+            </div>
+        </div>
+
+        <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+            <h3 class="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">Connection Tips:</h3>
+            <ul class="text-xs text-blue-800 dark:text-blue-200 space-y-1">
+                <li>• Ensure your ARC device is on the same network</li>
+                <li>• Check that SSH is enabled on your ARC device</li>
+                <li>• Try ping or telnet to verify connectivity first</li>
+                <li>• For local testing, you can use 127.0.0.1</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // DOM elements with proper type casting
+        const ipInput = document.getElementById('ip') as HTMLInputElement;
+        const userInput = document.getElementById('user') as HTMLInputElement;
+        const passInput = document.getElementById('pass') as HTMLInputElement;
+        const form = document.getElementById('connectForm') as HTMLFormElement;
+        const formError = document.getElementById('formError') as HTMLElement;
+        const formSuccess = document.getElementById('formSuccess') as HTMLElement;
+        const toggleBtn = document.getElementById('togglePassword') as HTMLButtonElement;
+        const eyeIcon = document.getElementById('eyeIcon') as HTMLElement;
+        const connectBtn = document.getElementById('connectBtn') as HTMLButtonElement;
+        const connectText = document.getElementById('connectText') as HTMLElement;
+        const loadingSpinner = document.getElementById('loadingSpinner') as HTMLElement;
+        const statusDot = document.getElementById('statusDot') as HTMLElement;
+        const statusText = document.getElementById('statusText') as HTMLElement;
+        const saveCredentials = document.getElementById('saveCredentials') as HTMLInputElement;
+
+        // Load saved credentials if available
+        function loadSavedCredentials(): void {
+            const saved = localStorage.getItem('arcConnection');
+            if (saved && ipInput && userInput && saveCredentials) {
+                try {
+                    const creds = JSON.parse(saved);
+                    ipInput.value = creds.ip || '';
+                    userInput.value = creds.user || '';
+                    // Don't auto-fill password for security
+                    saveCredentials.checked = true;
+                } catch (e) {
+                    console.log('Error loading saved credentials:', e);
+                }
+            }
+        }
+
+        // Save credentials to localStorage
+        function saveCredentialsToStorage(ip: string, user: string, pass: string): void {
+            if (saveCredentials?.checked) {
+                localStorage.setItem('arcConnection', JSON.stringify({
+                    ip: ip,
+                    user: user,
+                    pass: pass
+                }));
+            } else {
+                localStorage.removeItem('arcConnection');
+            }
+        }
+
+        // Show/hide messages
+        function showError(message: string): void {
+            if (formError && formSuccess) {
+                formError.textContent = message;
+                formError.classList.remove('hidden');
+                formSuccess.classList.add('hidden');
+            }
+        }
+
+        function showSuccess(message: string): void {
+            if (formSuccess && formError) {
+                formSuccess.textContent = message;
+                formSuccess.classList.remove('hidden');
+                formError.classList.add('hidden');
+            }
+        }
+
+        function hideMessages(): void {
+            if (formError && formSuccess) {
+                formError.classList.add('hidden');
+                formSuccess.classList.add('hidden');
+            }
+        }
+
+        // Update connection status
+        function updateStatus(status: string, message: string): void {
+            if (statusText) {
+                statusText.textContent = message;
+            }
+            if (statusDot) {
+                statusDot.className = `w-3 h-3 rounded-full ${
+                    status === 'connected' ? 'bg-green-500' :
+                        status === 'connecting' ? 'bg-yellow-500' :
+                            status === 'error' ? 'bg-red-500' : 'bg-gray-400'
+                }`;
+            }
+        }
+
+        // Toggle password visibility
+        if (toggleBtn && passInput && eyeIcon) {
+            toggleBtn.addEventListener('click', () => {
+                const isPassword = passInput.type === 'password';
+                passInput.type = isPassword ? 'text' : 'password';
+                eyeIcon.textContent = isPassword ? '🙈' : '👁️';
+            });
+        }
+
+        // Set loading state
+        function setLoadingState(loading: boolean): void {
+            if (connectBtn) {
+                connectBtn.disabled = loading;
+            }
+            if (loading) {
+                connectText?.classList.add('hidden');
+                loadingSpinner?.classList.remove('hidden');
+            } else {
+                connectText?.classList.remove('hidden');
+                loadingSpinner?.classList.add('hidden');
+            }
+        }
+
+        // Test connection using HTTP request instead of WebSocket
+        async function testConnection(ip: string, user: string, pass: string): Promise<string> {
+            try {
+                // First, try to ping the server to see if it's reachable
+                const response = await fetch(`http://${ip}:5001/health`, {
+                    method: 'GET',
+                    mode: 'no-cors',
+                    signal: AbortSignal.timeout(10000)
+                });
+
+                return 'Connection successful';
+            } catch (error) {
+                // If direct connection fails, try WebSocket approach
+                return new Promise((resolve, reject) => {
+                    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                    const ws = new WebSocket(`${wsProtocol}//${ip}:5001/ws/ssh`);
+
+                    let connectionTimeout = setTimeout(() => {
+                        ws.close();
+                        reject(new Error('Connection timeout - make sure your ARC device is reachable'));
+                    }, 15000);
+
+                    ws.onopen = () => {
+                        updateStatus('connecting', 'Testing connection...');
+                        ws.send(JSON.stringify({
+                            host: ip,
+                            port: 22,
+                            username: user,
+                            password: pass
+                        }));
+                    };
+
+                    ws.onmessage = (event) => {
+                        clearTimeout(connectionTimeout);
+                        if (event.data === 'SSH_READY') {
+                            ws.close();
+                            resolve('Connection successful');
+                        } else if (event.data.startsWith('ERROR:')) {
+                            ws.close();
+                            reject(new Error(event.data.replace('ERROR: ', '')));
+                        }
+                    };
+
+                    ws.onerror = (error) => {
+                        clearTimeout(connectionTimeout);
+                        ws.close();
+                        reject(new Error(`Failed to connect to ${ip}:5001 - check if the server is running`));
+                    };
+
+                    ws.onclose = (event) => {
+                        clearTimeout(connectionTimeout);
+                        if (event.code !== 1000) {
+                            reject(new Error('Connection closed unexpectedly'));
+                        }
+                    };
+                });
+            }
+        }
+
+        // Form submission handler
+        if (form) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                hideMessages();
+
+                const ip = ipInput?.value.trim() || '';
+                const user = userInput?.value.trim() || '';
+                const pass = passInput?.value || '';
+
+                // Validation
+                if (!ip || !user || !pass) {
+                    showError('Please fill in all fields.');
+                    return;
+                }
+
+                // Basic IP validation (allow localhost)
+                const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+                if (!ipRegex.test(ip) && ip !== 'localhost' && ip !== '127.0.0.1') {
+                    showError('Please enter a valid IP address.');
+                    return;
+                }
+
+                setLoadingState(true);
+                updateStatus('connecting', 'Connecting to ARC device...');
+
+                try {
+                    await testConnection(ip, user, pass);
+
+                    // Save credentials if requested
+                    saveCredentialsToStorage(ip, user, pass);
+
+                    updateStatus('connected', `Connected to ${user}@${ip}`);
+                    showSuccess('Connection successful! Redirecting to terminal...');
+
+                    // Redirect to terminal after short delay
+                    setTimeout(() => {
+                        window.location.href = `http://${ip}:5001/`;
+                    }, 1500);
+
+                } catch (error) {
+                    updateStatus('error', 'Connection failed');
+                    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+                    showError(`Connection failed: ${errorMessage}`);
+                    console.error('Connection error:', error);
+                } finally {
+                    setLoadingState(false);
+                }
+            });
+        }
+
+        // Input validation and real-time feedback
+        if (ipInput) {
+            ipInput.addEventListener('input', () => {
+                const ip = ipInput.value.trim();
+                if (ip && !/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ip) && ip !== 'localhost' && ip !== '127.0.0.1') {
+                    ipInput.setCustomValidity('Please enter a valid IP address');
+                } else {
+                    ipInput.setCustomValidity('');
+                }
+            });
+        }
+
+        // Clear credentials when checkbox is unchecked
+        if (saveCredentials) {
+            saveCredentials.addEventListener('change', () => {
+                if (!saveCredentials.checked) {
+                    localStorage.removeItem('arcConnection');
+                }
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSavedCredentials();
+
+            // Check if we have saved credentials and auto-focus appropriate field
+            const saved = localStorage.getItem('arcConnection');
+            if (saved) {
+                try {
+                    const creds = JSON.parse(saved);
+                    if (creds.ip && creds.user) {
+                        passInput?.focus();
+                    } else {
+                        ipInput?.focus();
+                    }
+                } catch (e) {
+                    ipInput?.focus();
+                }
+            } else {
+                ipInput?.focus();
+            }
+        });
+
+        // Handle Enter key in password field
+        if (passInput && form) {
+            passInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    form.dispatchEvent(new Event('submit'));
+                }
+            });
+        }
+    </script>
+</Layout>

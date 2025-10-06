@@ -1,0 +1,288 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero';
+
+const categories = [
+  "All", "Productivity", "Communication", "Social", "Media", "Utilities", "Games", "Development", "Pentesting"
+];
+
+const apps = [
+  {
+    id: "music_player",
+    name: "Music player",
+    category: "Media",
+    description: "MP3 and FLAC player.",
+    version: "2.1.0",
+    size: "53.3 MB",
+    developer: "Istratie Stefan",
+    icon: "/icons/music.png",
+    screenshots: [
+      "/screenshots/music_player.png",
+    ],
+    download: "/app-store/Music_app.zip"
+  },
+  {
+    id: "wifi_tools",
+    name: "Wifi Tools",
+    category: "Pentesting",
+    description: "Wifi cybersecurity tool",
+    version: "1.0.0",
+    size: "42.8 MB",
+    developer: "Istratie Stefan",
+    icon: "/icons/wifi_tools.png",
+    screenshots: [
+      "/screenshots/wifi_tools.png"
+    ],
+    download: "/app-store/WifiTools.zip"
+  },
+  {
+    id: "bluetooth_tools",
+    name: "Bluetooth Tools",
+    category: "Pentesting",
+    description: "Bluetooth analysis and security toolkit",
+    version: "1.0.0",
+    size: "42.8 MB",
+    developer: "Istratie Stefan",
+    icon: "/icons/bluetooth_tools.png",
+    screenshots: [
+      "/screenshots/bluetooth_tools.png"
+    ],
+    download: "/app-store/BluetoothTools.zip"
+  },
+  {
+    id: "ir_tools",
+    name: "IR Tools",
+    category: "Pentesting",
+    description: "Infrared control and analysis suite",
+    version: "1.0.0",
+    size: "Coming soon",
+    developer: "Istratie Stefan",
+    icon: "/icons/ir.png",
+    screenshots: [
+      "/screenshots/coming_soon.png"
+    ]
+  },
+  {
+    id: "nfc_tools",
+    name: "NFC Tools",
+    category: "Pentesting",
+    description: "NFC tag reader, writer, and emulator",
+    version: "1.0.0",
+    size: "Coming soon",
+    developer: "Istratie Stefan",
+    icon: "https://images.pexels.com/photos/279614/pexels-photo-279614.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+    screenshots: [
+      "/screenshots/coming_soon.png"
+    ]
+  },
+  {
+    id: "rf_tools",
+    name: "RF Tools",
+    category: "Pentesting",
+    description: "Radio frequency signal analyzer and toolkit",
+    version: "1.0.0",
+    size: "Coming soon",
+    developer: "Istratie Stefan",
+    icon: "https://images.pexels.com/photos/130707/pexels-photo-130707.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+    screenshots: [
+      "/screenshots/coming_soon.png"
+    ]
+  },
+  {
+    id: "calendar",
+    name: "Calendar",
+    category: "Productivity",
+    description: "Simple Calendar app",
+    version: "1.0.0",
+    size: "42.8 MB",
+    developer: "Istratie Stefan",
+    icon: "https://images.pexels.com/photos/7438440/pexels-photo-7438440.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+    screenshots: [
+      "/screenshots/Calendar.png"
+    ],
+    download: "/app-store/Calendar.zip"
+  },
+  {
+    id: "notes",
+    name: "Notes",
+    category: "Productivity",
+    description: "A simple notes app",
+    version: "1.0.0",
+    size: "Coming soon",
+    developer: "Istratie Stefan",
+    icon: "https://images.pexels.com/photos/7438440/pexels-photo-7438440.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+    screenshots: [
+      "/screenshots/coming_soon.png"
+    ]
+  },
+  {
+    id: "games",
+    name: "Game Launcher",
+    category: "Games",
+    description: "Simple game launcher",
+    version: "1.3.0",
+    size: "42.8 MB",
+    developer: "Istratie Stefan",
+    icon: "https://images.pexels.com/photos/7438440/pexels-photo-7438440.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+    screenshots: [
+      "/screenshots/GameLauncher.png"
+    ],
+    download: "/app-store/GameLauncher.zip"
+  },
+];
+---
+
+<Layout title="App Store" description="Browse and download open source applications for your ARC">
+  <Hero
+      client:load
+      title="[ARC] App Store"
+      subtitle="Discover privacy-respecting applications built for your open source phone"
+      image="/Software.JPG"
+  />
+
+  <section class="section">
+    <div class="container-custom">
+      <div id="app-store" class="space-y-8">
+        <!-- Categories -->
+        <div class="overflow-x-auto pb-4">
+          <div class="flex space-x-2 min-w-max">
+            {categories.map((category) => (
+                <button
+                    class="px-4 py-2 rounded-full border border-gray-200 hover:border-accent hover:text-accent transition-colors whitespace-nowrap"
+                    data-category={category}
+                >
+                  {category}
+                </button>
+            ))}
+          </div>
+        </div>
+
+        <!-- Search -->
+        <div class="relative">
+          <input
+              type="text"
+              id="app-search"
+              placeholder="Search applications..."
+              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent pl-10"
+          />
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-3 top-3.5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+          </svg>
+        </div>
+
+        <!-- App Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {apps.map((app) => (
+              <div class="card group" data-app-id={app.id} data-category={app.category}>
+                <div class="relative p-4 pb-0">
+                  <div class="relative h-40 mb-4 overflow-hidden rounded-lg">
+                    <img
+                        src={app.screenshots[0]}
+                        alt={app.name}
+                        class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </div>
+                </div>
+                <div class="p-4">
+                  <div class="flex justify-between items-start">
+                    <h3 class="font-semibold text-lg">{app.name}</h3>
+                    <span class="text-xs text-gray-500">v{app.version}</span>
+                  </div>
+                  <p class="text-xs text-gray-500 mb-2">{app.developer}</p>
+                  <p class="text-sm text-gray-600 mb-4 line-clamp-2">{app.description}</p>
+                  <div class="flex justify-between items-center">
+                  <span class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
+                    {app.size}
+                  </span>
+                    <a href={app.download} class="text-accent hover:text-accent-hover text-sm font-medium flex items-center" download>
+                      Download
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+          ))}
+        </div>
+
+        <br>
+        <div class="mt-16">
+          <h2 class="heading-2 mb-6">Run Apps on Desktop (Preview Only)</h2>
+
+          <div class="prose max-w-none">
+            <p>This method is intended <strong>only for previewing ARC applications</strong> on your current computer. The behavior and features may differ from the final ARC hardware experience.</p>
+
+            <h3>macOS</h3>
+            <ol>
+              <li>Download the .zip file for the desired application from this page.</li>
+              <li>Unzip it (double-click or use Terminal: <code>unzip filename.zip</code>).</li>
+              <li>Navigate to the <code>dist</code> folder: <code>cd dist</code></li>
+              <li>Run the app from Terminal: <code>./appname</code></li>
+              <li>If blocked by macOS Gatekeeper, go to System Settings → Privacy & Security → Allow Anyway.</li>
+            </ol>
+
+            <h3>Windows</h3>
+            <ol>
+              <li>Download and unzip the .zip file (right-click → Extract All).</li>
+              <li>Open the <code>dist</code> folder.</li>
+              <li>Double-click the <code>.exe</code> file to run it.</li>
+              <li>If SmartScreen appears, click “More Info” → “Run Anyway.”</li>
+            </ol>
+
+            <h3>Linux</h3>
+            <ol>
+              <li>Download and unzip the file (<code>unzip filename.zip</code>).</li>
+              <li>Navigate to the <code>dist</code> directory in terminal.</li>
+              <li>Make the file executable if needed: <code>chmod +x appname</code></li>
+              <li>Run the application: <code>./appname</code></li>
+            </ol>
+
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 my-4">
+              <p class="font-medium text-blue-800">Note</p>
+              <p class="text-blue-700">These previews are for demonstration and testing only. On ARC hardware, performance, I/O, and integration features may differ significantly.</p>
+            </div>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+  </section>
+
+
+</Layout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const appSearch = document.getElementById('app-search');
+    const categoryButtons = document.querySelectorAll('[data-category]');
+    const appCards = document.querySelectorAll('[data-app-id]');
+    let activeCategory = 'All';
+
+    categoryButtons[0].classList.add('bg-accent', 'text-white', 'border-accent');
+
+    categoryButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        categoryButtons.forEach(btn => btn.classList.remove('bg-accent', 'text-white', 'border-accent'));
+        button.classList.add('bg-accent', 'text-white', 'border-accent');
+        activeCategory = button.getAttribute('data-category');
+        filterApps();
+      });
+    });
+
+    appSearch.addEventListener('input', filterApps);
+
+    function filterApps() {
+      const searchTerm = appSearch.value.toLowerCase();
+      appCards.forEach(card => {
+        const appCategory = card.getAttribute('data-category');
+        const appName = card.querySelector('h3').textContent.toLowerCase();
+        const appDescription = card.querySelector('p:nth-of-type(2)').textContent.toLowerCase();
+        const matchesCategory = activeCategory === 'All' || appCategory === activeCategory;
+        const matchesSearch = !searchTerm || appName.includes(searchTerm) || appDescription.includes(searchTerm);
+        card.classList.toggle('hidden', !(matchesCategory && matchesSearch));
+      });
+    }
+  });
+</script>

@@ -6,7 +6,7 @@ requests
 pyaudio
 qrcode
 pillow
-python-uinput
+# python-uinput
 flask
 flask-cors
 websockets

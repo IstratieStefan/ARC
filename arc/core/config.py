@@ -48,19 +48,28 @@ def load_config(config_path=None):
         config_path = os.path.expanduser("~/.config/arc.yaml")
         if not os.path.exists(config_path):
             # Go up two levels from arc/core/ to find config/arc.yaml or arc.yaml
-            base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+            base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
             config_path = os.path.join(base_dir, "config", "arc.yaml")
             if not os.path.exists(config_path):
                 config_path = os.path.join(base_dir, "arc.yaml")
     
     # Get the project root directory (parent of config file)
+    config_path = os.path.abspath(config_path)
     if "config" in config_path:
         base_dir = os.path.dirname(os.path.dirname(config_path))
     else:
         base_dir = os.path.dirname(config_path)
     
+    # Ensure base_dir is absolute
+    base_dir = os.path.abspath(base_dir)
+    
     with open(config_path, "r") as f:
         data = yaml.safe_load(f)
+    
+    # Store the base directory and config path for debugging
+    data['_base_dir'] = base_dir
+    data['_config_path'] = config_path
+    
     data = expand_paths(data, base_dir)
     return ConfigDict(data)
 

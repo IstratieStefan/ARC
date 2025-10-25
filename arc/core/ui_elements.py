@@ -320,17 +320,49 @@ class AppIcon(Button):
         self.text_color = getattr(colors, "text", (220, 220, 220))
 
         self.icon_path = icon_path
-        print(f"AppIcon: Attempting to load '{icon_path}' for '{name}'")
-        if not os.path.isfile(icon_path):
-            print(f"AppIcon WARNING: File does not exist: {icon_path}")
-        try:
-            img = pygame.image.load(icon_path).convert_alpha()
-        except Exception as e:
-            print(f"AppIcon: Failed to load icon '{icon_path}' for '{name}'. Error: {e}")
-            img = pygame.Surface((self.rect.width - 25,
-                                  self.rect.height - 25),
-                                  pygame.SRCALPHA)
-            img.fill((255, 0, 0))  # Bright red for missing
+        
+        # Try to resolve the icon path if it's relative
+        if icon_path and not os.path.isabs(icon_path):
+            # Try relative to current working directory
+            if not os.path.exists(icon_path):
+                # Try relative to project root (stored in config)
+                base_dir = getattr(config, '_base_dir', os.getcwd())
+                alt_path = os.path.join(base_dir, icon_path)
+                if os.path.exists(alt_path):
+                    icon_path = alt_path
+                    self.icon_path = icon_path
+        
+        # Make path absolute for better debugging
+        abs_icon_path = os.path.abspath(icon_path) if icon_path else None
+        
+        print(f"AppIcon: Loading '{name}'")
+        print(f"  Path: {icon_path}")
+        print(f"  Absolute: {abs_icon_path}")
+        print(f"  Exists: {os.path.isfile(icon_path) if icon_path else False}")
+        
+        if not icon_path or not os.path.isfile(icon_path):
+            print(f"  WARNING: Icon file not found!")
+            # Create a placeholder icon with the first letter of the app name
+            img = pygame.Surface((self.rect.width - 25, self.rect.height - 25), pygame.SRCALPHA)
+            img.fill((100, 100, 100))  # Gray background
+            # Draw first letter
+            try:
+                letter_font = pygame.font.SysFont('Arial', 40, bold=True)
+                letter = name[0].upper() if name else '?'
+                text_surf = letter_font.render(letter, True, (255, 255, 255))
+                text_rect = text_surf.get_rect(center=(img.get_width()//2, img.get_height()//2))
+                img.blit(text_surf, text_rect)
+            except:
+                pass
+        else:
+            try:
+                img = pygame.image.load(icon_path).convert_alpha()
+                print(f"  ✓ Successfully loaded icon")
+            except Exception as e:
+                print(f"  ✗ Failed to load icon: {e}")
+                img = pygame.Surface((self.rect.width - 25, self.rect.height - 25), pygame.SRCALPHA)
+                img.fill((200, 50, 50))  # Red for error
+        
         self.icon = pygame.transform.smoothscale(
             img,
             (self.rect.width - 25, self.rect.height - 25)

@@ -6,6 +6,7 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 from mutagen.id3 import ID3
+from mutagen import File
 
 class PlayerScreen:
     ICON_SIZE = 36
@@ -20,9 +21,20 @@ class PlayerScreen:
         self.font_small = fonts[2]
         self.C_BG, self.C_TEXT, self.C_ACCENT = colors[0], colors[2], colors[3]
 
-        # Initialize mixer if needed
+        # Initialize mixer if needed - with specific settings for Raspberry Pi
         if not pygame.mixer.get_init():
-            pygame.mixer.init()
+            try:
+                # Try with specific frequency/buffer settings for better compatibility
+                pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=2048)
+                print(f"Pygame mixer initialized: {pygame.mixer.get_init()}")
+            except Exception as e:
+                print(f"Failed to initialize pygame mixer: {e}")
+                print("Trying with default settings...")
+                try:
+                    pygame.mixer.init()
+                except Exception as e2:
+                    print(f"Mixer initialization failed completely: {e2}")
+                    print("Audio playback will not work!")
 
         # Load control icons
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -64,12 +76,27 @@ class PlayerScreen:
         self.current = idx
         track_info = self.tracks[idx]
         path = track_info['file']
+        
+        print(f"\n=== Loading track {idx} ===")
+        print(f"File: {path}")
+        print(f"Title: {track_info.get('title', 'Unknown')}")
+        print(f"Length: {track_info.get('length', 0)} seconds")
+        
         try:
+            # Stop any currently playing music
+            if pygame.mixer.music.get_busy():
+                pygame.mixer.music.stop()
+            
+            # Load and play the new track
             pygame.mixer.music.load(path)
             pygame.mixer.music.play()
             self.playing = True
+            print(f"✓ Successfully loaded and playing: {track_info.get('title', path)}")
         except Exception as e:
-            print(f"Error loading track {path}: {e}")
+            print(f"✗ Error loading track {path}: {e}")
+            print(f"  Exception type: {type(e).__name__}")
+            import traceback
+            traceback.print_exc()
             self.playing = False
 
         self.title_offset = 0.0
@@ -83,15 +110,41 @@ class PlayerScreen:
         self.album_art_ready = None
         # Extract ID3 tags
         try:
-            id3 = ID3(path)
-            for tag in id3.getall("APIC"):
-                img = pygame.image.load(io.BytesIO(tag.data))
-                self.art = img
-                break
-            if 'TPE1' in id3:
-                self.artist = id3['TPE1'].text[0]
-        except Exception:
-            pass
+            audio_file = File(path)
+            
+            # Try to get album art from various tag formats
+            if audio_file is not None and hasattr(audio_file, 'tags') and audio_file.tags:
+                # Try ID3v2 (MP3)
+                if hasattr(audio_file.tags, 'getall'):
+                    for tag in audio_file.tags.getall("APIC"):
+                        try:
+                            img = pygame.image.load(io.BytesIO(tag.data))
+                            self.art = img
+                            break
+                        except Exception as e:
+                            print(f"Failed to load album art from APIC: {e}")
+                
+                # Get artist
+                if hasattr(audio_file.tags, 'get'):
+                    tpe1 = audio_file.tags.get('TPE1')
+                    if tpe1:
+                        self.artist = str(tpe1.text[0]) if hasattr(tpe1, 'text') else str(tpe1)
+            
+            # Fallback: Try with ID3 directly
+            if self.art is None:
+                try:
+                    id3 = ID3(path)
+                    for tag in id3.getall("APIC"):
+                        img = pygame.image.load(io.BytesIO(tag.data))
+                        self.art = img
+                        print(f"Album art loaded successfully from {path}")
+                        break
+                    if not self.artist and 'TPE1' in id3:
+                        self.artist = id3['TPE1'].text[0]
+                except Exception as e:
+                    print(f"No album art found or failed to load: {e}")
+        except Exception as e:
+            print(f"Error extracting metadata: {e}")
 
         # Pre-render album art with rounded corners, only if art exists
         BORDER_RADIUS = 8

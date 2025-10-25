@@ -9,6 +9,13 @@ from arc.core.ui_elements import ScrollableList
 def scan_music_dir(music_dir):
     """Scans a directory for MP3s, returning a list of dicts with all tags."""
     tracks = []
+    print(f"\n=== Scanning music directory: {music_dir} ===")
+    
+    # Check if directory exists
+    if not os.path.exists(music_dir):
+        print(f"✗ Music directory does not exist: {music_dir}")
+        return tracks
+    
     for fn in sorted(os.listdir(music_dir)):
         if fn.lower().endswith('.mp3'):
             path = os.path.join(music_dir, fn)
@@ -18,7 +25,9 @@ def scan_music_dir(music_dir):
                 title = audio.get('title', [os.path.splitext(fn)[0]])[0]
                 album = audio.get('album', ['Unknown'])[0]
                 artist = audio.get('artist', ['Unknown'])[0]
-            except Exception:
+                print(f"✓ {fn}: {title} - {duration:.1f}s")
+            except Exception as e:
+                print(f"✗ Failed to read tags from {fn}: {e}")
                 duration = 0
                 title = os.path.splitext(fn)[0]
                 album = 'Unknown'
@@ -30,6 +39,8 @@ def scan_music_dir(music_dir):
                 'album': album,
                 'artist': artist
             })
+    
+    print(f"Found {len(tracks)} tracks total\n")
     return tracks
 
 class SongSelector:

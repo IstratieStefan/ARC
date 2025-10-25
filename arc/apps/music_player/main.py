@@ -2,6 +2,7 @@ import pygame
 import sys
 import os
 import math
+import platform
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 from arc.core.config import config
@@ -12,6 +13,13 @@ from arc.apps.music_player.player import PlayerScreen
 from arc.apps.music_player.artist_selector import ArtistSelector
 
 def main():
+    # ---- Set audio environment for Linux/Raspberry Pi ----
+    if platform.system() == 'Linux':
+        # Set SDL audio driver to ALSA for better Raspberry Pi compatibility
+        if 'SDL_AUDIODRIVER' not in os.environ:
+            os.environ['SDL_AUDIODRIVER'] = 'alsa'
+        print(f"Audio driver: {os.environ.get('SDL_AUDIODRIVER', 'default')}")
+    
     # ---- Init Pygame and Config ----
     pygame.init()
     screen_width = getattr(getattr(config, "screen", None), "width", 480)

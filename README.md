@@ -3,6 +3,16 @@
 [![Designed in - California](https://img.shields.io/badge/Designed_in-California-2ea44f)](https://)
 [![Built in - Romania](https://img.shields.io/badge/Built_in-Romania-3876fc)](https://)
 
+## 🚨 Quick Fix After Update
+
+If you're experiencing icon loading issues after updating, run:
+```bash
+bash quick_fix.sh
+```
+This will automatically fix all paths and move files to the new structure.
+
+---
+
 [Documentation 🇷🇴](https://github.com/IstratieStefan/ARC/blob/main/Docs/ARC%20Documentation.pdf)
 
 [Documentation 🇺🇸](https://github.com/IstratieStefan/ARC/blob/main/Docs/ARC%20Documentation%20English.pdf)

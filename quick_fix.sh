@@ -159,3 +159,5 @@ echo ""
 echo "If you still have issues, run: python3 debug_icons.py"
 echo ""
 
+
+

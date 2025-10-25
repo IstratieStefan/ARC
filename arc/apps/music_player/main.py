@@ -5,11 +5,11 @@ import math
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 from arc.core.config import config
-from music_player.menu import MainMenu
-from music_player.song_selector import SongSelector, scan_music_dir
-from music_player.album_selector import AlbumSelector
-from music_player.player import PlayerScreen
-from music_player.artist_selector import ArtistSelector
+from arc.apps.music_player.menu import MainMenu
+from arc.apps.music_player.song_selector import SongSelector, scan_music_dir
+from arc.apps.music_player.album_selector import AlbumSelector
+from arc.apps.music_player.player import PlayerScreen
+from arc.apps.music_player.artist_selector import ArtistSelector
 
 def main():
     # ---- Init Pygame and Config ----

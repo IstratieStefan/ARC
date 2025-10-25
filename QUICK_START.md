@@ -65,8 +65,13 @@ sudo reboot
 ### Test Individual App
 
 ```bash
-./run_app.sh music_player main.py
-./run_app.sh Chatbot main.py
+cd ~/Github/ARC/music_player
+PYTHONPATH=~/Github/ARC ~/Github/ARC/venv/bin/python main.py
+```
+
+Or test with the full command:
+```bash
+bash -c 'cd ~/Github/ARC/music_player && PYTHONPATH=~/Github/ARC ~/Github/ARC/venv/bin/python main.py'
 ```
 
 ### Verify Icons Work
@@ -105,10 +110,11 @@ sudo systemctl restart arc-launcher  # If using systemd
 ```
 ARC/
 ├── launcher.py              # Main launcher
-├── run_app.sh              # App wrapper script
 ├── config/
 │   └── arc.yaml            # Main configuration
 ├── venv/                   # Python virtual environment
+│   └── bin/
+│       └── python          # Python interpreter with all deps
 ├── music_player/           # Example app
 │   └── main.py
 ├── Chatbot/
@@ -118,8 +124,7 @@ ARC/
 
 ## Configuration Files
 
-- **`config/arc.yaml`** - Main config (icons, apps, colors)
-- **`run_app.sh`** - Launches apps with correct environment
+- **`config/arc.yaml`** - Main config (icons, apps, colors, launch commands)
 - **`setup_autostart.sh`** - Sets up auto-start on boot
 - **`generate_config.sh`** - Updates paths for your installation
 
@@ -147,7 +152,7 @@ ARC/
 
 1. Check paths in config:
    ```bash
-   grep "exec.*run_app.sh" config/arc.yaml
+   grep "exec.*bash -c" config/arc.yaml
    ```
 
 2. Update paths:
@@ -155,9 +160,9 @@ ARC/
    ./generate_config.sh
    ```
 
-3. Test manually:
+3. Test manually (copy exec command from config and run it):
    ```bash
-   ./run_app.sh music_player main.py
+   bash -c 'cd ~/Github/ARC/music_player && PYTHONPATH=~/Github/ARC ~/Github/ARC/venv/bin/python main.py'
    ```
 
 ### Auto-Start Doesn't Work
@@ -218,9 +223,10 @@ For issues, check:
 
 ✅ Always use absolute paths in config
 ✅ Run `generate_config.sh` after moving the project
-✅ Apps launch via `run_app.sh` which activates venv automatically
+✅ Apps launch directly with venv Python (no wrapper script)
 ✅ Icons should be in `/home/admin/Icons/` or update config
 ✅ Test apps work before setting up auto-start
+✅ Each app runs in its own directory with PYTHONPATH set
 
 Happy hacking! 🚀
 

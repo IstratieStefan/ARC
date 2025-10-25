@@ -27,10 +27,8 @@ echo "Backup created: $BACKUP_FILE"
 USER_HOME="$HOME"
 
 # Update the exec paths to use absolute paths
-# This works by replacing "bash run_app.sh" or "/home/admin/Github/ARC/run_app.sh" 
-# with the actual current path
-sed -i.tmp "s|exec: \"bash run_app.sh|exec: \"$SCRIPT_DIR/run_app.sh|g" "$CONFIG_FILE"
-sed -i.tmp "s|exec: \"/home/admin/Github/ARC/run_app.sh|exec: \"$SCRIPT_DIR/run_app.sh|g" "$CONFIG_FILE"
+# This replaces /home/admin/Github/ARC with the actual current path
+sed -i.tmp "s|/home/admin/Github/ARC|$SCRIPT_DIR|g" "$CONFIG_FILE"
 
 # Clean up temp file
 rm -f "$CONFIG_FILE.tmp"
@@ -39,7 +37,8 @@ echo ""
 echo "✓ Config file updated successfully!"
 echo ""
 echo "Summary of changes:"
-echo "  - All app exec paths now use: $SCRIPT_DIR/run_app.sh"
+echo "  - All paths updated to use: $SCRIPT_DIR"
+echo "  - Apps launch with venv Python: $SCRIPT_DIR/venv/bin/python"
 echo "  - Backup saved to: $BACKUP_FILE"
 echo ""
 echo "Note: Icon paths may still need to be updated manually if not at /home/admin/Icons/"
@@ -58,6 +57,7 @@ fi
 
 echo ""
 echo "All apps will now launch correctly from anywhere using:"
-echo "  - Virtual environment: $SCRIPT_DIR/venv"
+echo "  - Virtual environment: $SCRIPT_DIR/venv/bin/python"
 echo "  - Project root: $SCRIPT_DIR"
+echo "  - PYTHONPATH: $SCRIPT_DIR"
 

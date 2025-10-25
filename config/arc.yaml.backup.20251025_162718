@@ -51,31 +51,31 @@ builtin_apps:
 
   - name: AI Chatbot
     icon: /home/admin/Icons/AI.png
-    exec: "/home/admin/ARC/venv/bin/python -m arc.apps.chatbot.main"
+    exec: "cd /home/admin/ARC && /home/admin/ARC/venv/bin/python -m arc.apps.chatbot.main"
 
   - name: Calendar
     icon: /home/admin/Icons/calendar.png
-    exec: "/home/admin/ARC/venv/bin/python -m arc.apps.calendar.main"
+    exec: "cd /home/admin/ARC && /home/admin/ARC/venv/bin/python -m arc.apps.calendar.main"
 
   - name: RF tools
     icon: /home/admin/Icons/rf.png
-    exec: "/home/admin/ARC/venv/bin/python -m arc.apps.rf_tools.main"
+    exec: "cd /home/admin/ARC && /home/admin/ARC/venv/bin/python -m arc.apps.rf_tools.main"
 
   - name: IR tools
     icon: /home/admin/Icons/ir.png
-    exec: "/home/admin/ARC/venv/bin/python -m arc.apps.ir_tools.main"
+    exec: "cd /home/admin/ARC && /home/admin/ARC/venv/bin/python -m arc.apps.ir_tools.main"
 
   - name: NFC tools
     icon: /home/admin/Icons/nfc.png
-    exec: "/home/admin/ARC/venv/bin/python -m arc.apps.nfc_tools.main"
+    exec: "cd /home/admin/ARC && /home/admin/ARC/venv/bin/python -m arc.apps.nfc_tools.main"
 
   - name: WiFi tools
     icon: /home/admin/Icons/wifi_tools.png
-    exec: "/home/admin/ARC/venv/bin/python -m arc.apps.wifi_tools.main"
+    exec: "cd /home/admin/ARC && /home/admin/ARC/venv/bin/python -m arc.apps.wifi_tools.main"
 
   - name: Bluetooth tools
     icon: /home/admin/Icons/bluetooth_tools.png
-    exec: "/home/admin/ARC/venv/bin/python -m arc.apps.bluetooth_tools.main"
+    exec: "cd /home/admin/ARC && /home/admin/ARC/venv/bin/python -m arc.apps.bluetooth_tools.main"
 
   - name: Files
     icon: /home/admin/Icons/files.png
@@ -83,19 +83,19 @@ builtin_apps:
 
   - name: Text editor
     icon: /home/admin/Icons/editor.png
-    exec: "/home/admin/ARC/venv/bin/python -m arc.apps.notes.main"
+    exec: "cd /home/admin/ARC && /home/admin/ARC/venv/bin/python -m arc.apps.notes.main"
 
   - name: Music
     icon: /home/admin/Icons/music.png
-    exec: "/home/admin/ARC/venv/bin/python -m arc.apps.music_player.main"
+    exec: "cd /home/admin/ARC && /home/admin/ARC/venv/bin/python -m arc.apps.music_player.main"
 
   - name: Games
     icon: /home/admin/Icons/games.png
-    exec: "/home/admin/ARC/venv/bin/python -m arc.apps.games.main"
+    exec: "cd /home/admin/ARC && /home/admin/ARC/venv/bin/python -m arc.apps.games.main"
 
   - name: ARC connect
     icon: /home/admin/Icons/arc_connect.png
-    exec: "/home/admin/ARC/venv/bin/python -m arc.apps.connect.ip"
+    exec: "cd /home/admin/ARC && /home/admin/ARC/venv/bin/python -m arc.apps.connect.ip"
 
 # Directory paths
 apps_dir: ./apps

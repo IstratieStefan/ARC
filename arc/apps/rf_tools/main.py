@@ -3,8 +3,8 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import math
-from config import config
-from ui_elements import Button, WarningMessage, TabManager
+from arc.core.config import config
+from arc.core.ui_elements import Button, WarningMessage, TabManager
 
 def safe_get(obj, key, default=None):
     """Safely get attribute or dict key from config, falling back as needed."""

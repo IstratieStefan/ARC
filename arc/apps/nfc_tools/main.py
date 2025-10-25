@@ -6,10 +6,10 @@ import math
 import time
 import serial
 import serial.tools.list_ports
-from config import config 
+from arc.core.config import config 
 import json
 import datetime
-from ui_elements import Button, WarningMessage, TabManager
+from arc.core.ui_elements import Button, WarningMessage, TabManager
 
 class NFCMenu:
     ITEMS_PER_TAB = 3

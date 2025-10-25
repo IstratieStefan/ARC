@@ -58,7 +58,7 @@ fi
 
 echo ""
 echo "All apps will now launch correctly from anywhere using:"
-echo "  - Format: $SCRIPT_DIR/venv/bin/python $SCRIPT_DIR/arc/apps/<app>/main.py"
+echo "  - Format: cd $SCRIPT_DIR && venv/bin/python arc/apps/<app>/main.py"
 echo "  - Virtual environment: $SCRIPT_DIR/venv/bin/python"
 echo "  - Project root: $SCRIPT_DIR"
 

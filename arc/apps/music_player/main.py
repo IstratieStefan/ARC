@@ -4,7 +4,7 @@ import os
 import math
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from config import config
+from arc.core.config import config
 from music_player.menu import MainMenu
 from music_player.song_selector import SongSelector, scan_music_dir
 from music_player.album_selector import AlbumSelector

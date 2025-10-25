@@ -1,7 +1,7 @@
 import pygame
 import sys
 import math
-from config import config
+from arc.core.config import config
 
 pygame.init()
 

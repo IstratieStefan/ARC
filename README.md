@@ -7,6 +7,8 @@
 
 The default configuration is set for `/home/admin/ARC` on Raspberry Pi.
 
+**After pulling updates, apps should work immediately!** All import statements have been fixed.
+
 If you've installed ARC in a different location, update the app paths:
 
 ```bash
@@ -16,7 +18,9 @@ cd /home/admin/ARC  # or your installation path
 
 This ensures all apps launch correctly from anywhere, using the virtual environment. 
 
-**Quick Reference:** See [`RPI_COMMANDS.md`](RPI_COMMANDS.md) for all Raspberry Pi commands.
+**Quick References:**
+- [`RPI_COMMANDS.md`](RPI_COMMANDS.md) - All Raspberry Pi commands
+- [`IMPORT_FIX_SUMMARY.md`](IMPORT_FIX_SUMMARY.md) - Import fixes explained
 
 ---
 

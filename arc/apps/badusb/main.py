@@ -4,7 +4,7 @@ import sys
 import subprocess
 import threading
 import time
-from config import config
+from arc.core.config import config
 
 SCREEN_WIDTH = 480
 SCREEN_HEIGHT = 320

@@ -18,20 +18,20 @@ For apps to work from anywhere (regardless of your current directory), all paths
 
 ### Current Configuration
 
-Your config now uses absolute paths with direct Python execution:
+Your config now uses simple commands that cd to the project root:
 
 ```yaml
 builtin_apps:
   - name: Music
     icon: /home/admin/Icons/music.png
-    exec: "/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/music_player/main.py"
+    exec: "cd /home/admin/ARC && venv/bin/python arc/apps/music_player/main.py"
 ```
 
 This means:
 - ✅ Works when launched from any directory
-- ✅ Uses the virtual environment Python directly
-- ✅ Simple, clean command structure
-- ✅ No wrapper script or cd needed
+- ✅ Uses the virtual environment Python
+- ✅ Runs from ARC root so imports work correctly
+- ✅ Simple, reliable command structure
 
 ## Updating Paths for Your System
 
@@ -96,19 +96,19 @@ To test if apps launch correctly:
 
 1. **Test from any directory:**
    ```bash
-   /home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/music_player/main.py
+   cd /home/admin/ARC && venv/bin/python arc/apps/music_player/main.py
    ```
 
 2. **Test from different directory:**
    ```bash
    cd /tmp
-   /home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/chatbot/main.py
+   cd /home/admin/ARC && venv/bin/python arc/apps/chatbot/main.py
    ```
 
 Both should work! If not, check:
 - Does the virtual environment exist? (`ls -d /home/admin/ARC/venv/`)
 - Does the app exist? (`ls /home/admin/ARC/arc/apps/music_player/main.py`)
-- Are the paths in your config absolute?
+- Are you in the ARC root when running? (`pwd` should show `/home/admin/ARC`)
 
 ## Adding New Apps
 
@@ -117,14 +117,14 @@ When adding a new app to `config/arc.yaml`:
 ```yaml
 - name: My New App
   icon: /home/admin/Icons/my_app.png
-  exec: "/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/my_new_app/main.py"
+  exec: "cd /home/admin/ARC && venv/bin/python arc/apps/my_new_app/main.py"
 ```
 
 **Important:**
-- Use absolute paths for both icon and exec command
-- Format: `/path/to/venv/bin/python /path/to/app/main.py`
+- Icon should use absolute path
+- Exec command: `cd /home/admin/ARC && venv/bin/python arc/apps/<app>/main.py`
 - Place your app in `/home/admin/ARC/arc/apps/` directory
-- Icon should be in `/home/admin/Icons/`
+- The `cd` ensures imports work correctly
 
 ## Troubleshooting
 
@@ -145,6 +145,11 @@ When adding a new app to `config/arc.yaml`:
    ls -l /home/admin/ARC/arc/apps/music_player/main.py
    ```
    Both should exist.
+
+4. **Test the command directly:**
+   ```bash
+   cd /home/admin/ARC && venv/bin/python arc/apps/music_player/main.py
+   ```
 
 ### "No such file or directory" error
 

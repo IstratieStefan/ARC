@@ -6,64 +6,66 @@ Your ARC installation: **`/home/admin/ARC`**
 
 ### Simple Command Format:
 ```bash
-/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/<app_folder>/main.py
+cd /home/admin/ARC && venv/bin/python arc/apps/<app_folder>/main.py
 ```
+
+**Note:** Apps import from `arc.core` (e.g., `from arc.core import config`), so they must be run from the ARC root directory.
 
 ### Specific Apps:
 
 **Music Player:**
 ```bash
-/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/music_player/main.py
+cd /home/admin/ARC && venv/bin/python arc/apps/music_player/main.py
 ```
 
 **Chatbot:**
 ```bash
-/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/chatbot/main.py
+cd /home/admin/ARC && venv/bin/python arc/apps/chatbot/main.py
 ```
 
 **WiFi Tools:**
 ```bash
-/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/wifi_tools/main.py
+cd /home/admin/ARC && venv/bin/python arc/apps/wifi_tools/main.py
 ```
 
 **Calendar:**
 ```bash
-/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/calendar/main.py
+cd /home/admin/ARC && venv/bin/python arc/apps/calendar/main.py
 ```
 
 **Games:**
 ```bash
-/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/games/main.py
+cd /home/admin/ARC && venv/bin/python arc/apps/games/main.py
 ```
 
 **NFC Tools:**
 ```bash
-/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/nfc_tools/main.py
+cd /home/admin/ARC && venv/bin/python arc/apps/nfc_tools/main.py
 ```
 
 **RF Tools:**
 ```bash
-/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/rf_tools/main.py
+cd /home/admin/ARC && venv/bin/python arc/apps/rf_tools/main.py
 ```
 
 **IR Tools:**
 ```bash
-/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/ir_tools/main.py
+cd /home/admin/ARC && venv/bin/python arc/apps/ir_tools/main.py
 ```
 
 **Bluetooth Tools:**
 ```bash
-/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/bluetooth_tools/main.py
+cd /home/admin/ARC && venv/bin/python arc/apps/bluetooth_tools/main.py
 ```
 
 **Notes/Text Editor:**
 ```bash
-/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/notes/main.py
+cd /home/admin/ARC && venv/bin/python arc/apps/notes/main.py
 ```
 
 **ARC Connect:**
 ```bash
-/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/connect/ip.py
+cd /home/admin/ARC && venv/bin/python arc/apps/connect/ip.py
 ```
 
 ## Running the Launcher
@@ -184,7 +186,7 @@ cat /home/admin/ARC/config/arc.yaml | grep "venv/bin/python"
 
 ### Test App Manually:
 ```bash
-/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/music_player/main.py
+cd /home/admin/ARC && venv/bin/python arc/apps/music_player/main.py
 ```
 
 ## Quick Fixes

@@ -4,8 +4,8 @@ import os
 import json
 import subprocess
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from config import config
-from ui_elements import Button, WarningMessage, TabManager
+from arc.core.config import config
+from arc.core.ui_elements import Button, WarningMessage, TabManager
 
 class GameMenu:
     ITEMS_PER_TAB = 3

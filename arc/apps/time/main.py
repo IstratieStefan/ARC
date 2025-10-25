@@ -1,7 +1,7 @@
 import pygame
 import sys
 import time
-from config import config
+from arc.core.config import config
 
 WIDTH, HEIGHT = config.screen.width, config.screen.height
 TAB_HEIGHT = 50

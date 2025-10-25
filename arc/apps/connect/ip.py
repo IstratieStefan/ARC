@@ -6,7 +6,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from PIL import Image
 import io
-from config import config   # <-- YAML loader
+from arc.core.config import config   # <-- YAML loader
 
 WIDTH, HEIGHT = config.screen.width, config.screen.height
 ACCENT_COLOR = tuple(config.accent_color)

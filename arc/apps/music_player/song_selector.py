@@ -4,7 +4,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import pygame
 from mutagen.mp3 import MP3
 from mutagen.easyid3 import EasyID3
-from ui_elements import ScrollableList
+from arc.core.ui_elements import ScrollableList
 
 def scan_music_dir(music_dir):
     """Scans a directory for MP3s, returning a list of dicts with all tags."""

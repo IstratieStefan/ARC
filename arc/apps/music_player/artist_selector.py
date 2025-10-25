@@ -1,5 +1,5 @@
 import pygame
-from ui_elements import ScrollableList
+from arc.core.ui_elements import ScrollableList
 
 class ArtistSelector:
     def __init__(self, tracks, fonts, colors, screen,

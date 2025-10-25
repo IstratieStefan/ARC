@@ -1,5 +1,5 @@
 import pygame
-from config import config
+from arc.core.config import config
 import sys
 import requests
 import json

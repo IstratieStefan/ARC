@@ -1,7 +1,7 @@
 import pygame
 import sys
 import os
-from config import config
+from arc.core.config import config
 
 # --- For file dialog ---
 import tkinter as tk

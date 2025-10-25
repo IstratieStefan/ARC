@@ -1,8 +1,8 @@
 import pygame
 import sys
 import math
-import config
-from ui_elements import Button, WarningMessage, TabManager, SearchBox
+from arc.core import config
+from arc.core.ui_elements import Button, WarningMessage, TabManager, SearchBox
 
 class EmailApp:
     """

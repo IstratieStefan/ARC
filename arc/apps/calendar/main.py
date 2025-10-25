@@ -5,8 +5,8 @@ import calendar
 from datetime import datetime
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import config
-from ui_elements import *
+from arc.core import config
+from arc.core.ui_elements import *
 
 # --- Config helpers ---
 def c(name, default=(240,240,240)):

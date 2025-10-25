@@ -40,12 +40,21 @@ All app paths in `config/arc.yaml` updated to reflect the new structure:
 - **New:** `/home/admin/ARC/arc/apps/chatbot`
 
 ### Simplified Launch Commands
-Apps now launch with simple absolute path commands:
+Apps now launch with simple commands from the ARC root:
 ```bash
-/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/<app>/main.py
+cd /home/admin/ARC && venv/bin/python arc/apps/<app>/main.py
 ```
 
-No wrapper scripts, no cd, no PYTHONPATH - just direct execution!
+No wrapper scripts, no PYTHONPATH - just cd to root and run!
+
+### Fixed Imports
+All apps now use proper imports:
+```python
+from arc.core import config
+from arc.core.ui_elements import *
+```
+
+This ensures modules are found correctly when running from the project root.
 
 ## Documentation Updates
 
@@ -158,7 +167,7 @@ If you have custom scripts or shortcuts pointing to old app locations, update th
 
 4. **Test an app:**
    ```bash
-   /home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/music_player/main.py
+   cd /home/admin/ARC && venv/bin/python arc/apps/music_player/main.py
    ```
 
 ## Documentation Map

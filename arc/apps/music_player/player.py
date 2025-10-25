@@ -1,6 +1,6 @@
 import pygame
 import io
-from config import config
+from arc.core.config import config
 import time
 import sys
 import os

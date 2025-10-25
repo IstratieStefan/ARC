@@ -66,12 +66,12 @@ sudo reboot
 ### Test Individual App
 
 ```bash
-/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/music_player/main.py
+cd /home/admin/ARC && venv/bin/python arc/apps/music_player/main.py
 ```
 
 Or any other app:
 ```bash
-/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/chatbot/main.py
+cd /home/admin/ARC && venv/bin/python arc/apps/chatbot/main.py
 ```
 
 ### Verify Icons Work
@@ -165,7 +165,7 @@ ARC/
 
 3. Test manually (copy exec command from config and run it):
    ```bash
-   /home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/music_player/main.py
+   cd /home/admin/ARC && venv/bin/python arc/apps/music_player/main.py
    ```
 
 ### Auto-Start Doesn't Work

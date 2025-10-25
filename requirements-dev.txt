@@ -1,0 +1,20 @@
+# Development dependencies
+# Install these for development/testing: pip install -r requirements-dev.txt
+
+# Include base requirements
+-r requirements.txt
+
+# Code quality tools
+black>=22.0.0        # Code formatter
+flake8>=4.0.0        # Linter
+mypy>=0.950          # Type checker
+pylint>=2.13.0       # Additional linting
+
+# Testing tools
+pytest>=7.0.0        # Testing framework
+pytest-cov>=3.0.0    # Coverage plugin
+
+# Development utilities
+ipython>=8.0.0       # Better Python REPL
+ipdb>=0.13.0         # Better debugger
+

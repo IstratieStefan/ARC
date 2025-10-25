@@ -33,18 +33,28 @@ source venv/bin/activate  # On Linux/macOS
 
 ### 3. Install Dependencies
 
-**macOS:**
+**macOS (Development):**
 ```bash
 pip install -r requirements.txt
+# All dependencies will install successfully
 ```
 
-**Linux:**
+**Linux / Raspberry Pi:**
 ```bash
+# Install base dependencies
 pip install -r requirements.txt
-# If python-uinput fails on Linux, that's OK - it's only needed for hardware integration
+
+# Install Linux-specific packages (optional, for hardware features)
+pip install -r requirements-linux.txt
 ```
 
-> **Note:** On macOS, `python-uinput` will fail to install as it's Linux-specific. This is expected and won't affect development.
+**Development Tools (Optional):**
+```bash
+pip install -r requirements-dev.txt
+# Includes code formatters, linters, testing tools
+```
+
+> **Note:** The `requirements-linux.txt` file contains `python-uinput` which only works on Linux. It's used for hardware keyboard integration on Raspberry Pi. Skip it on macOS.
 
 ## Running ARC
 

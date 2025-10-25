@@ -1,0 +1,13 @@
+# Linux-specific dependencies for ARC
+# These packages are only needed on Linux/Raspberry Pi
+# Will fail to install on macOS - that's expected!
+
+# Keyboard input emulation (Linux only)
+# This is used for hardware keyboard integration on Raspberry Pi
+python-uinput>=1.0.0
+
+# Optional: Additional Linux-specific packages
+# Uncomment if needed for your setup:
+# RPi.GPIO>=0.7.0  # Raspberry Pi GPIO (if using GPIO features)
+# evdev>=1.4.0     # Linux input device interface
+

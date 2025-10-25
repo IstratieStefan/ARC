@@ -1,15 +1,39 @@
-numpy
-pygame
-mutagen
-qtpy
-requests
-pyaudio
-qrcode
-pillow
-python-uinput
-flask
-flask-cors
-websockets
-paramiko
-pyyaml
-smbus2
+# ARC Desktop Environment Dependencies
+# Compatible with Python 3.7+
+# Works on macOS, Linux, and Raspberry Pi
+
+# Core dependencies
+numpy>=1.21.0
+pygame>=2.1.0
+mutagen>=1.45.0
+requests>=2.26.0
+pillow>=9.0.0
+pyyaml>=6.0
+
+# Audio support
+pyaudio>=0.2.11
+
+# QR code generation
+qrcode>=7.3
+
+# Web server (for ARC Connect)
+flask>=2.0.0
+flask-cors>=3.0.0
+websockets>=10.0
+
+# SSH/Remote access
+paramiko>=2.8.0
+
+# Qt compatibility layer (optional, for some apps)
+qtpy>=2.0.0
+
+# Hardware interfaces (Linux/Raspberry Pi only)
+# Note: smbus2 will install but may not work on macOS (that's OK)
+smbus2>=0.4.0
+
+# Linux-specific packages (will fail on macOS - see requirements-linux.txt):
+# - python-uinput (for keyboard emulation on hardware)
+
+# To install:
+# macOS/Development: pip install -r requirements.txt
+# Linux/Raspberry Pi: pip install -r requirements.txt && pip install -r requirements-linux.txt

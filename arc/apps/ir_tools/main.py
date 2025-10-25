@@ -2,7 +2,7 @@ import pygame
 import sys
 import math
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 from arc.core.config import config
 from arc.core.ui_elements import Button, WarningMessage, TabManager
 

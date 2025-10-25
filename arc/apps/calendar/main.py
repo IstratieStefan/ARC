@@ -4,7 +4,8 @@ import os
 import calendar
 from datetime import datetime
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# Add project root to path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 from arc.core import config
 from arc.core.ui_elements import *
 

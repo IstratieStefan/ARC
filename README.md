@@ -3,11 +3,20 @@
 [![Designed in - California](https://img.shields.io/badge/Designed_in-California-2ea44f)](https://)
 [![Built in - Romania](https://img.shields.io/badge/Built_in-Romania-3876fc)](https://)
 
+## 🚨 IMPORTANT: Fix Import Errors
+
+If you're seeing `ModuleNotFoundError: No module named 'config'` on your Raspberry Pi:
+
+```bash
+cd /home/admin/ARC
+git pull
+```
+
+**All import statements have been fixed!** See [`FIX_NOW.md`](FIX_NOW.md) for details.
+
 ## ⚙️ Configuration for Your Installation
 
 The default configuration is set for `/home/admin/ARC` on Raspberry Pi.
-
-**After pulling updates, apps should work immediately!** All import statements have been fixed.
 
 If you've installed ARC in a different location, update the app paths:
 

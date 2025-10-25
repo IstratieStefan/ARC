@@ -57,6 +57,18 @@ builtin_apps:
     icon: /home/admin/Icons/calendar.png
     exec: "/home/admin/ARC/venv/bin/python -m arc.apps.calendar.main"
 
+  - name: Web Browser
+    icon: /home/admin/Icons/web.png
+    exec: "midori"
+
+  - name: Calc
+    icon: /home/admin/Icons/calc.png
+    exec: "libreoffice --calc"
+
+  - name: Writer
+    icon: /home/admin/Icons/writer.png
+    exec: "libreoffice --writer"
+
   - name: RF tools
     icon: /home/admin/Icons/rf.png
     exec: "/home/admin/ARC/venv/bin/python -m arc.apps.rf_tools.main"
@@ -97,6 +109,7 @@ builtin_apps:
     icon: /home/admin/Icons/arc_connect.png
     exec: "/home/admin/ARC/venv/bin/python -m arc.apps.connect.ip"
 
+  
 # Directory paths
 apps_dir: ./apps
 packages_dir: ./packages

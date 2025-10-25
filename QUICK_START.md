@@ -5,7 +5,7 @@
 ### 1. Install Dependencies
 
 ```bash
-cd ~/Github/ARC
+cd /home/admin/ARC
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
@@ -20,8 +20,9 @@ pip install -r requirements-linux.txt
 # Create icons directory
 sudo mkdir -p /home/admin/Icons
 
-# Copy icons
-cp -r ARC_DE/icons/* /home/admin/Icons/
+# Copy icons (use whichever folder exists)
+cp -r /home/admin/ARC/ARC_DE/icons/* /home/admin/Icons/ 2>/dev/null || \
+cp -r /home/admin/ARC/arc/assets/icons/* /home/admin/Icons/
 ```
 
 ### 3. Configure Paths
@@ -47,7 +48,7 @@ Choose your preferred method when prompted.
 ### From Terminal
 
 ```bash
-cd ~/Github/ARC
+cd /home/admin/ARC
 source venv/bin/activate
 python launcher.py
 ```
@@ -65,13 +66,12 @@ sudo reboot
 ### Test Individual App
 
 ```bash
-cd ~/Github/ARC/music_player
-PYTHONPATH=~/Github/ARC ~/Github/ARC/venv/bin/python main.py
+/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/music_player/main.py
 ```
 
-Or test with the full command:
+Or any other app:
 ```bash
-bash -c 'cd ~/Github/ARC/music_player && PYTHONPATH=~/Github/ARC ~/Github/ARC/venv/bin/python main.py'
+/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/chatbot/main.py
 ```
 
 ### Verify Icons Work
@@ -115,11 +115,14 @@ ARC/
 ├── venv/                   # Python virtual environment
 │   └── bin/
 │       └── python          # Python interpreter with all deps
-├── music_player/           # Example app
-│   └── main.py
-├── Chatbot/
-│   └── main.py
-└── ... other apps
+├── arc/
+│   ├── apps/               # All applications
+│   │   ├── music_player/
+│   │   ├── chatbot/
+│   │   └── ... other apps
+│   ├── assets/             # Icons and fonts
+│   └── core/               # Core system files
+└── ... documentation and setup files
 ```
 
 ## Configuration Files
@@ -152,7 +155,7 @@ ARC/
 
 1. Check paths in config:
    ```bash
-   grep "exec.*bash -c" config/arc.yaml
+   grep "exec.*venv/bin/python" config/arc.yaml
    ```
 
 2. Update paths:
@@ -162,7 +165,7 @@ ARC/
 
 3. Test manually (copy exec command from config and run it):
    ```bash
-   bash -c 'cd ~/Github/ARC/music_player && PYTHONPATH=~/Github/ARC ~/Github/ARC/venv/bin/python main.py'
+   /home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/music_player/main.py
    ```
 
 ### Auto-Start Doesn't Work
@@ -194,7 +197,7 @@ ARC/
 ### After Git Pull
 
 ```bash
-cd ~/Github/ARC
+cd /home/admin/ARC
 git pull
 ./generate_config.sh
 sudo systemctl restart arc-launcher  # if using systemd
@@ -203,7 +206,7 @@ sudo systemctl restart arc-launcher  # if using systemd
 ### Reset Everything
 
 ```bash
-cd ~/Github/ARC
+cd /home/admin/ARC
 rm -rf venv
 python3 -m venv venv
 source venv/bin/activate

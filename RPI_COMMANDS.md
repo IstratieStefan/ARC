@@ -6,64 +6,64 @@ Your ARC installation: **`/home/admin/ARC`**
 
 ### Simple Command Format:
 ```bash
-cd /home/admin/ARC/<app_folder> && ../venv/bin/python main.py
+/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/<app_folder>/main.py
 ```
 
 ### Specific Apps:
 
 **Music Player:**
 ```bash
-cd /home/admin/ARC/music_player && ../venv/bin/python main.py
+/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/music_player/main.py
 ```
 
 **Chatbot:**
 ```bash
-cd /home/admin/ARC/Chatbot && ../venv/bin/python main.py
+/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/chatbot/main.py
 ```
 
 **WiFi Tools:**
 ```bash
-cd /home/admin/ARC/WIFI_tools && ../venv/bin/python main.py
+/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/wifi_tools/main.py
 ```
 
 **Calendar:**
 ```bash
-cd /home/admin/ARC/Calendar_app && ../venv/bin/python main.py
+/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/calendar/main.py
 ```
 
 **Games:**
 ```bash
-cd /home/admin/ARC/Games && ../venv/bin/python main.py
+/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/games/main.py
 ```
 
 **NFC Tools:**
 ```bash
-cd /home/admin/ARC/NFC_tools && ../venv/bin/python main.py
+/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/nfc_tools/main.py
 ```
 
 **RF Tools:**
 ```bash
-cd /home/admin/ARC/RF_tools && ../venv/bin/python main.py
+/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/rf_tools/main.py
 ```
 
 **IR Tools:**
 ```bash
-cd /home/admin/ARC/IR_tools && ../venv/bin/python main.py
+/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/ir_tools/main.py
 ```
 
 **Bluetooth Tools:**
 ```bash
-cd /home/admin/ARC/BT_tools && ../venv/bin/python main.py
+/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/bluetooth_tools/main.py
 ```
 
 **Notes/Text Editor:**
 ```bash
-cd /home/admin/ARC/Notes_app && ../venv/bin/python main.py
+/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/notes/main.py
 ```
 
 **ARC Connect:**
 ```bash
-cd /home/admin/ARC/ARC_connect && ../venv/bin/python ip.py
+/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/connect/ip.py
 ```
 
 ## Running the Launcher
@@ -152,7 +152,11 @@ sudo mkdir -p /home/admin/Icons
 
 ### Copy Icons:
 ```bash
+# From ARC_DE folder (if it exists)
 cp -r /home/admin/ARC/ARC_DE/icons/* /home/admin/Icons/
+
+# Or from arc/assets folder
+cp -r /home/admin/ARC/arc/assets/icons/* /home/admin/Icons/
 ```
 
 ### Verify Icons:
@@ -175,13 +179,12 @@ ls -la /home/admin/ARC/venv/bin/python
 
 ### Verify Config:
 ```bash
-cat /home/admin/ARC/config/arc.yaml | grep "cd /home/admin/ARC"
+cat /home/admin/ARC/config/arc.yaml | grep "venv/bin/python"
 ```
 
 ### Test App Manually:
 ```bash
-cd /home/admin/ARC/music_player
-../venv/bin/python main.py
+/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/music_player/main.py
 ```
 
 ## Quick Fixes
@@ -189,7 +192,9 @@ cd /home/admin/ARC/music_player
 ### Icons Not Loading:
 ```bash
 sudo mkdir -p /home/admin/Icons
-cp -r /home/admin/ARC/ARC_DE/icons/* /home/admin/Icons/
+# Copy from ARC_DE or arc/assets
+cp -r /home/admin/ARC/ARC_DE/icons/* /home/admin/Icons/ 2>/dev/null || \
+cp -r /home/admin/ARC/arc/assets/icons/* /home/admin/Icons/
 ```
 
 ### Apps Not Launching:

@@ -24,14 +24,14 @@ Your config now uses absolute paths with direct Python execution:
 builtin_apps:
   - name: Music
     icon: /home/admin/Icons/music.png
-    exec: "bash -c 'cd /home/admin/Github/ARC/music_player && PYTHONPATH=/home/admin/Github/ARC /home/admin/Github/ARC/venv/bin/python main.py'"
+    exec: "/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/music_player/main.py"
 ```
 
 This means:
 - ✅ Works when launched from any directory
 - ✅ Uses the virtual environment Python directly
-- ✅ Sets the correct working directory for the app
-- ✅ No wrapper script needed
+- ✅ Simple, clean command structure
+- ✅ No wrapper script or cd needed
 
 ## Updating Paths for Your System
 
@@ -94,22 +94,21 @@ If your icons are elsewhere:
 
 To test if apps launch correctly:
 
-1. **Test from project root:**
+1. **Test from any directory:**
    ```bash
-   cd ~/Github/ARC/music_player
-   PYTHONPATH=~/Github/ARC ~/Github/ARC/venv/bin/python main.py
+   /home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/music_player/main.py
    ```
 
 2. **Test from different directory:**
    ```bash
    cd /tmp
-   bash -c 'cd /home/admin/Github/ARC/music_player && PYTHONPATH=/home/admin/Github/ARC /home/admin/Github/ARC/venv/bin/python main.py'
+   /home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/chatbot/main.py
    ```
 
 Both should work! If not, check:
-- Does the virtual environment exist? (`ls -d ~/Github/ARC/venv/`)
+- Does the virtual environment exist? (`ls -d /home/admin/ARC/venv/`)
+- Does the app exist? (`ls /home/admin/ARC/arc/apps/music_player/main.py`)
 - Are the paths in your config absolute?
-- Is the app directory correct?
 
 ## Adding New Apps
 
@@ -117,15 +116,15 @@ When adding a new app to `config/arc.yaml`:
 
 ```yaml
 - name: My New App
-  icon: /absolute/path/to/icon.png
-  exec: "bash -c 'cd /absolute/path/to/ARC/MyApp && PYTHONPATH=/absolute/path/to/ARC /absolute/path/to/ARC/venv/bin/python main.py'"
+  icon: /home/admin/Icons/my_app.png
+  exec: "/home/admin/ARC/venv/bin/python /home/admin/ARC/arc/apps/my_new_app/main.py"
 ```
 
 **Important:**
-- Use absolute paths for `icon`, app directory, and Python interpreter
-- Set `PYTHONPATH` to the ARC root directory
-- Change directory to the app's folder before running
-- Replace `/absolute/path/to/ARC` with your actual ARC installation path
+- Use absolute paths for both icon and exec command
+- Format: `/path/to/venv/bin/python /path/to/app/main.py`
+- Place your app in `/home/admin/ARC/arc/apps/` directory
+- Icon should be in `/home/admin/Icons/`
 
 ## Troubleshooting
 
@@ -133,18 +132,19 @@ When adding a new app to `config/arc.yaml`:
 
 1. **Check the config format:**
    ```bash
-   grep "exec.*bash -c" config/arc.yaml
+   grep "exec.*venv/bin/python" config/arc.yaml
    ```
-   Should show absolute paths in the bash -c command.
+   Should show absolute paths for both venv and app.
 
 2. **Test the command manually:**
    Copy the exact `exec` line from your config and run it in terminal.
 
-3. **Check Python path:**
+3. **Check paths exist:**
    ```bash
-   ls -l /home/admin/Github/ARC/venv/bin/python
+   ls -l /home/admin/ARC/venv/bin/python
+   ls -l /home/admin/ARC/arc/apps/music_player/main.py
    ```
-   Should exist and be executable.
+   Both should exist.
 
 ### "No such file or directory" error
 

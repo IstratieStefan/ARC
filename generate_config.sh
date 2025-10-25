@@ -27,7 +27,8 @@ echo "Backup created: $BACKUP_FILE"
 USER_HOME="$HOME"
 
 # Update the exec paths to use absolute paths
-# This replaces /home/admin/Github/ARC with the actual current path
+# This replaces /home/admin/ARC or /home/admin/Github/ARC with the actual current path
+sed -i.tmp "s|/home/admin/ARC|$SCRIPT_DIR|g" "$CONFIG_FILE"
 sed -i.tmp "s|/home/admin/Github/ARC|$SCRIPT_DIR|g" "$CONFIG_FILE"
 
 # Clean up temp file
@@ -57,7 +58,7 @@ fi
 
 echo ""
 echo "All apps will now launch correctly from anywhere using:"
+echo "  - Format: $SCRIPT_DIR/venv/bin/python $SCRIPT_DIR/arc/apps/<app>/main.py"
 echo "  - Virtual environment: $SCRIPT_DIR/venv/bin/python"
 echo "  - Project root: $SCRIPT_DIR"
-echo "  - PYTHONPATH: $SCRIPT_DIR"
 

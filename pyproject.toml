@@ -26,7 +26,8 @@ dependencies = [
 requires-python = ">=3.7"
 
 [project.scripts]
-arc-launcher = "ARC_DE.launcher:main"
+arc-launcher = "arc.desktop.launcher:main"
 
 [tool.setuptools.packages.find]
-include = ["ARC_DE*"]
+include = ["arc*"]
+where = ["."]

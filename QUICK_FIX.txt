@@ -1,0 +1,45 @@
+================================================================================
+ARC ICON FIX - RASPBERRY PI
+================================================================================
+
+ON YOUR RASPBERRY PI, RUN THESE 3 COMMANDS:
+
+1. cd ~/ARC && git pull
+
+2. python3 fix_config_paths.py
+
+3. python3 launcher.py
+
+================================================================================
+
+WHAT HAPPENS:
+- Step 1: Downloads the fix script
+- Step 2: Converts all paths to absolute (fixes icon loading)
+- Step 3: Runs launcher (icons will load!)
+
+================================================================================
+
+EXPECTED OUTPUT FROM STEP 2:
+
+ARC Root: /home/admin/ARC
+Config file: /home/admin/ARC/config/arc.yaml
+
+Fixing paths...
+  icons.wifi_locked: ARC_DE/icons/wifi_locked.png -> /home/admin/ARC/ARC_DE/icons/wifi_locked.png
+  Terminal: ARC_DE/icons/terminal.png -> /home/admin/ARC/ARC_DE/icons/terminal.png
+  (... more lines ...)
+
+✓ All icon paths verified!
+
+Now run: python3 launcher.py
+
+================================================================================
+
+IF IT STILL DOESN'T WORK:
+
+Send me the output of:
+  python3 fix_config_paths.py
+  python3 debug_icons.py
+
+================================================================================
+

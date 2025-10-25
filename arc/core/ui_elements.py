@@ -321,19 +321,30 @@ class AppIcon(Button):
 
         self.icon_path = icon_path
         
-        # Try to resolve the icon path if it's relative
-        if icon_path and not os.path.isabs(icon_path):
-            # Try relative to current working directory
-            if not os.path.exists(icon_path):
-                # Try relative to project root (stored in config)
-                base_dir = getattr(config, '_base_dir', os.getcwd())
-                alt_path = os.path.join(base_dir, icon_path)
-                if os.path.exists(alt_path):
-                    icon_path = alt_path
-                    self.icon_path = icon_path
-        
-        # Make path absolute for better debugging
-        abs_icon_path = os.path.abspath(icon_path) if icon_path else None
+        # Resolve the icon path
+        if icon_path:
+            # If already absolute, use as-is
+            if os.path.isabs(icon_path):
+                abs_icon_path = icon_path
+            else:
+                # Try relative to current working directory first
+                if os.path.exists(icon_path):
+                    abs_icon_path = os.path.abspath(icon_path)
+                else:
+                    # Try relative to project root (stored in config)
+                    base_dir = getattr(config, '_base_dir', os.getcwd())
+                    alt_path = os.path.join(base_dir, icon_path)
+                    if os.path.exists(alt_path):
+                        abs_icon_path = alt_path
+                    else:
+                        # Fallback to making it absolute from cwd
+                        abs_icon_path = os.path.abspath(icon_path)
+            
+            # Update icon_path to the resolved absolute path
+            icon_path = abs_icon_path
+            self.icon_path = abs_icon_path
+        else:
+            abs_icon_path = None
         
         print(f"AppIcon: Loading '{name}'")
         print(f"  Path: {icon_path}")

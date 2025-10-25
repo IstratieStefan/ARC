@@ -29,20 +29,16 @@ def expand_paths(obj, base_dir=None):
         # Expand both ~ and $VARS
         expanded = os.path.expandvars(os.path.expanduser(obj))
         
-        # If it's a relative path starting with arc/, resolve it from base_dir
-        if base_dir and not os.path.isabs(expanded):
-            if expanded.startswith('arc/') or expanded.startswith('arc\\'):
-                expanded = os.path.join(base_dir, expanded)
-            # Also handle paths without leading ./
-            elif '/' in expanded or '\\' in expanded:
-                # Try to resolve as relative to base_dir
-                test_path = os.path.join(base_dir, expanded)
-                if os.path.exists(test_path):
-                    expanded = test_path
+        # If already absolute, just normalize and return
+        if os.path.isabs(expanded):
+            return os.path.normpath(expanded)
         
-        # Normalize path separators for the current OS
-        if '/' in expanded or '\\' in expanded:
-            expanded = os.path.normpath(expanded)
+        # If it's a relative path and we have a base_dir, resolve it
+        if base_dir and ('/' in expanded or '\\' in expanded or expanded.startswith('arc')):
+            # Don't modify special values (like "true", "false", single words without paths)
+            if '/' in expanded or '\\' in expanded:
+                expanded = os.path.join(base_dir, expanded)
+                expanded = os.path.normpath(expanded)
         
         return expanded
     else:

@@ -1,6 +1,5 @@
 # ARC Configuration File
-# Cross-platform compatible for macOS and Linux
-# Paths are relative to ARC project root and will be resolved automatically
+# Icons are stored in: ARC/Icons/
 
 screen:
   width: 480
@@ -39,64 +38,63 @@ colors:
   slider_knob: [200, 200, 200]
   slider_active_knob: [255, 255, 255]
 
-# Icon paths - Current location (will be resolved from ARC root)
+# Icon paths - Reading from Icons/ folder in root
 icons:
-  wifi_locked: ARC_DE/icons/wifi_locked.png
-  wifi_unlocked: ARC_DE/icons/wifi_unlocked.png
+  wifi_locked: Icons/wifi_locked.png
+  wifi_unlocked: Icons/wifi_unlocked.png
 
 # Built-in applications
-# Using bash wrapper script to ensure correct working directory
 builtin_apps:
   - name: Terminal
-    icon: ARC_DE/icons/terminal.png
+    icon: Icons/terminal.png
     exec: "kitty --directory=~"
 
   - name: AI Chatbot
-    icon: ARC_DE/icons/AI.png
+    icon: Icons/AI.png
     exec: "bash run_app.sh Chatbot main.py"
 
   - name: Calendar
-    icon: ARC_DE/icons/calendar.png
+    icon: Icons/calendar.png
     exec: "bash run_app.sh Calendar_app main.py"
 
   - name: RF tools
-    icon: ARC_DE/icons/rf.png
+    icon: Icons/rf.png
     exec: "bash run_app.sh RF_tools main.py"
 
   - name: IR tools
-    icon: ARC_DE/icons/ir.png
+    icon: Icons/ir.png
     exec: "bash run_app.sh IR_tools main.py"
 
   - name: NFC tools
-    icon: ARC_DE/icons/nfc.png
+    icon: Icons/nfc.png
     exec: "bash run_app.sh NFC_tools main.py"
 
   - name: WiFi tools
-    icon: ARC_DE/icons/wifi_tools.png
+    icon: Icons/wifi_tools.png
     exec: "bash run_app.sh WIFI_tools main.py"
 
   - name: Bluetooth tools
-    icon: ARC_DE/icons/bluetooth_tools.png
+    icon: Icons/bluetooth_tools.png
     exec: "bash run_app.sh BT_tools main.py"
 
   - name: Files
-    icon: ARC_DE/icons/files.png
+    icon: Icons/files.png
     exec: "pcmanfm"
 
   - name: Text editor
-    icon: ARC_DE/icons/editor.png
+    icon: Icons/editor.png
     exec: "bash run_app.sh Notes_app main.py"
 
   - name: Music
-    icon: ARC_DE/icons/music.png
+    icon: Icons/music.png
     exec: "bash run_app.sh music_player main.py"
 
   - name: Games
-    icon: ARC_DE/icons/games.png
+    icon: Icons/games.png
     exec: "bash run_app.sh Games main.py"
 
   - name: ARC connect
-    icon: ARC_DE/icons/arc_connect.png
+    icon: Icons/arc_connect.png
     exec: "bash run_app.sh ARC_connect ip.py"
 
 # Directory paths
@@ -124,17 +122,17 @@ topbar:
   fg: [200, 200, 200]
   notification_dot: [245, 88, 88]
   icons: []
-  icon_battery: ARC_DE/icons/topbar/battery.png
-  icon_mobile: ARC_DE/icons/topbar/cellular.png
+  icon_battery: Icons/topbar/battery.png
+  icon_mobile: Icons/topbar/cellular.png
   wifi_icons:
-    - ARC_DE/icons/topbar/wifi_0.png
-    - ARC_DE/icons/topbar/wifi_1.png
-    - ARC_DE/icons/topbar/wifi_2.png
-    - ARC_DE/icons/topbar/wifi_3.png
-    - ARC_DE/icons/topbar/wifi_4.png
-  icon_bt_on: ARC_DE/icons/topbar/bluetooth_on.png
-  icon_bt_off: ARC_DE/icons/topbar/bluetooth_off.png
-  icon_bt_connected: ARC_DE/icons/topbar/bluetooth_connected.png
+    - Icons/topbar/wifi_0.png
+    - Icons/topbar/wifi_1.png
+    - Icons/topbar/wifi_2.png
+    - Icons/topbar/wifi_3.png
+    - Icons/topbar/wifi_4.png
+  icon_bt_on: Icons/topbar/bluetooth_on.png
+  icon_bt_off: Icons/topbar/bluetooth_off.png
+  icon_bt_connected: Icons/topbar/bluetooth_connected.png
   show_clock: true
   clock_format: "%H:%M"
   show_notifications: true
@@ -169,12 +167,12 @@ font:
   name: assets/fonts/Inter/Inter_18pt-SemiBold.ttf
   size: 20
 
-# User directories (~ expands on both macOS and Linux)
+# User directories
 music_dir: ~/Music
 badusb_dir: ~/BadUsbScripts
 game_json: ~/Games/games.json
 
-# API keys and secrets
+# API keys
 api:
   gemini_key: "your api key"
 

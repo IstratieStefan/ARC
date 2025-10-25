@@ -1,6 +1,6 @@
 # ARC Configuration File
-# This configuration works on both macOS and Linux
-# Paths are relative to the project root and work cross-platform
+# Cross-platform compatible for macOS and Linux
+# Paths are relative to ARC project root and will be resolved automatically
 
 screen:
   width: 480
@@ -39,70 +39,69 @@ colors:
   slider_knob: [200, 200, 200]
   slider_active_knob: [255, 255, 255]
 
-# Icon paths (relative to project root, cross-platform)
+# Icon paths - Current location (will be resolved from ARC root)
 icons:
-  wifi_locked: arc/assets/icons/wifi_locked.png
-  wifi_unlocked: arc/assets/icons/wifi_unlocked.png
+  wifi_locked: ARC_DE/icons/wifi_locked.png
+  wifi_unlocked: ARC_DE/icons/wifi_unlocked.png
 
 # Built-in applications
-# Use 'python -m' for Python apps to ensure proper module loading
-# Terminal and file manager commands will be platform-specific at runtime
+# Using bash wrapper script to ensure correct working directory
 builtin_apps:
   - name: Terminal
-    icon: arc/assets/icons/terminal.png
-    exec: "kitty --directory=~"  # Can be overridden per-platform
+    icon: ARC_DE/icons/terminal.png
+    exec: "kitty --directory=~"
 
   - name: AI Chatbot
-    icon: arc/assets/icons/AI.png
-    exec: "python -m arc.apps.chatbot.main"
+    icon: ARC_DE/icons/AI.png
+    exec: "bash run_app.sh Chatbot main.py"
 
   - name: Calendar
-    icon: arc/assets/icons/calendar.png
-    exec: "python -m arc.apps.calendar.main"
+    icon: ARC_DE/icons/calendar.png
+    exec: "bash run_app.sh Calendar_app main.py"
 
   - name: RF tools
-    icon: arc/assets/icons/rf.png
-    exec: "python -m arc.apps.rf_tools.main"
+    icon: ARC_DE/icons/rf.png
+    exec: "bash run_app.sh RF_tools main.py"
 
   - name: IR tools
-    icon: arc/assets/icons/ir.png
-    exec: "python -m arc.apps.ir_tools.main"
+    icon: ARC_DE/icons/ir.png
+    exec: "bash run_app.sh IR_tools main.py"
 
   - name: NFC tools
-    icon: arc/assets/icons/nfc.png
-    exec: "python -m arc.apps.nfc_tools.main"
+    icon: ARC_DE/icons/nfc.png
+    exec: "bash run_app.sh NFC_tools main.py"
 
   - name: WiFi tools
-    icon: arc/assets/icons/wifi_tools.png
-    exec: "python -m arc.apps.wifi_tools.main"
+    icon: ARC_DE/icons/wifi_tools.png
+    exec: "bash run_app.sh WIFI_tools main.py"
 
   - name: Bluetooth tools
-    icon: arc/assets/icons/bluetooth_tools.png
-    exec: "python -m arc.apps.bluetooth_tools.main"
+    icon: ARC_DE/icons/bluetooth_tools.png
+    exec: "bash run_app.sh BT_tools main.py"
 
   - name: Files
-    icon: arc/assets/icons/files.png
-    exec: "pcmanfm"  # Linux: pcmanfm, macOS: open ~
+    icon: ARC_DE/icons/files.png
+    exec: "pcmanfm"
 
   - name: Text editor
-    icon: arc/assets/icons/editor.png
-    exec: "python -m arc.apps.notes.main"
+    icon: ARC_DE/icons/editor.png
+    exec: "bash run_app.sh Notes_app main.py"
 
   - name: Music
-    icon: arc/assets/icons/music.png
-    exec: "python -m arc.apps.music_player.main"
+    icon: ARC_DE/icons/music.png
+    exec: "bash run_app.sh music_player main.py"
 
   - name: Games
-    icon: arc/assets/icons/games.png
-    exec: "python -m arc.apps.games.main"
+    icon: ARC_DE/icons/games.png
+    exec: "bash run_app.sh Games main.py"
 
   - name: ARC connect
-    icon: arc/assets/icons/arc_connect.png
-    exec: "python -m arc.apps.connect.ip"
+    icon: ARC_DE/icons/arc_connect.png
+    exec: "bash run_app.sh ARC_connect ip.py"
 
-# Directory paths (relative paths work on both platforms)
-apps_dir: arc/apps
-packages_dir: packages
+# Directory paths
+apps_dir: ./apps
+packages_dir: ./packages
 
 # Grid layout
 grid:
@@ -125,17 +124,17 @@ topbar:
   fg: [200, 200, 200]
   notification_dot: [245, 88, 88]
   icons: []
-  icon_battery: arc/assets/icons/topbar/battery.png
-  icon_mobile: arc/assets/icons/topbar/cellular.png
+  icon_battery: ARC_DE/icons/topbar/battery.png
+  icon_mobile: ARC_DE/icons/topbar/cellular.png
   wifi_icons:
-    - arc/assets/icons/topbar/wifi_0.png
-    - arc/assets/icons/topbar/wifi_1.png
-    - arc/assets/icons/topbar/wifi_2.png
-    - arc/assets/icons/topbar/wifi_3.png
-    - arc/assets/icons/topbar/wifi_4.png
-  icon_bt_on: arc/assets/icons/topbar/bluetooth_on.png
-  icon_bt_off: arc/assets/icons/topbar/bluetooth_off.png
-  icon_bt_connected: arc/assets/icons/topbar/bluetooth_connected.png
+    - ARC_DE/icons/topbar/wifi_0.png
+    - ARC_DE/icons/topbar/wifi_1.png
+    - ARC_DE/icons/topbar/wifi_2.png
+    - ARC_DE/icons/topbar/wifi_3.png
+    - ARC_DE/icons/topbar/wifi_4.png
+  icon_bt_on: ARC_DE/icons/topbar/bluetooth_on.png
+  icon_bt_off: ARC_DE/icons/topbar/bluetooth_off.png
+  icon_bt_connected: ARC_DE/icons/topbar/bluetooth_connected.png
   show_clock: true
   clock_format: "%H:%M"
   show_notifications: true
@@ -165,9 +164,9 @@ indicator:
   radius: 4
   spacing: 10
 
-# Font configuration (relative path)
+# Font configuration
 font:
-  name: arc/assets/fonts/Inter/Inter_18pt-SemiBold.ttf
+  name: assets/fonts/Inter/Inter_18pt-SemiBold.ttf
   size: 20
 
 # User directories (~ expands on both macOS and Linux)
@@ -181,13 +180,3 @@ api:
 
 # UI timing
 warning_duration: 2000
-
-# Platform-specific settings (optional overrides)
-# These can be used to override settings based on the detected platform
-platform:
-  macos:
-    terminal_cmd: "open -a Terminal"
-    file_manager: "open ~"
-  linux:
-    terminal_cmd: "kitty --directory=~"
-    file_manager: "pcmanfm"

@@ -167,10 +167,20 @@ def load_apps():
     return apps
 
 def launch_app(cmd):
+    """Launch an app, ensuring we run from the project root directory"""
     try:
-        subprocess.Popen(cmd, shell=True)
+        # Ensure we're in the project root when launching apps
+        original_cwd = os.getcwd()
+        os.chdir(project_root)
+        
+        # Launch the app
+        subprocess.Popen(cmd, shell=True, cwd=project_root)
+        
+        # Restore original directory (though we should already be there)
+        os.chdir(original_cwd)
     except Exception as e:
-        print('Launch failed', cmd, e)
+        print(f'Launch failed: {cmd}')
+        print(f'Error: {e}')
 
 def paginate_apps(apps):
     per_page = config.grid.cols * config.grid.rows

@@ -28,12 +28,22 @@ def expand_paths(obj, base_dir=None):
     elif isinstance(obj, str):
         # Expand both ~ and $VARS
         expanded = os.path.expandvars(os.path.expanduser(obj))
+        
         # If it's a relative path starting with arc/, resolve it from base_dir
-        if base_dir and (expanded.startswith('arc/') or expanded.startswith('arc\\')):
-            expanded = os.path.join(base_dir, expanded)
+        if base_dir and not os.path.isabs(expanded):
+            if expanded.startswith('arc/') or expanded.startswith('arc\\'):
+                expanded = os.path.join(base_dir, expanded)
+            # Also handle paths without leading ./
+            elif '/' in expanded or '\\' in expanded:
+                # Try to resolve as relative to base_dir
+                test_path = os.path.join(base_dir, expanded)
+                if os.path.exists(test_path):
+                    expanded = test_path
+        
         # Normalize path separators for the current OS
         if '/' in expanded or '\\' in expanded:
             expanded = os.path.normpath(expanded)
+        
         return expanded
     else:
         return obj
@@ -55,13 +65,28 @@ def load_config(config_path=None):
     
     # Get the project root directory (parent of config file)
     config_path = os.path.abspath(config_path)
-    if "config" in config_path:
-        base_dir = os.path.dirname(os.path.dirname(config_path))
+    
+    # More robust base_dir calculation
+    if os.path.exists(config_path):
+        # If config is in config/ subdirectory, go up one level
+        config_dir = os.path.dirname(config_path)
+        if os.path.basename(config_dir) == "config":
+            base_dir = os.path.dirname(config_dir)
+        else:
+            # Config is in project root
+            base_dir = config_dir
     else:
-        base_dir = os.path.dirname(config_path)
+        # Fallback: use current working directory
+        base_dir = os.getcwd()
     
     # Ensure base_dir is absolute
     base_dir = os.path.abspath(base_dir)
+    
+    # Debug output (can be removed later)
+    import sys
+    if '--debug' in sys.argv or os.environ.get('ARC_DEBUG'):
+        print(f"[Config Debug] Config file: {config_path}")
+        print(f"[Config Debug] Base directory: {base_dir}")
     
     with open(config_path, "r") as f:
         data = yaml.safe_load(f)

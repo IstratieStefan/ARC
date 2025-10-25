@@ -52,3 +52,4 @@ echo "   speaker-test -t wav -c 2"
 echo ""
 echo "Now try running the music player again!"
 
+

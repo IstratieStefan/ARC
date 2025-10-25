@@ -174,3 +174,4 @@ Then check `music_debug.log` for detailed error information.
 ✓ Album art loading
 ✓ Proper ALSA audio driver selection on Linux
 
+

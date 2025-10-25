@@ -169,18 +169,30 @@ def load_apps():
 def launch_app(cmd):
     """Launch an app, ensuring we run from the project root directory"""
     try:
-        # Ensure we're in the project root when launching apps
-        original_cwd = os.getcwd()
-        os.chdir(project_root)
+        # Log the launch attempt
+        log_path = os.path.join(project_root, 'launcher.log')
+        with open(log_path, 'a') as log:
+            log.write(f'\n=== Launching at {time.strftime("%Y-%m-%d %H:%M:%S")} ===\n')
+            log.write(f'Command: {cmd}\n')
+            log.write(f'Working directory: {project_root}\n')
         
-        # Launch the app
-        subprocess.Popen(cmd, shell=True, cwd=project_root)
-        
-        # Restore original directory (though we should already be there)
-        os.chdir(original_cwd)
+        # Launch the app with proper environment
+        subprocess.Popen(
+            cmd,
+            shell=True,
+            cwd=project_root,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.STDOUT,
+            start_new_session=True
+        )
     except Exception as e:
         print(f'Launch failed: {cmd}')
         print(f'Error: {e}')
+        try:
+            with open(log_path, 'a') as log:
+                log.write(f'ERROR: {e}\n')
+        except:
+            pass
 
 def paginate_apps(apps):
     per_page = config.grid.cols * config.grid.rows

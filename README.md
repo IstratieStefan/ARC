@@ -13,14 +13,18 @@ This will automatically fix all paths and move files to the new structure.
 
 ## ⚙️ Configuration for Your Installation
 
-If you've installed ARC in a custom location (not `/home/admin/Github/ARC`), update the app paths:
+The default configuration is set for `/home/admin/ARC` on Raspberry Pi.
+
+If you've installed ARC in a different location, update the app paths:
 
 ```bash
-cd ~/Github/ARC  # or your installation path
+cd /home/admin/ARC  # or your installation path
 ./generate_config.sh
 ```
 
-This ensures all apps launch correctly from anywhere, using the virtual environment. See [`APP_LAUNCHING.md`](APP_LAUNCHING.md) for details.
+This ensures all apps launch correctly from anywhere, using the virtual environment. 
+
+**Quick Reference:** See [`RPI_COMMANDS.md`](RPI_COMMANDS.md) for all Raspberry Pi commands.
 
 ---
 

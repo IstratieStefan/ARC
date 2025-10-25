@@ -51,31 +51,31 @@ builtin_apps:
 
   - name: AI Chatbot
     icon: /home/admin/Icons/AI.png
-    exec: "bash -c 'cd /home/admin/Github/ARC/Chatbot && PYTHONPATH=/home/admin/Github/ARC /home/admin/Github/ARC/venv/bin/python main.py'"
+    exec: "cd /home/admin/ARC/Chatbot && ../venv/bin/python main.py"
 
   - name: Calendar
     icon: /home/admin/Icons/calendar.png
-    exec: "bash -c 'cd /home/admin/Github/ARC/Calendar_app && PYTHONPATH=/home/admin/Github/ARC /home/admin/Github/ARC/venv/bin/python main.py'"
+    exec: "cd /home/admin/ARC/Calendar_app && ../venv/bin/python main.py"
 
   - name: RF tools
     icon: /home/admin/Icons/rf.png
-    exec: "bash -c 'cd /home/admin/Github/ARC/RF_tools && PYTHONPATH=/home/admin/Github/ARC /home/admin/Github/ARC/venv/bin/python main.py'"
+    exec: "cd /home/admin/ARC/RF_tools && ../venv/bin/python main.py"
 
   - name: IR tools
     icon: /home/admin/Icons/ir.png
-    exec: "bash -c 'cd /home/admin/Github/ARC/IR_tools && PYTHONPATH=/home/admin/Github/ARC /home/admin/Github/ARC/venv/bin/python main.py'"
+    exec: "cd /home/admin/ARC/IR_tools && ../venv/bin/python main.py"
 
   - name: NFC tools
     icon: /home/admin/Icons/nfc.png
-    exec: "bash -c 'cd /home/admin/Github/ARC/NFC_tools && PYTHONPATH=/home/admin/Github/ARC /home/admin/Github/ARC/venv/bin/python main.py'"
+    exec: "cd /home/admin/ARC/NFC_tools && ../venv/bin/python main.py"
 
   - name: WiFi tools
     icon: /home/admin/Icons/wifi_tools.png
-    exec: "bash -c 'cd /home/admin/Github/ARC/WIFI_tools && PYTHONPATH=/home/admin/Github/ARC /home/admin/Github/ARC/venv/bin/python main.py'"
+    exec: "cd /home/admin/ARC/WIFI_tools && ../venv/bin/python main.py"
 
   - name: Bluetooth tools
     icon: /home/admin/Icons/bluetooth_tools.png
-    exec: "bash -c 'cd /home/admin/Github/ARC/BT_tools && PYTHONPATH=/home/admin/Github/ARC /home/admin/Github/ARC/venv/bin/python main.py'"
+    exec: "cd /home/admin/ARC/BT_tools && ../venv/bin/python main.py"
 
   - name: Files
     icon: /home/admin/Icons/files.png
@@ -83,19 +83,19 @@ builtin_apps:
 
   - name: Text editor
     icon: /home/admin/Icons/editor.png
-    exec: "bash -c 'cd /home/admin/Github/ARC/Notes_app && PYTHONPATH=/home/admin/Github/ARC /home/admin/Github/ARC/venv/bin/python main.py'"
+    exec: "cd /home/admin/ARC/Notes_app && ../venv/bin/python main.py"
 
   - name: Music
     icon: /home/admin/Icons/music.png
-    exec: "bash -c 'cd /home/admin/Github/ARC/music_player && PYTHONPATH=/home/admin/Github/ARC /home/admin/Github/ARC/venv/bin/python main.py'"
+    exec: "cd /home/admin/ARC/music_player && ../venv/bin/python main.py"
 
   - name: Games
     icon: /home/admin/Icons/games.png
-    exec: "bash -c 'cd /home/admin/Github/ARC/Games && PYTHONPATH=/home/admin/Github/ARC /home/admin/Github/ARC/venv/bin/python main.py'"
+    exec: "cd /home/admin/ARC/Games && ../venv/bin/python main.py"
 
   - name: ARC connect
     icon: /home/admin/Icons/arc_connect.png
-    exec: "bash -c 'cd /home/admin/Github/ARC/ARC_connect && PYTHONPATH=/home/admin/Github/ARC /home/admin/Github/ARC/venv/bin/python ip.py'"
+    exec: "cd /home/admin/ARC/ARC_connect && ../venv/bin/python ip.py"
 
 # Directory paths
 apps_dir: ./apps

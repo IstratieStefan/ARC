@@ -40,61 +40,61 @@ colors:
 
 # Icon paths - Reading from Icons/ folder in root
 icons:
-  wifi_locked: Icons/wifi_locked.png
-  wifi_unlocked: Icons/wifi_unlocked.png
+  wifi_locked: /home/admin/Icons/wifi_locked.png
+  wifi_unlocked: /home/admin/Icons/wifi_unlocked.png
 
 # Built-in applications
 builtin_apps:
   - name: Terminal
-    icon: Icons/terminal.png
+    icon: /home/admin/Icons/terminal.png
     exec: "kitty --directory=~"
 
   - name: AI Chatbot
-    icon: Icons/AI.png
+    icon: /home/admin/Icons/AI.png
     exec: "bash run_app.sh Chatbot main.py"
 
   - name: Calendar
-    icon: Icons/calendar.png
+    icon: /home/admin/Icons/calendar.png
     exec: "bash run_app.sh Calendar_app main.py"
 
   - name: RF tools
-    icon: Icons/rf.png
+    icon: /home/admin/Icons/rf.png
     exec: "bash run_app.sh RF_tools main.py"
 
   - name: IR tools
-    icon: Icons/ir.png
+    icon: /home/admin/Icons/ir.png
     exec: "bash run_app.sh IR_tools main.py"
 
   - name: NFC tools
-    icon: Icons/nfc.png
+    icon: /home/admin/Icons/nfc.png
     exec: "bash run_app.sh NFC_tools main.py"
 
   - name: WiFi tools
-    icon: Icons/wifi_tools.png
+    icon: /home/admin/Icons/wifi_tools.png
     exec: "bash run_app.sh WIFI_tools main.py"
 
   - name: Bluetooth tools
-    icon: Icons/bluetooth_tools.png
+    icon: /home/admin/Icons/bluetooth_tools.png
     exec: "bash run_app.sh BT_tools main.py"
 
   - name: Files
-    icon: Icons/files.png
+    icon: /home/admin/Icons/files.png
     exec: "pcmanfm"
 
   - name: Text editor
-    icon: Icons/editor.png
+    icon: /home/admin/Icons/editor.png
     exec: "bash run_app.sh Notes_app main.py"
 
   - name: Music
-    icon: Icons/music.png
+    icon: /home/admin/Icons/music.png
     exec: "bash run_app.sh music_player main.py"
 
   - name: Games
-    icon: Icons/games.png
+    icon: /home/admin/Icons/games.png
     exec: "bash run_app.sh Games main.py"
 
   - name: ARC connect
-    icon: Icons/arc_connect.png
+    icon: /home/admin/Icons/arc_connect.png
     exec: "bash run_app.sh ARC_connect ip.py"
 
 # Directory paths

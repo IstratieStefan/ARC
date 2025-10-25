@@ -1,5 +1,5 @@
 # ARC Configuration File
-# Icons are stored in: ARC/Icons/
+# Icons are stored in: /home/admin/Icons/
 
 screen:
   width: 480
@@ -38,12 +38,12 @@ colors:
   slider_knob: [200, 200, 200]
   slider_active_knob: [255, 255, 255]
 
-# Icon paths - Reading from Icons/ folder in root
+# Icon paths - Using ABSOLUTE paths to /home/admin/Icons/
 icons:
   wifi_locked: /home/admin/Icons/wifi_locked.png
   wifi_unlocked: /home/admin/Icons/wifi_unlocked.png
 
-# Built-in applications
+# Built-in applications - Using ABSOLUTE paths for icons and executables
 builtin_apps:
   - name: Terminal
     icon: /home/admin/Icons/terminal.png
@@ -51,31 +51,31 @@ builtin_apps:
 
   - name: AI Chatbot
     icon: /home/admin/Icons/AI.png
-    exec: "bash run_app.sh Chatbot main.py"
+    exec: "/home/admin/Github/ARC/run_app.sh Chatbot main.py"
 
   - name: Calendar
     icon: /home/admin/Icons/calendar.png
-    exec: "bash run_app.sh Calendar_app main.py"
+    exec: "/home/admin/Github/ARC/run_app.sh Calendar_app main.py"
 
   - name: RF tools
     icon: /home/admin/Icons/rf.png
-    exec: "bash run_app.sh RF_tools main.py"
+    exec: "/home/admin/Github/ARC/run_app.sh RF_tools main.py"
 
   - name: IR tools
     icon: /home/admin/Icons/ir.png
-    exec: "bash run_app.sh IR_tools main.py"
+    exec: "/home/admin/Github/ARC/run_app.sh IR_tools main.py"
 
   - name: NFC tools
     icon: /home/admin/Icons/nfc.png
-    exec: "bash run_app.sh NFC_tools main.py"
+    exec: "/home/admin/Github/ARC/run_app.sh NFC_tools main.py"
 
   - name: WiFi tools
     icon: /home/admin/Icons/wifi_tools.png
-    exec: "bash run_app.sh WIFI_tools main.py"
+    exec: "/home/admin/Github/ARC/run_app.sh WIFI_tools main.py"
 
   - name: Bluetooth tools
     icon: /home/admin/Icons/bluetooth_tools.png
-    exec: "bash run_app.sh BT_tools main.py"
+    exec: "/home/admin/Github/ARC/run_app.sh BT_tools main.py"
 
   - name: Files
     icon: /home/admin/Icons/files.png
@@ -83,19 +83,19 @@ builtin_apps:
 
   - name: Text editor
     icon: /home/admin/Icons/editor.png
-    exec: "bash run_app.sh Notes_app main.py"
+    exec: "/home/admin/Github/ARC/run_app.sh Notes_app main.py"
 
   - name: Music
     icon: /home/admin/Icons/music.png
-    exec: "bash run_app.sh music_player main.py"
+    exec: "/home/admin/Github/ARC/run_app.sh music_player main.py"
 
   - name: Games
     icon: /home/admin/Icons/games.png
-    exec: "bash run_app.sh Games main.py"
+    exec: "/home/admin/Github/ARC/run_app.sh Games main.py"
 
   - name: ARC connect
     icon: /home/admin/Icons/arc_connect.png
-    exec: "bash run_app.sh ARC_connect ip.py"
+    exec: "/home/admin/Github/ARC/run_app.sh ARC_connect ip.py"
 
 # Directory paths
 apps_dir: ./apps
@@ -115,24 +115,24 @@ cell:
   width: 90
   height: 90
 
-# Top bar configuration
+# Top bar configuration - Using ABSOLUTE icon paths
 topbar:
   height: 30
   bg: [20, 20, 20]
   fg: [200, 200, 200]
   notification_dot: [245, 88, 88]
   icons: []
-  icon_battery: Icons/topbar/battery.png
-  icon_mobile: Icons/topbar/cellular.png
+  icon_battery: /home/admin/Icons/topbar/battery.png
+  icon_mobile: /home/admin/Icons/topbar/cellular.png
   wifi_icons:
-    - Icons/topbar/wifi_0.png
-    - Icons/topbar/wifi_1.png
-    - Icons/topbar/wifi_2.png
-    - Icons/topbar/wifi_3.png
-    - Icons/topbar/wifi_4.png
-  icon_bt_on: Icons/topbar/bluetooth_on.png
-  icon_bt_off: Icons/topbar/bluetooth_off.png
-  icon_bt_connected: Icons/topbar/bluetooth_connected.png
+    - /home/admin/Icons/topbar/wifi_0.png
+    - /home/admin/Icons/topbar/wifi_1.png
+    - /home/admin/Icons/topbar/wifi_2.png
+    - /home/admin/Icons/topbar/wifi_3.png
+    - /home/admin/Icons/topbar/wifi_4.png
+  icon_bt_on: /home/admin/Icons/topbar/bluetooth_on.png
+  icon_bt_off: /home/admin/Icons/topbar/bluetooth_off.png
+  icon_bt_connected: /home/admin/Icons/topbar/bluetooth_connected.png
   show_clock: true
   clock_format: "%H:%M"
   show_notifications: true

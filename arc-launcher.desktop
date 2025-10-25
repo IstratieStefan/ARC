@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=ARC Launcher
+Comment=Start ARC Desktop Environment
+Exec=/home/admin/Github/ARC/venv/bin/python /home/admin/Github/ARC/launcher.py
+Path=/home/admin/Github/ARC
+Terminal=false
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+

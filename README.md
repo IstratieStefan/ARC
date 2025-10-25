@@ -11,6 +11,17 @@ bash quick_fix.sh
 ```
 This will automatically fix all paths and move files to the new structure.
 
+## ⚙️ Configuration for Your Installation
+
+If you've installed ARC in a custom location (not `/home/admin/Github/ARC`), update the app paths:
+
+```bash
+cd ~/Github/ARC  # or your installation path
+./generate_config.sh
+```
+
+This ensures all apps launch correctly from anywhere, using the virtual environment. See [`APP_LAUNCHING.md`](APP_LAUNCHING.md) for details.
+
 ---
 
 [Documentation 🇷🇴](https://github.com/IstratieStefan/ARC/blob/main/Docs/ARC%20Documentation.pdf)

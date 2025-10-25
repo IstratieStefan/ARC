@@ -1,0 +1,17 @@
+[Unit]
+Description=ARC Launcher
+After=graphical.target
+
+[Service]
+Type=simple
+User=admin
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/admin/.Xauthority
+WorkingDirectory=/home/admin/Github/ARC
+ExecStart=/home/admin/Github/ARC/venv/bin/python /home/admin/Github/ARC/launcher.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical.target
+

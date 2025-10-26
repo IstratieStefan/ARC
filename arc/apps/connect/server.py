@@ -67,6 +67,10 @@ async def api_info():
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
     """Root endpoint - Web Interface"""
+    dashboard_path = Path(__file__).parent / "dashboard.html"
+    if dashboard_path.exists():
+        with open(dashboard_path, 'r') as f:
+            return HTMLResponse(content=f.read())
     return await web_interface(request)
 
 @app.get("/health")

@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARC Connect Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0f0f0f;
+            color: #e0e0e0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Navigation Tabs */
+        .tabs {
+            display: flex;
+            background: #1a1a1a;
+            padding: 0 20px;
+            gap: 5px;
+            border-bottom: 2px solid #2a2a2a;
+        }
+
+        .tab {
+            padding: 15px 30px;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            color: #888;
+            font-size: 1em;
+            font-weight: 500;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            overflow: auto;
+            padding: 30px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Dashboard/Metrics Tab */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid #2a2a2a;
+        }
+
+        .metric-card h3 {
+            color: #888;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .metric-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #2a2a2a;
+            border-radius: 4px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            transition: width 0.5s;
+        }
+
+        .system-info {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid #2a2a2a;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #888;
+        }
+
+        .info-value {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        /* Terminal Tab */
+        .terminal-container {
+            background: #000;
+            border-radius: 12px;
+            padding: 20px;
+            height: calc(100vh - 250px);
+            display: flex;
+            flex-direction: column;
+            font-family: 'Courier New', monospace;
+            border: 1px solid #2a2a2a;
+        }
+
+        .terminal-output {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            color: #0f0;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .terminal-input-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #2a2a2a;
+        }
+
+        .terminal-prompt {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .terminal-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            outline: none;
+        }
+
+        /* File Transfer Tab */
+        .file-section {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid #2a2a2a;
+        }
+
+        .file-section h3 {
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #764ba2;
+        }
+
+        .upload-area.dragging {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: #764ba2;
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-size: 1em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .file-list {
+            margin-top: 20px;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #0f0f0f;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #2a2a2a;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .file-icon {
+            font-size: 1.5em;
+        }
+
+        .file-name {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .file-size {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.85em;
+            background: #2a2a2a;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-small:hover {
+            background: #667eea;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 3px solid #2a2a2a;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🚀 ARC Connect Dashboard</h1>
+            <div class="connection-status">
+                <div class="status-dot"></div>
+                <span>Connected</span>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-tab="dashboard">📊 Dashboard</button>
+            <button class="tab" data-tab="terminal">💻 Terminal</button>
+            <button class="tab" data-tab="files">📁 Files</button>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <h3>CPU Usage</h3>
+                        <div class="metric-value" id="cpu-value">--</div>
+                        <div class="metric-label">Processor Load</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="cpu-bar"></div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <h3>Memory Usage</h3>
+                        <div class="metric-value" id="memory-value">--</div>
+                        <div class="metric-label">RAM Utilization</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="memory-bar"></div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <h3>Disk Usage</h3>
+                        <div class="metric-value" id="disk-value">--</div>
+                        <div class="metric-label">Storage Capacity</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="disk-bar"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="system-info">
+                    <h3 style="margin-bottom: 20px; color: #667eea;">System Information</h3>
+                    <div class="info-row">
+                        <span class="info-label">Hostname</span>
+                        <span class="info-value" id="hostname">--</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Platform</span>
+                        <span class="info-value" id="platform">--</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Architecture</span>
+                        <span class="info-value" id="architecture">--</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">CPU Count</span>
+                        <span class="info-value" id="cpu-count">--</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Total Memory</span>
+                        <span class="info-value" id="total-memory">--</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Total Disk</span>
+                        <span class="info-value" id="total-disk">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terminal Tab -->
+            <div id="terminal" class="tab-content">
+                <div class="terminal-container">
+                    <div class="terminal-output" id="terminal-output">
+Welcome to ARC Connect Terminal
+Type 'help' for available commands.
+                    </div>
+                    <div class="terminal-input-container">
+                        <span class="terminal-prompt">$</span>
+                        <input type="text" class="terminal-input" id="terminal-input" placeholder="Enter command..." autocomplete="off">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Files Tab -->
+            <div id="files" class="tab-content">
+                <div class="file-section">
+                    <h3>📤 Upload Files</h3>
+                    <div class="upload-area" id="upload-area">
+                        <div class="upload-icon">📁</div>
+                        <h4>Drag & Drop files here</h4>
+                        <p style="color: #666; margin: 10px 0;">or</p>
+                        <button class="btn" onclick="document.getElementById('file-input').click()">Browse Files</button>
+                    </div>
+                    <input type="file" id="file-input" class="file-input" multiple>
+                </div>
+
+                <div class="file-section">
+                    <h3>📥 Files on Device</h3>
+                    <div id="file-list" class="file-list">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Loading files...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab Switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        // Dashboard - Fetch system info
+        async function updateDashboard() {
+            try {
+                const response = await fetch('/system/info');
+                const data = await response.json();
+
+                // Update metrics
+                document.getElementById('cpu-value').textContent = data.cpu_percent.toFixed(1) + '%';
+                document.getElementById('cpu-bar').style.width = data.cpu_percent + '%';
+
+                document.getElementById('memory-value').textContent = data.memory.percent.toFixed(1) + '%';
+                document.getElementById('memory-bar').style.width = data.memory.percent + '%';
+
+                document.getElementById('disk-value').textContent = data.disk.percent.toFixed(1) + '%';
+                document.getElementById('disk-bar').style.width = data.disk.percent + '%';
+
+                // Update system info
+                document.getElementById('hostname').textContent = data.hostname;
+                document.getElementById('platform').textContent = data.platform;
+                document.getElementById('architecture').textContent = data.architecture;
+                document.getElementById('cpu-count').textContent = data.cpu_count;
+                document.getElementById('total-memory').textContent = (data.memory.total / (1024**3)).toFixed(2) + ' GB';
+                document.getElementById('total-disk').textContent = (data.disk.total / (1024**3)).toFixed(2) + ' GB';
+            } catch (error) {
+                console.error('Failed to fetch system info:', error);
+            }
+        }
+
+        // Update dashboard every 2 seconds
+        updateDashboard();
+        setInterval(updateDashboard, 2000);
+
+        // Terminal - WebSocket connection
+        let ws = null;
+        const terminalOutput = document.getElementById('terminal-output');
+        const terminalInput = document.getElementById('terminal-input');
+
+        function connectTerminal() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${protocol}//${window.location.host}/ws/terminal`);
+
+            ws.onmessage = (event) => {
+                terminalOutput.textContent += '\n' + event.data;
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            };
+
+            ws.onerror = () => {
+                terminalOutput.textContent += '\n[ERROR] Connection failed';
+            };
+
+            ws.onclose = () => {
+                terminalOutput.textContent += '\n[DISCONNECTED] Connection closed';
+            };
+        }
+
+        terminalInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const command = terminalInput.value;
+                if (command.trim()) {
+                    terminalOutput.textContent += '\n$ ' + command;
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(command);
+                    } else {
+                        terminalOutput.textContent += '\n[ERROR] Not connected. Reconnecting...';
+                        connectTerminal();
+                    }
+                    terminalInput.value = '';
+                }
+            }
+        });
+
+        // Connect terminal when tab is opened
+        document.querySelector('[data-tab="terminal"]').addEventListener('click', () => {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                connectTerminal();
+            }
+        });
+
+        // Files - Upload
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('file-input');
+        const fileList = document.getElementById('file-list');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragging');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragging');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragging');
+            const files = e.dataTransfer.files;
+            uploadFiles(files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            uploadFiles(e.target.files);
+        });
+
+        async function uploadFiles(files) {
+            for (const file of files) {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                try {
+                    const response = await fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+                    alert(`Uploaded: ${result.filename}`);
+                    loadFiles();
+                } catch (error) {
+                    alert(`Upload failed: ${error.message}`);
+                }
+            }
+        }
+
+        // Load files
+        async function loadFiles() {
+            try {
+                const response = await fetch('/files');
+                const data = await response.json();
+                
+                fileList.innerHTML = '';
+                if (data.files.length === 0) {
+                    fileList.innerHTML = '<p style="text-align: center; color: #666;">No files uploaded yet</p>';
+                    return;
+                }
+
+                data.files.forEach(file => {
+                    const item = document.createElement('div');
+                    item.className = 'file-item';
+                    item.innerHTML = `
+                        <div class="file-info">
+                            <span class="file-icon">${file.is_dir ? '📁' : '📄'}</span>
+                            <div>
+                                <div class="file-name">${file.name}</div>
+                                <div class="file-size">${formatBytes(file.size)}</div>
+                            </div>
+                        </div>
+                        <div class="file-actions">
+                            ${!file.is_dir ? `<button class="btn-small" onclick="downloadFile('${file.name}')">⬇ Download</button>` : ''}
+                            <button class="btn-small btn-danger" onclick="deleteFile('${file.name}')">🗑 Delete</button>
+                        </div>
+                    `;
+                    fileList.appendChild(item);
+                });
+            } catch (error) {
+                fileList.innerHTML = '<p style="text-align: center; color: #dc2626;">Failed to load files</p>';
+            }
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function downloadFile(filename) {
+            window.location.href = `/files/download/${filename}`;
+        }
+
+        async function deleteFile(filename) {
+            if (confirm(`Delete ${filename}?`)) {
+                try {
+                    await fetch(`/files/${filename}`, { method: 'DELETE' });
+                    loadFiles();
+                } catch (error) {
+                    alert('Delete failed: ' + error.message);
+                }
+            }
+        }
+
+        // Load files when tab is opened
+        document.querySelector('[data-tab="files"]').addEventListener('click', loadFiles);
+        
+        // Initial load
+        loadFiles();
+    </script>
+</body>
+</html>
+

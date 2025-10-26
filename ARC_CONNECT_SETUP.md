@@ -235,21 +235,45 @@ curl http://localhost:5001/arc/apps
 curl -X POST http://localhost:5001/arc/launch/music_player
 ```
 
+## Performance & Resource Usage
+
+**RAM-Optimized Features:**
+- Dashboard updates only when tab is active
+- Limited terminal output buffer (1000 lines max)
+- System info cached after first load
+- Single worker process
+- Reduced update frequency (3 seconds vs 2)
+- Lazy loading for file list
+
+**Expected Resource Usage:**
+- **RAM**: ~60MB (fancy UI with SSH)
+- **CPU**: 2-5% idle, 10-15% during SSH use
+- **Network**: Minimal when idle
+- **Disk I/O**: Low (warning-level logging only)
+
+**Optimizations Applied:**
+- Single uvicorn worker
+- Connection limit: 50 concurrent
+- Keep-alive timeout: 30s
+- Warning-level logging (not info/debug)
+- WebSocket with small delays to reduce CPU
+
 ## Security Notes
 
 ⚠️ **Important Security Considerations:**
 
-1. **Command Execution** - Only whitelisted commands are allowed
-2. **Network Access** - Server binds to 0.0.0.0 (all interfaces)
-3. **CORS** - Currently allows all origins (*)
-4. **File Upload** - Files go to `/home/admin/uploads/`
+1. **SSH Access** - Real SSH connection (requires SSH credentials)
+2. **Command Execution** - Only whitelisted commands in /execute endpoint
+3. **Network Access** - Server binds to 0.0.0.0 (all interfaces)
+4. **CORS** - Currently allows all origins (*)
+5. **File Upload** - Files go to `/home/admin/uploads/`
 
 For production use, consider:
 - Adding authentication (JWT tokens)
 - Restricting CORS to specific domains
 - Using HTTPS with SSL certificates
 - Implementing rate limiting
-- Adding more command restrictions
+- SSH key authentication instead of passwords
 
 ## Troubleshooting
 
@@ -284,9 +308,42 @@ netstat -tulpn | grep 5001
 curl http://localhost:5001/health
 ```
 
+### SSH Terminal not connecting
+
+1. **Check SSH service is running:**
+```bash
+sudo systemctl status ssh
+sudo systemctl start ssh
+sudo systemctl enable ssh
+```
+
+2. **Test SSH locally:**
+```bash
+ssh localhost
+```
+
+3. **Install OpenSSH server if missing:**
+```bash
+sudo apt-get install openssh-server
+```
+
+4. **Check SSH configuration:**
+```bash
+sudo nano /etc/ssh/sshd_config
+# Make sure PasswordAuthentication is set to yes
+sudo systemctl restart ssh
+```
+
 ### WebSocket connection fails
 
 Make sure you're using `ws://` (not `wss://`) unless you have SSL configured.
+
+### Terminal colors not showing
+
+The terminal uses xterm-256color. If colors don't work:
+```bash
+export TERM=xterm-256color
+```
 
 ### Permission errors
 

@@ -17,6 +17,7 @@ from typing import List, Optional
 import asyncio
 import json
 import paramiko
+import time
 
 app = FastAPI(
     title="ARC Connect API",
@@ -283,29 +284,112 @@ async def web_interface(request: Request):
 
 @app.get("/system/info")
 async def get_system_info():
-    """Get system information"""
+    """Get comprehensive system information"""
     try:
+        # CPU info
+        cpu_freq = psutil.cpu_freq()
+        cpu_stats = psutil.cpu_stats()
+        
+        # Memory info
+        mem = psutil.virtual_memory()
+        swap = psutil.swap_memory()
+        
+        # Disk info
+        disk = psutil.disk_usage('/')
+        disk_io = psutil.disk_io_counters()
+        
+        # Network info
+        net_io = psutil.net_io_counters()
+        
+        # System temps (if available)
+        temps = {}
+        try:
+            temps = psutil.sensors_temperatures()
+        except:
+            pass
+        
+        # CPU temperature (Raspberry Pi)
+        cpu_temp = None
+        if temps and 'cpu_thermal' in temps:
+            cpu_temp = temps['cpu_thermal'][0].current
+        elif os.path.exists('/sys/class/thermal/thermal_zone0/temp'):
+            try:
+                with open('/sys/class/thermal/thermal_zone0/temp', 'r') as f:
+                    cpu_temp = float(f.read().strip()) / 1000.0
+            except:
+                pass
+        
+        # Uptime
+        boot_time = psutil.boot_time()
+        uptime_seconds = time.time() - boot_time
+        
         return {
             "hostname": platform.node(),
             "platform": platform.system(),
             "platform_version": platform.version(),
             "architecture": platform.machine(),
             "processor": platform.processor(),
+            
+            # CPU
             "cpu_count": psutil.cpu_count(),
-            "cpu_percent": psutil.cpu_percent(interval=1),
+            "cpu_count_physical": psutil.cpu_count(logical=False),
+            "cpu_percent": psutil.cpu_percent(interval=0.1),
+            "cpu_percent_per_core": psutil.cpu_percent(interval=0.1, percpu=True),
+            "cpu_freq_current": cpu_freq.current if cpu_freq else None,
+            "cpu_freq_min": cpu_freq.min if cpu_freq else None,
+            "cpu_freq_max": cpu_freq.max if cpu_freq else None,
+            "cpu_temp": cpu_temp,
+            "cpu_stats": {
+                "ctx_switches": cpu_stats.ctx_switches,
+                "interrupts": cpu_stats.interrupts,
+            },
+            
+            # Memory
             "memory": {
-                "total": psutil.virtual_memory().total,
-                "available": psutil.virtual_memory().available,
-                "percent": psutil.virtual_memory().percent,
-                "used": psutil.virtual_memory().used,
+                "total": mem.total,
+                "available": mem.available,
+                "percent": mem.percent,
+                "used": mem.used,
+                "free": mem.free,
+                "cached": mem.cached if hasattr(mem, 'cached') else 0,
+                "buffers": mem.buffers if hasattr(mem, 'buffers') else 0,
             },
+            "swap": {
+                "total": swap.total,
+                "used": swap.used,
+                "free": swap.free,
+                "percent": swap.percent,
+            },
+            
+            # Disk
             "disk": {
-                "total": psutil.disk_usage('/').total,
-                "used": psutil.disk_usage('/').used,
-                "free": psutil.disk_usage('/').free,
-                "percent": psutil.disk_usage('/').percent,
+                "total": disk.total,
+                "used": disk.used,
+                "free": disk.free,
+                "percent": disk.percent,
             },
-            "boot_time": psutil.boot_time(),
+            "disk_io": {
+                "read_bytes": disk_io.read_bytes if disk_io else 0,
+                "write_bytes": disk_io.write_bytes if disk_io else 0,
+                "read_count": disk_io.read_count if disk_io else 0,
+                "write_count": disk_io.write_count if disk_io else 0,
+            },
+            
+            # Network
+            "network": {
+                "bytes_sent": net_io.bytes_sent,
+                "bytes_recv": net_io.bytes_recv,
+                "packets_sent": net_io.packets_sent,
+                "packets_recv": net_io.packets_recv,
+                "errin": net_io.errin,
+                "errout": net_io.errout,
+                "dropin": net_io.dropin,
+                "dropout": net_io.dropout,
+            },
+            
+            # System
+            "boot_time": boot_time,
+            "uptime_seconds": uptime_seconds,
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get system info: {str(e)}")
@@ -456,15 +540,25 @@ class SSHSession:
             username = os.getenv('USER', 'admin')
         
         try:
-            self.client.connect(
-                hostname=host,
-                port=port,
-                username=username,
-                password=password,
-                timeout=10,
-                allow_agent=False,
-                look_for_keys=False
-            )
+            # Try multiple authentication methods
+            connect_kwargs = {
+                'hostname': host,
+                'port': port,
+                'username': username,
+                'timeout': 10,
+            }
+            
+            # Try with password first if provided
+            if password:
+                connect_kwargs['password'] = password
+                connect_kwargs['allow_agent'] = False
+                connect_kwargs['look_for_keys'] = False
+            else:
+                # Try SSH keys first, then agent
+                connect_kwargs['allow_agent'] = True
+                connect_kwargs['look_for_keys'] = True
+            
+            self.client.connect(**connect_kwargs)
             
             # Open interactive shell with proper terminal
             self.channel = self.client.invoke_shell(
@@ -538,8 +632,16 @@ async def websocket_terminal(websocket: WebSocket):
         
         # Connect to SSH
         if not ssh.connect(host, 22, username, password):
-            await websocket.send_text(f'[ERROR] SSH connection to {host} failed\n')
-            await websocket.send_text('Check that SSH is running: sudo systemctl status ssh\n')
+            await websocket.send_text(f'[ERROR] SSH connection to {host} failed\n\n')
+            await websocket.send_text('Possible issues:\n')
+            await websocket.send_text('1. SSH keys not set up - Run: ssh-keygen && ssh-copy-id localhost\n')
+            await websocket.send_text('2. SSH service not running - Run: sudo systemctl start ssh\n')
+            await websocket.send_text('3. Password authentication disabled\n')
+            await websocket.send_text('4. User not allowed to SSH\n\n')
+            await websocket.send_text('Quick fix - Set up passwordless SSH:\n')
+            await websocket.send_text('  ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa\n')
+            await websocket.send_text('  cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys\n')
+            await websocket.send_text('  chmod 600 ~/.ssh/authorized_keys\n')
             return
         
         # Read initial output (login banner, prompt)

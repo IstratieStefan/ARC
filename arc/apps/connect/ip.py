@@ -74,7 +74,10 @@ def main():
         screen.blit(qr_surface, (qr_x, qr_y))
 
         info_text = small_font.render("Scan this QR with your app to connect!", True, (180, 180, 180))
-        screen.blit(info_text, (WIDTH // 2 - info_text.get_width() // 2, HEIGHT - 40))
+        screen.blit(info_text, (WIDTH // 2 - info_text.get_width() // 2, HEIGHT - 60))
+        
+        server_text = small_font.render("Server: http://{}:5001/".format(ip_addr), True, ACCENT_COLOR)
+        screen.blit(server_text, (WIDTH // 2 - server_text.get_width() // 2, HEIGHT - 35))
 
         pygame.display.flip()
 

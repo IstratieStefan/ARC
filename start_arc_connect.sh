@@ -36,10 +36,13 @@ echo ""
 echo "Press Ctrl+C to stop the server"
 echo ""
 
-# Start the server
+# Start the server with optimizations
 venv/bin/uvicorn arc.apps.connect.server:app \
     --host 0.0.0.0 \
     --port 5001 \
-    --log-level info \
+    --log-level warning \
+    --workers 1 \
+    --limit-concurrency 50 \
+    --timeout-keep-alive 30 \
     2>&1 | tee arc_connect.log
 

@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import List, Optional
 import asyncio
 import json
+import paramiko
 
 app = FastAPI(
     title="ARC Connect API",
@@ -436,86 +437,159 @@ async def execute_command(command: dict):
         raise HTTPException(status_code=500, detail=f"Execution failed: {str(e)}")
 
 # =====================
-# WebSocket Terminal
+# Real SSH Terminal via WebSocket
 # =====================
 
-class ConnectionManager:
+class SSHSession:
+    """Real SSH session handler"""
     def __init__(self):
-        self.active_connections: List[WebSocket] = []
-
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections.append(websocket)
-
-    def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
-
-    async def send_personal_message(self, message: str, websocket: WebSocket):
-        await websocket.send_text(message)
-
-    async def broadcast(self, message: str):
-        for connection in self.active_connections:
-            await connection.send_text(message)
-
-manager = ConnectionManager()
+        self.client = None
+        self.channel = None
+        
+    def connect(self, host='localhost', port=22, username=None, password=None):
+        """Connect to SSH server"""
+        self.client = paramiko.SSHClient()
+        self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        
+        # Default to current user if not specified
+        if not username:
+            username = os.getenv('USER', 'admin')
+        
+        try:
+            self.client.connect(
+                hostname=host,
+                port=port,
+                username=username,
+                password=password,
+                timeout=10,
+                allow_agent=False,
+                look_for_keys=False
+            )
+            
+            # Open interactive shell with proper terminal
+            self.channel = self.client.invoke_shell(
+                term='xterm-256color',
+                width=120,
+                height=40
+            )
+            self.channel.settimeout(0.1)
+            return True
+        except Exception as e:
+            print(f"SSH connection failed: {e}")
+            return False
+    
+    def send_command(self, command: str):
+        """Send command to SSH shell"""
+        if self.channel and not self.channel.closed:
+            try:
+                self.channel.send(command + '\n')
+            except:
+                pass
+    
+    def read_output(self):
+        """Read output from SSH shell"""
+        if not self.channel or self.channel.closed:
+            return ''
+        
+        output = ''
+        try:
+            while self.channel.recv_ready():
+                data = self.channel.recv(4096).decode('utf-8', errors='ignore')
+                output += data
+        except:
+            pass
+        return output
+    
+    def resize_terminal(self, width: int, height: int):
+        """Resize terminal window"""
+        if self.channel and not self.channel.closed:
+            try:
+                self.channel.resize_pty(width=width, height=height)
+            except:
+                pass
+    
+    def close(self):
+        """Close SSH connection"""
+        if self.channel:
+            self.channel.close()
+        if self.client:
+            self.client.close()
 
 @app.websocket("/ws/terminal")
 async def websocket_terminal(websocket: WebSocket):
-    """WebSocket endpoint for terminal emulation"""
-    await manager.connect(websocket)
+    """Real SSH terminal via WebSocket"""
+    await websocket.accept()
+    
+    ssh = SSHSession()
+    
     try:
-        await websocket.send_text("Connected to ARC device terminal. Type 'help' for commands.")
+        # Try to receive connection parameters
+        try:
+            data = await asyncio.wait_for(websocket.receive_text(), timeout=2.0)
+            params = json.loads(data)
+            host = params.get('host', 'localhost')
+            username = params.get('username', None)
+            password = params.get('password', None)
+        except:
+            # Default to localhost with current user
+            host = 'localhost'
+            username = None
+            password = None
         
+        # Connect to SSH
+        if not ssh.connect(host, 22, username, password):
+            await websocket.send_text(f'[ERROR] SSH connection to {host} failed\n')
+            await websocket.send_text('Check that SSH is running: sudo systemctl status ssh\n')
+            return
+        
+        # Read initial output (login banner, prompt)
+        await asyncio.sleep(0.3)
+        initial = ssh.read_output()
+        if initial:
+            await websocket.send_text(initial)
+        
+        # Main communication loop
         while True:
-            data = await websocket.receive_text()
-            
-            # Handle special commands
-            if data.strip() == "help":
-                help_text = """
-Available commands:
-- sysinfo: Display system information
-- files: List uploaded files  
-- clear: Clear terminal
-- exit: Close connection
-                """
-                await manager.send_personal_message(help_text, websocket)
-            elif data.strip() == "sysinfo":
-                info = await get_system_info()
-                await manager.send_personal_message(json.dumps(info, indent=2), websocket)
-            elif data.strip() == "files":
-                files = await list_files()
-                await manager.send_personal_message(json.dumps(files, indent=2), websocket)
-            elif data.strip() == "exit":
-                await websocket.send_text("Goodbye!")
-                break
-            else:
-                await manager.send_personal_message(f"Echo: {data}", websocket)
+            # Check for incoming commands
+            try:
+                message = await asyncio.wait_for(websocket.receive_text(), timeout=0.05)
                 
+                # Handle special commands
+                if message.startswith('__RESIZE__'):
+                    # Format: __RESIZE__:width:height
+                    parts = message.split(':')
+                    if len(parts) == 3:
+                        width, height = int(parts[1]), int(parts[2])
+                        ssh.resize_terminal(width, height)
+                else:
+                    ssh.send_command(message)
+            except asyncio.TimeoutError:
+                pass
+            except WebSocketDisconnect:
+                break
+            
+            # Read and send SSH output
+            output = ssh.read_output()
+            if output:
+                await websocket.send_text(output)
+            
+            # Small delay to prevent excessive CPU usage
+            await asyncio.sleep(0.02)
+            
     except WebSocketDisconnect:
-        manager.disconnect(websocket)
+        pass
+    except Exception as e:
+        try:
+            await websocket.send_text(f'\n[ERROR] {str(e)}\n')
+        except:
+            pass
+    finally:
+        ssh.close()
 
 @app.websocket("/ws/ssh")
 async def websocket_ssh(websocket: WebSocket):
-    """WebSocket endpoint for SSH connection (for website compatibility)"""
-    await manager.connect(websocket)
-    try:
-        # Send ready signal
-        await websocket.send_text("SSH_READY")
-        
-        while True:
-            data = await websocket.receive_text()
-            message = json.loads(data)
-            
-            # Validate SSH credentials (basic check)
-            if message.get('username') and message.get('password'):
-                await websocket.send_text("Connection established")
-            else:
-                await websocket.send_text("ERROR: Invalid credentials")
-                
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
-    except Exception as e:
-        await websocket.send_text(f"ERROR: {str(e)}")
+    """Alias for /ws/terminal (for website compatibility)"""
+    await websocket_terminal(websocket)
 
 # =====================
 # ARC Specific Endpoints

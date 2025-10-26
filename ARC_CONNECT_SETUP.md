@@ -191,26 +191,39 @@ Returns:
 }
 ```
 
-### 3. WebSocket Terminal
+### 3. Real SSH Terminal
 
-Connect via JavaScript:
+The terminal provides a **real SSH connection** to your device:
+
+**Features:**
+- ✅ Full interactive shell (bash/zsh/fish)
+- ✅ All commands work: `ls`, `cd`, `vim`, `nano`, `htop`, etc.
+- ✅ ANSI colors preserved
+- ✅ Tab completion (press Tab)
+- ✅ Command history (Arrow Up/Down)
+- ✅ Ctrl+C to interrupt
+- ✅ Real-time output streaming
+
+**Technical:**
+- Uses paramiko for SSH connections
+- Connects to localhost by default
+- xterm-256color terminal emulation
+- WebSocket-based bidirectional communication
 
 ```javascript
+// Example: Connect to SSH terminal
 const ws = new WebSocket('ws://192.168.1.100:5001/ws/terminal');
 
 ws.onmessage = (event) => {
-  console.log('Received:', event.data);
+  console.log('SSH Output:', event.data);
 };
 
-ws.send('sysinfo');
-```
+// Send command
+ws.send('ls -la\n');
 
-Available terminal commands:
-- `help` - Show available commands
-- `sysinfo` - Display system information
-- `files` - List uploaded files
-- `clear` - Clear terminal
-- `exit` - Close connection
+// Send Ctrl+C
+ws.send('\x03');
+```
 
 ### 4. Launch ARC Apps
 

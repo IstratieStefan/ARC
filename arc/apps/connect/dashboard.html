@@ -531,82 +531,144 @@ Type 'help' for available commands.
             });
         });
 
-        // Dashboard - Fetch system info
+        // Dashboard - Fetch system info (optimized)
+        let dashboardInterval = null;
+        
         async function updateDashboard() {
-            try {
-                const response = await fetch('/system/info');
-                const data = await response.json();
+            // Only update if dashboard tab is active
+            if (document.getElementById('dashboard').classList.contains('active')) {
+                try {
+                    const response = await fetch('/system/info');
+                    const data = await response.json();
 
-                // Update metrics
-                document.getElementById('cpu-value').textContent = data.cpu_percent.toFixed(1) + '%';
-                document.getElementById('cpu-bar').style.width = data.cpu_percent + '%';
+                    // Update metrics
+                    document.getElementById('cpu-value').textContent = data.cpu_percent.toFixed(1) + '%';
+                    document.getElementById('cpu-bar').style.width = data.cpu_percent + '%';
 
-                document.getElementById('memory-value').textContent = data.memory.percent.toFixed(1) + '%';
-                document.getElementById('memory-bar').style.width = data.memory.percent + '%';
+                    document.getElementById('memory-value').textContent = data.memory.percent.toFixed(1) + '%';
+                    document.getElementById('memory-bar').style.width = data.memory.percent + '%';
 
-                document.getElementById('disk-value').textContent = data.disk.percent.toFixed(1) + '%';
-                document.getElementById('disk-bar').style.width = data.disk.percent + '%';
+                    document.getElementById('disk-value').textContent = data.disk.percent.toFixed(1) + '%';
+                    document.getElementById('disk-bar').style.width = data.disk.percent + '%';
 
-                // Update system info
-                document.getElementById('hostname').textContent = data.hostname;
-                document.getElementById('platform').textContent = data.platform;
-                document.getElementById('architecture').textContent = data.architecture;
-                document.getElementById('cpu-count').textContent = data.cpu_count;
-                document.getElementById('total-memory').textContent = (data.memory.total / (1024**3)).toFixed(2) + ' GB';
-                document.getElementById('total-disk').textContent = (data.disk.total / (1024**3)).toFixed(2) + ' GB';
-            } catch (error) {
-                console.error('Failed to fetch system info:', error);
+                    // Update system info (only once or when needed)
+                    if (!document.getElementById('hostname').textContent || document.getElementById('hostname').textContent === '--') {
+                        document.getElementById('hostname').textContent = data.hostname;
+                        document.getElementById('platform').textContent = data.platform;
+                        document.getElementById('architecture').textContent = data.architecture;
+                        document.getElementById('cpu-count').textContent = data.cpu_count;
+                        document.getElementById('total-memory').textContent = (data.memory.total / (1024**3)).toFixed(2) + ' GB';
+                        document.getElementById('total-disk').textContent = (data.disk.total / (1024**3)).toFixed(2) + ' GB';
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch system info:', error);
+                }
             }
         }
 
-        // Update dashboard every 2 seconds
+        // Update dashboard every 3 seconds (reduced frequency for lower RAM)
         updateDashboard();
-        setInterval(updateDashboard, 2000);
+        dashboardInterval = setInterval(updateDashboard, 3000);
 
-        // Terminal - WebSocket connection
+        // Real SSH Terminal via WebSocket
         let ws = null;
         const terminalOutput = document.getElementById('terminal-output');
         const terminalInput = document.getElementById('terminal-input');
+        let commandHistory = [];
+        let historyIndex = -1;
 
         function connectTerminal() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                return; // Already connected
+            }
+
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             ws = new WebSocket(`${protocol}//${window.location.host}/ws/terminal`);
 
+            ws.onopen = () => {
+                terminalOutput.textContent = 'Connecting to SSH...\n';
+            };
+
             ws.onmessage = (event) => {
-                terminalOutput.textContent += '\n' + event.data;
+                // Append output without prefixes (real terminal output)
+                terminalOutput.textContent += event.data;
                 terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                
+                // Limit output buffer to prevent memory issues
+                const lines = terminalOutput.textContent.split('\n');
+                if (lines.length > 1000) {
+                    terminalOutput.textContent = lines.slice(-500).join('\n');
+                }
             };
 
             ws.onerror = () => {
-                terminalOutput.textContent += '\n[ERROR] Connection failed';
+                terminalOutput.textContent += '\n[ERROR] SSH connection failed\n';
+                terminalOutput.textContent += 'Make sure SSH is running: sudo systemctl start ssh\n';
             };
 
             ws.onclose = () => {
-                terminalOutput.textContent += '\n[DISCONNECTED] Connection closed';
+                terminalOutput.textContent += '\n[DISCONNECTED]\n';
+                ws = null;
             };
         }
 
-        terminalInput.addEventListener('keypress', (e) => {
+        // Handle terminal input (like real terminal)
+        terminalInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
+                e.preventDefault();
                 const command = terminalInput.value;
-                if (command.trim()) {
-                    terminalOutput.textContent += '\n$ ' + command;
-                    if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.send(command);
-                    } else {
-                        terminalOutput.textContent += '\n[ERROR] Not connected. Reconnecting...';
-                        connectTerminal();
+                
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    // Send command directly (no echo, SSH handles that)
+                    ws.send(command);
+                    
+                    // Add to history
+                    if (command.trim()) {
+                        commandHistory.push(command);
+                        historyIndex = commandHistory.length;
                     }
+                    
                     terminalInput.value = '';
+                } else {
+                    terminalOutput.textContent += '\n[ERROR] Not connected. Reconnecting...\n';
+                    connectTerminal();
+                }
+            } else if (e.key === 'ArrowUp') {
+                // Command history - up
+                e.preventDefault();
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    terminalInput.value = commandHistory[historyIndex] || '';
+                }
+            } else if (e.key === 'ArrowDown') {
+                // Command history - down
+                e.preventDefault();
+                if (historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                    terminalInput.value = commandHistory[historyIndex] || '';
+                } else {
+                    historyIndex = commandHistory.length;
+                    terminalInput.value = '';
+                }
+            } else if (e.key === 'Tab') {
+                // Send tab for autocomplete (SSH will handle it)
+                e.preventDefault();
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send('\t');
+                }
+            } else if (e.ctrlKey && e.key === 'c') {
+                // Send Ctrl+C to SSH
+                e.preventDefault();
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send('\x03'); // Ctrl+C character
                 }
             }
         });
 
         // Connect terminal when tab is opened
         document.querySelector('[data-tab="terminal"]').addEventListener('click', () => {
-            if (!ws || ws.readyState !== WebSocket.OPEN) {
-                connectTerminal();
-            }
+            connectTerminal();
+            terminalInput.focus();
         });
 
         // Files - Upload
@@ -711,11 +773,28 @@ Type 'help' for available commands.
             }
         }
 
-        // Load files when tab is opened
-        document.querySelector('[data-tab="files"]').addEventListener('click', loadFiles);
+        // Load files when tab is opened (lazy loading to save RAM)
+        document.querySelector('[data-tab="files"]').addEventListener('click', () => {
+            loadFiles();
+        });
         
-        // Initial load
-        loadFiles();
+        // Cleanup when switching tabs to save memory
+        document.querySelectorAll('.tab').forEach(tab => {
+            const originalClick = tab.onclick;
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+                
+                // Stop dashboard updates when not on dashboard tab
+                if (tabName !== 'dashboard' && dashboardInterval) {
+                    // Dashboard updates will still run but won't fetch if not active
+                }
+                
+                // Close WebSocket when leaving terminal tab
+                if (tabName !== 'terminal' && ws && ws.readyState === WebSocket.OPEN) {
+                    // Keep connection open but user can reconnect if needed
+                }
+            });
+        });
     </script>
 </body>
 </html>

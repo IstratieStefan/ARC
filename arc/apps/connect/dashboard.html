@@ -192,50 +192,6 @@
             font-weight: 500;
         }
 
-        /* Terminal Tab */
-        #terminal {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            background: #000;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
-        #terminal-output {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            line-height: 1.5;
-            color: #0f0;
-        }
-
-        #input-line {
-            display: flex;
-            padding: 12px 15px;
-            border-top: 1px solid #2a2a2a;
-            background: #0a0a0a;
-        }
-
-        #prompt {
-            color: #CC6324;
-            margin-right: 8px;
-        }
-
-        #terminal-input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: #0f0;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            outline: none;
-        }
-
         /* Files Tab */
         #files {
             padding: 0;
@@ -374,7 +330,6 @@
         <!-- Navigation Tabs -->
         <div class="tabs">
             <button class="tab active" data-tab="dashboard">Dashboard</button>
-            <button class="tab" data-tab="terminal">Terminal</button>
             <button class="tab" data-tab="files">Files</button>
         </div>
 
@@ -438,6 +393,37 @@
                         <div class="metric-label">System Uptime</div>
                         <div class="small-metric" id="boot-time">--</div>
                     </div>
+
+                    <div class="metric-card">
+                        <h3>Disk I/O</h3>
+                        <div class="metric-value" id="disk-read">--</div>
+                        <div class="metric-label">Read</div>
+                        <div class="small-metric" id="disk-write">Write: --</div>
+                        <div class="small-metric" id="disk-ops">Operations: --</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <h3>Processes</h3>
+                        <div class="metric-value" id="process-count">--</div>
+                        <div class="metric-label">Running Processes</div>
+                        <div class="small-metric" id="process-threads">Threads: --</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <h3>Load Average</h3>
+                        <div class="metric-value" id="load-1min">--</div>
+                        <div class="metric-label">1 Minute</div>
+                        <div class="small-metric" id="load-5min">5 min: --</div>
+                        <div class="small-metric" id="load-15min">15 min: --</div>
+                    </div>
+                </div>
+
+                <!-- CPU Per-Core Usage -->
+                <div class="system-info" style="margin-bottom: 20px;">
+                    <h3 style="margin-bottom: 20px; color: #CC6324;">CPU Per-Core Usage</h3>
+                    <div id="cpu-cores-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                        <div style="text-align:center;color:#666;padding:20px">Loading...</div>
+                    </div>
                 </div>
 
                 <div class="system-info">
@@ -469,14 +455,6 @@
                 </div>
             </div>
 
-            <!-- Terminal Tab -->
-            <div id="terminal" class="tab-content">
-                <div id="terminal-output">Connecting to SSH...</div>
-                <div id="input-line">
-                    <span id="prompt">$</span>
-                    <input type="text" id="terminal-input" autocomplete="off" autofocus>
-                </div>
-            </div>
 
             <!-- Files Tab -->
             <div id="files" class="tab-content">
@@ -511,7 +489,6 @@
                 tab.classList.add('active');
                 document.getElementById(tab.dataset.tab).classList.add('active');
                 
-                if (tab.dataset.tab === 'terminal') connectTerminal();
                 if (tab.dataset.tab === 'files') loadFiles();
             });
         });
@@ -586,6 +563,51 @@
                 document.getElementById('boot-time').textContent = 
                     `Since: ${bootDate.toLocaleDateString()} ${bootDate.toLocaleTimeString()}`;
 
+                // Disk I/O
+                document.getElementById('disk-read').textContent = formatBytes(data.disk_io.read_bytes);
+                document.getElementById('disk-write').textContent = 
+                    `Write: ${formatBytes(data.disk_io.write_bytes)}`;
+                document.getElementById('disk-ops').textContent = 
+                    `Operations: ${data.disk_io.read_count.toLocaleString()} R / ${data.disk_io.write_count.toLocaleString()} W`;
+
+                // Processes
+                if (data.process_count !== undefined) {
+                    document.getElementById('process-count').textContent = data.process_count;
+                    document.getElementById('process-threads').textContent = 
+                        `Threads: ${data.thread_count || '--'}`;
+                }
+
+                // Load Average
+                if (data.load_avg) {
+                    document.getElementById('load-1min').textContent = data.load_avg[0].toFixed(2);
+                    document.getElementById('load-5min').textContent = `5 min: ${data.load_avg[1].toFixed(2)}`;
+                    document.getElementById('load-15min').textContent = `15 min: ${data.load_avg[2].toFixed(2)}`;
+                }
+
+                // CPU Per-Core
+                if (data.cpu_percent_per_core && data.cpu_percent_per_core.length > 0) {
+                    const coresGrid = document.getElementById('cpu-cores-grid');
+                    if (coresGrid.children.length !== data.cpu_percent_per_core.length) {
+                        coresGrid.innerHTML = '';
+                        data.cpu_percent_per_core.forEach((percent, i) => {
+                            const coreDiv = document.createElement('div');
+                            coreDiv.style.cssText = 'background: #0f0f0f; padding: 15px; border-radius: 8px; text-align: center;';
+                            coreDiv.innerHTML = `
+                                <div style="color: #888; font-size: 0.85em; margin-bottom: 8px;">Core ${i}</div>
+                                <div id="core-${i}-value" style="font-size: 1.8em; font-weight: 700; color: #CC6324; margin-bottom: 8px;">--</div>
+                                <div class="progress-bar" style="width: 100%; height: 4px; background: #2a2a2a; border-radius: 2px; overflow: hidden;">
+                                    <div id="core-${i}-bar" class="progress-fill" style="height: 100%; background: linear-gradient(90deg, #CC6324, #B35620); border-radius: 2px; transition: width 0.5s;"></div>
+                                </div>
+                            `;
+                            coresGrid.appendChild(coreDiv);
+                        });
+                    }
+                    data.cpu_percent_per_core.forEach((percent, i) => {
+                        document.getElementById(`core-${i}-value`).textContent = percent.toFixed(1) + '%';
+                        document.getElementById(`core-${i}-bar`).style.width = percent + '%';
+                    });
+                }
+
                 // System info (once)
                 if (!document.getElementById('hostname').textContent || document.getElementById('hostname').textContent === '--') {
                     document.getElementById('hostname').textContent = data.hostname;
@@ -603,84 +625,6 @@
 
         updateDashboard();
         dashboardInterval = setInterval(updateDashboard, 3000);
-
-        // SSH Terminal
-        let ws = null;
-        const terminalOutput = document.getElementById('terminal-output');
-        const terminalInput = document.getElementById('terminal-input');
-        let commandHistory = [];
-        let historyIndex = -1;
-
-        function connectTerminal() {
-            if (ws && ws.readyState === WebSocket.OPEN) return;
-
-            const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-            ws = new WebSocket(`${protocol}//${location.host}/ws/terminal`);
-
-            ws.onopen = () => {
-                terminalOutput.textContent = 'Connecting to SSH...\n';
-            };
-
-            ws.onmessage = (e) => {
-                terminalOutput.textContent += e.data;
-                terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                
-                const lines = terminalOutput.textContent.split('\n');
-                if (lines.length > 1000) {
-                    terminalOutput.textContent = lines.slice(-500).join('\n');
-                }
-            };
-
-            ws.onerror = () => {
-                terminalOutput.textContent += '\n[ERROR] SSH connection failed\n';
-            };
-
-            ws.onclose = () => {
-                terminalOutput.textContent += '\n[DISCONNECTED]\n';
-                ws = null;
-            };
-        }
-
-        terminalInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const command = terminalInput.value;
-                
-                if (ws && ws.readyState === WebSocket.OPEN) {
-                    ws.send(command);
-                    if (command.trim()) {
-                        commandHistory.push(command);
-                        historyIndex = commandHistory.length;
-                    }
-                    terminalInput.value = '';
-                }
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                if (historyIndex > 0) {
-                    historyIndex--;
-                    terminalInput.value = commandHistory[historyIndex] || '';
-                }
-            } else if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                if (historyIndex < commandHistory.length - 1) {
-                    historyIndex++;
-                    terminalInput.value = commandHistory[historyIndex] || '';
-                } else {
-                    historyIndex = commandHistory.length;
-                    terminalInput.value = '';
-                }
-            } else if (e.key === 'Tab') {
-                e.preventDefault();
-                if (ws && ws.readyState === WebSocket.OPEN) {
-                    ws.send('\t');
-                }
-            } else if (e.ctrlKey && e.key === 'c') {
-                e.preventDefault();
-                if (ws && ws.readyState === WebSocket.OPEN) {
-                    ws.send('\x03');
-                }
-            }
-        });
 
         // Files
         const uploadArea = document.getElementById('upload-area');

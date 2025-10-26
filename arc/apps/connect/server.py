@@ -390,6 +390,13 @@ async def get_system_info():
             # System
             "boot_time": boot_time,
             "uptime_seconds": uptime_seconds,
+            
+            # Processes
+            "process_count": len(psutil.pids()),
+            "thread_count": sum([p.num_threads() for p in psutil.process_iter(['num_threads']) if p.info['num_threads']]),
+            
+            # Load Average (Unix only)
+            "load_avg": psutil.getloadavg() if hasattr(psutil, 'getloadavg') else [0, 0, 0],
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get system info: {str(e)}")

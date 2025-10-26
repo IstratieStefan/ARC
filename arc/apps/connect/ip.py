@@ -7,6 +7,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 from PIL import Image
 import io
 from arc.core.config import config   # <-- YAML loader
+import threading
+import uvicorn
+import time
 
 WIDTH, HEIGHT = config.screen.width, config.screen.height
 ACCENT_COLOR = tuple(config.accent_color)
@@ -41,16 +44,39 @@ def make_qr_code(data, size=160):
     qr_surface = pygame.image.load(buf, 'qr.png')
     return qr_surface
 
+def start_server():
+    """Start the FastAPI server in a separate thread"""
+    config = uvicorn.Config(
+        "arc.apps.connect.server:app",
+        host="0.0.0.0",
+        port=5001,
+        workers=1,
+        limit_concurrency=50,
+        timeout_keep_alive=30,
+        log_level="warning"
+    )
+    server = uvicorn.Server(config)
+    server.run()
+
 def main():
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
-    pygame.display.set_caption("IP Address & QR Code")
+    pygame.display.set_caption("ARC Connect")
 
     font = pygame.font.SysFont(None, 36)
-    small_font = pygame.font.SysFont(None, 22)
+    small_font = pygame.font.SysFont(None, 24)
+    tiny_font = pygame.font.SysFont(None, 18)
 
     ip_addr = get_ip_address()
-    qr_surface = make_qr_code(ip_addr, size=160)
+    dashboard_url = f"http://{ip_addr}:5001/"
+    qr_surface = make_qr_code(dashboard_url, size=180)
+
+    # Start the web server in a background thread
+    server_thread = threading.Thread(target=start_server, daemon=True)
+    server_thread.start()
+    
+    # Give server a moment to start
+    time.sleep(1)
 
     running = True
     while running:
@@ -63,21 +89,35 @@ def main():
 
         screen.fill(BG_COLOR)
 
-        # Render the IP address
-        text = font.render("IP Address:", True, TEXT_COLOR)
-        ip_text = font.render(ip_addr, True, ACCENT_COLOR)
-        screen.blit(text, (WIDTH // 2 - text.get_width() // 2, 20))
-        screen.blit(ip_text, (WIDTH // 2 - ip_text.get_width() // 2, 60))
+        # Title
+        title_text = font.render("ARC Connect", True, ACCENT_COLOR)
+        screen.blit(title_text, (WIDTH // 2 - title_text.get_width() // 2, 10))
 
+        # Status indicator
+        status_text = tiny_font.render("Server Running", True, (0, 255, 0))
+        status_dot = pygame.Surface((8, 8))
+        status_dot.fill((0, 255, 0))
+        screen.blit(status_dot, (WIDTH // 2 - 45, 48))
+        screen.blit(status_text, (WIDTH // 2 - 30, 45))
+
+        # QR Code
         qr_x = WIDTH // 2 - qr_surface.get_width() // 2
-        qr_y = 100
+        qr_y = 70
         screen.blit(qr_surface, (qr_x, qr_y))
 
-        info_text = small_font.render("Scan this QR with your app to connect!", True, (180, 180, 180))
-        screen.blit(info_text, (WIDTH // 2 - info_text.get_width() // 2, HEIGHT - 60))
+        # Dashboard URL
+        url_text = small_font.render(dashboard_url, True, ACCENT_COLOR)
+        screen.blit(url_text, (WIDTH // 2 - url_text.get_width() // 2, qr_y + qr_surface.get_height() + 10))
+
+        # Instructions
+        info_text1 = tiny_font.render("Scan QR code or visit URL in browser", True, (180, 180, 180))
+        info_text2 = tiny_font.render("to access the ARC Connect Dashboard", True, (180, 180, 180))
+        screen.blit(info_text1, (WIDTH // 2 - info_text1.get_width() // 2, HEIGHT - 50))
+        screen.blit(info_text2, (WIDTH // 2 - info_text2.get_width() // 2, HEIGHT - 30))
         
-        server_text = small_font.render("Server: http://{}:5001/".format(ip_addr), True, ACCENT_COLOR)
-        screen.blit(server_text, (WIDTH // 2 - server_text.get_width() // 2, HEIGHT - 35))
+        # IP Address (bottom corner)
+        ip_label = tiny_font.render(f"IP: {ip_addr}", True, (120, 120, 120))
+        screen.blit(ip_label, (10, HEIGHT - 20))
 
         pygame.display.flip()
 

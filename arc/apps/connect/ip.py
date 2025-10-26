@@ -90,7 +90,7 @@ def main():
         screen.fill(BG_COLOR)
 
         # Title
-        title_text = font.render("ARC Connect", True, ACCENT_COLOR)
+        title_text = font.render("ARC Connect", True, (255, 255, 255))
         screen.blit(title_text, (WIDTH // 2 - title_text.get_width() // 2, 10))
 
         # Status indicator
@@ -108,16 +108,6 @@ def main():
         # Dashboard URL
         url_text = small_font.render(dashboard_url, True, ACCENT_COLOR)
         screen.blit(url_text, (WIDTH // 2 - url_text.get_width() // 2, qr_y + qr_surface.get_height() + 10))
-
-        # Instructions
-        info_text1 = tiny_font.render("Scan QR code or visit URL in browser", True, (180, 180, 180))
-        info_text2 = tiny_font.render("to access the ARC Connect Dashboard", True, (180, 180, 180))
-        screen.blit(info_text1, (WIDTH // 2 - info_text1.get_width() // 2, HEIGHT - 50))
-        screen.blit(info_text2, (WIDTH // 2 - info_text2.get_width() // 2, HEIGHT - 30))
-        
-        # IP Address (bottom corner)
-        ip_label = tiny_font.render(f"IP: {ip_addr}", True, (120, 120, 120))
-        screen.blit(ip_label, (10, HEIGHT - 20))
 
         pygame.display.flip()
 

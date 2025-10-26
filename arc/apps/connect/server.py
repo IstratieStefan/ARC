@@ -3,10 +3,10 @@ ARC Connect Server - Comprehensive FastAPI backend for ARC device management
 Integrates with the ARC Connect web interface
 """
 
-from fastapi import FastAPI, File, UploadFile, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, File, UploadFile, HTTPException, WebSocket, WebSocketDisconnect, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, HTMLResponse
 import os
 import shutil
 import subprocess
@@ -46,14 +46,16 @@ if WEBSITE_DIR.exists():
 # Health & Status
 # =====================
 
-@app.get("/")
-async def root():
-    """Root endpoint with API information"""
+@app.get("/api/info")
+async def api_info():
+    """API information endpoint"""
     return {
         "name": "ARC Connect API",
         "version": "2.0",
         "status": "online",
+        "message": "ARC Connect is running! Visit /docs for interactive API documentation",
         "endpoints": {
+            "docs": "/docs",
             "health": "/health",
             "system": "/system/info",
             "files": "/files",
@@ -61,6 +63,11 @@ async def root():
             "terminal": "ws://{host}:5001/ws/terminal"
         }
     }
+
+@app.get("/", response_class=HTMLResponse)
+async def root(request: Request):
+    """Root endpoint - Web Interface"""
+    return await web_interface(request)
 
 @app.get("/health")
 async def health_check():
@@ -70,6 +77,204 @@ async def health_check():
         "message": "ARC Connect is running",
         "timestamp": psutil.boot_time()
     }
+
+async def web_interface(request: Request):
+    """Web interface for ARC Connect"""
+    html_content = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>ARC Connect</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+            .container {
+                background: white;
+                border-radius: 20px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                max-width: 800px;
+                width: 100%;
+                padding: 40px;
+            }
+            h1 {
+                color: #667eea;
+                font-size: 2.5em;
+                margin-bottom: 10px;
+            }
+            .subtitle {
+                color: #666;
+                margin-bottom: 30px;
+                font-size: 1.1em;
+            }
+            .status {
+                background: #10b981;
+                color: white;
+                padding: 15px 25px;
+                border-radius: 10px;
+                display: inline-block;
+                margin-bottom: 30px;
+                font-weight: 600;
+            }
+            .card {
+                background: #f8f9fa;
+                border-radius: 10px;
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+            .card h3 {
+                color: #333;
+                margin-bottom: 15px;
+                font-size: 1.3em;
+            }
+            .endpoint {
+                background: white;
+                padding: 12px 15px;
+                border-radius: 8px;
+                margin-bottom: 10px;
+                border-left: 4px solid #667eea;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .endpoint code {
+                color: #667eea;
+                font-family: 'Courier New', monospace;
+                font-weight: 600;
+            }
+            .btn {
+                background: #667eea;
+                color: white;
+                padding: 12px 24px;
+                border-radius: 8px;
+                text-decoration: none;
+                display: inline-block;
+                margin-top: 10px;
+                font-weight: 600;
+                transition: background 0.3s;
+            }
+            .btn:hover {
+                background: #5568d3;
+            }
+            .stats {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 15px;
+                margin-top: 20px;
+            }
+            .stat-card {
+                background: white;
+                padding: 20px;
+                border-radius: 10px;
+                text-align: center;
+            }
+            .stat-value {
+                font-size: 2em;
+                font-weight: bold;
+                color: #667eea;
+            }
+            .stat-label {
+                color: #666;
+                margin-top: 5px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🚀 ARC Connect</h1>
+            <p class="subtitle">Remote Management Interface</p>
+            
+            <div class="status">
+                ✅ Server Online
+            </div>
+
+            <div class="card">
+                <h3>📊 System Status</h3>
+                <div class="stats" id="stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="cpu">--</div>
+                        <div class="stat-label">CPU Usage</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="memory">--</div>
+                        <div class="stat-label">Memory Usage</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="disk">--</div>
+                        <div class="stat-label">Disk Usage</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>🔗 API Endpoints</h3>
+                <div class="endpoint">
+                    <code>GET /health</code>
+                    <span>Health Check</span>
+                </div>
+                <div class="endpoint">
+                    <code>GET /system/info</code>
+                    <span>System Information</span>
+                </div>
+                <div class="endpoint">
+                    <code>POST /upload</code>
+                    <span>Upload Files</span>
+                </div>
+                <div class="endpoint">
+                    <code>GET /files</code>
+                    <span>List Files</span>
+                </div>
+                <div class="endpoint">
+                    <code>WS /ws/terminal</code>
+                    <span>Terminal WebSocket</span>
+                </div>
+                
+                <a href="/docs" class="btn">📚 View Interactive API Docs</a>
+            </div>
+
+            <div class="card">
+                <h3>💡 Quick Start</h3>
+                <p style="color: #666; line-height: 1.6;">
+                    <strong>API Documentation:</strong> Visit <a href="/docs" style="color: #667eea;">/docs</a> for interactive API testing<br>
+                    <strong>Upload Files:</strong> POST to /upload with form-data<br>
+                    <strong>Terminal Access:</strong> Connect to ws://[host]:5001/ws/terminal<br>
+                    <strong>System Stats:</strong> GET /system/info for detailed metrics
+                </p>
+            </div>
+        </div>
+
+        <script>
+            // Fetch and display system stats
+            async function updateStats() {
+                try {
+                    const response = await fetch('/system/info');
+                    const data = await response.json();
+                    
+                    document.getElementById('cpu').textContent = data.cpu_percent.toFixed(1) + '%';
+                    document.getElementById('memory').textContent = data.memory.percent.toFixed(1) + '%';
+                    document.getElementById('disk').textContent = data.disk.percent.toFixed(1) + '%';
+                } catch (error) {
+                    console.error('Failed to fetch stats:', error);
+                }
+            }
+
+            // Update stats every 2 seconds
+            updateStats();
+            setInterval(updateStats, 2000);
+        </script>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
 
 @app.get("/system/info")
 async def get_system_info():

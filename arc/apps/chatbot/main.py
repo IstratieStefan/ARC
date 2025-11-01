@@ -26,9 +26,18 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREE
 pygame.display.set_caption('AI Chatbot')
 clock = pygame.time.Clock()
 
-FONT = pygame.font.SysFont("Arial", 14)
-INPUT_FONT = pygame.font.SysFont("Arial", 16)
-TITLE_FONT = pygame.font.SysFont("Arial", 18, bold=True)
+# Use fonts with better Unicode support (emojis, special characters, etc.)
+# Try multiple fonts with good Unicode coverage
+try:
+    # DejaVu Sans has excellent Unicode coverage including emojis
+    FONT = pygame.font.SysFont("dejavusans,notosans,liberationsans,arial", 14)
+    INPUT_FONT = pygame.font.SysFont("dejavusans,notosans,liberationsans,arial", 16)
+    TITLE_FONT = pygame.font.SysFont("dejavusans,notosans,liberationsans,arial", 18, bold=True)
+except:
+    # Fallback to default fonts
+    FONT = pygame.font.Font(None, 14)
+    INPUT_FONT = pygame.font.Font(None, 16)
+    TITLE_FONT = pygame.font.Font(None, 18)
 
 
 class TextBox:
@@ -158,7 +167,12 @@ class TextBox:
             if i >= self.max_lines:
                 break
             y_pos = text_area.y + i * line_height
-            text_surface = INPUT_FONT.render(line, True, text_color)
+            try:
+                text_surface = INPUT_FONT.render(line, True, text_color)
+            except:
+                # Handle Unicode rendering errors
+                cleaned = ''.join(c if ord(c) < 65536 else '?' for c in line)
+                text_surface = INPUT_FONT.render(cleaned, True, text_color)
             surface.blit(text_surface, (text_area.x, y_pos))
 
         # Draw cursor if active and we have text
@@ -245,19 +259,36 @@ def gemini_api(message_text):
 
 
 def render_multiline(text, font, color, width):
+    """Render multi-line text with Unicode support"""
     lines = []
     words = text.split(' ')
     line = ''
     for word in words:
         test = line + word + ' '
-        if font.size(test)[0] > width and line:
-            lines.append(line.strip())
+        try:
+            if font.size(test)[0] > width and line:
+                lines.append(line.strip())
+                line = word + ' '
+            else:
+                line = test
+        except:
+            # If font.size fails on some Unicode chars, just add the word
+            if line:
+                lines.append(line.strip())
             line = word + ' '
-        else:
-            line = test
     if line:
         lines.append(line.strip())
-    return [font.render(l, True, color) for l in lines]
+    
+    # Render each line with error handling for unsupported characters
+    rendered = []
+    for l in lines:
+        try:
+            rendered.append(font.render(l, True, color))
+        except:
+            # If rendering fails, try without problematic characters
+            cleaned = ''.join(c if ord(c) < 65536 else '?' for c in l)
+            rendered.append(font.render(cleaned, True, color))
+    return rendered
 
 
 def main():

@@ -185,8 +185,8 @@ def draw_rounded_rect(surf, color, rect, radius):
 
 def gemini_api(message_text):
     """Call Gemini API with proper formatting for free tier"""
-    if not GEMINI_API_KEY or GEMINI_API_KEY == 'YOUR_GEMINI_API_KEY':
-        return "⚠️ Please set your Gemini API key"
+    if not GEMINI_API_KEY or GEMINI_API_KEY in ['YOUR_GEMINI_API_KEY', 'your api key', '']:
+        return "⚠️ Please set your Gemini API key in config/arc.yaml\n\nSteps:\n1. Get a free API key from https://makersuite.google.com/app/apikey\n2. Open config/arc.yaml\n3. Replace 'your api key' with your actual API key\n4. Restart the chatbot"
 
     headers = {
         'Content-Type': 'application/json',
@@ -261,7 +261,12 @@ def render_multiline(text, font, color, width):
 
 
 def main():
-    answer_text = "Hello! I'm your AI assistant powered by Gemini 1.5 Flash. Ask me anything in the text box below!"
+    # Check if API key is configured
+    if not GEMINI_API_KEY or GEMINI_API_KEY in ['YOUR_GEMINI_API_KEY', 'your api key', '']:
+        answer_text = "⚠️ API Key Not Configured\n\nTo use the AI Chatbot:\n\n1. Get a free API key from:\n   https://makersuite.google.com/app/apikey\n\n2. Open config/arc.yaml\n\n3. Find the 'api:' section and replace 'your api key' with your actual Gemini API key\n\n4. Restart the chatbot"
+    else:
+        answer_text = "Hello! I'm your AI assistant powered by Gemini 1.5 Flash. Ask me anything in the text box below!"
+    
     is_loading = False
     need_redraw = True
     scroll_offset = 0
@@ -353,7 +358,11 @@ def main():
                 elif clear_button.collidepoint(event.pos):
                     textbox.text = ""
                     textbox.cursor_pos = 0
-                    answer_text = "Hello! I'm your AI assistant powered by Gemini 1.5 Flash. Ask me anything in the text box below!"
+                    # Reset to welcome message (check API key status)
+                    if not GEMINI_API_KEY or GEMINI_API_KEY in ['YOUR_GEMINI_API_KEY', 'your api key', '']:
+                        answer_text = "⚠️ API Key Not Configured\n\nTo use the AI Chatbot:\n\n1. Get a free API key from:\n   https://makersuite.google.com/app/apikey\n\n2. Open config/arc.yaml\n\n3. Find the 'api:' section and replace 'your api key' with your actual Gemini API key\n\n4. Restart the chatbot"
+                    else:
+                        answer_text = "Hello! I'm your AI assistant powered by Gemini 1.5 Flash. Ask me anything in the text box below!"
                     scroll_offset = 0
                     need_redraw = True
                 elif answer_rect.collidepoint(event.pos):

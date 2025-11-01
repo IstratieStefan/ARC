@@ -6,8 +6,8 @@ import json
 import threading
 
 GEMINI_API_KEY = config.api.gemini_key
-# Use gemini-1.5-flash for free tier (works with Google AI Studio keys)
-GEMINI_ENDPOINT = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={GEMINI_API_KEY}'
+# Use gemini-2.0-flash for free tier (works with Google AI Studio keys, Nov 2025)
+GEMINI_ENDPOINT = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}'
 
 SCREEN_WIDTH = 480
 SCREEN_HEIGHT = 320
@@ -265,7 +265,7 @@ def main():
     if not GEMINI_API_KEY or GEMINI_API_KEY in ['YOUR_GEMINI_API_KEY', 'your api key', '']:
         answer_text = "⚠️ API Key Not Configured\n\nTo use the AI Chatbot:\n\n1. Get a free API key from:\n   https://aistudio.google.com/app/apikey\n\n2. Open config/arc.yaml\n\n3. Find the 'api:' section and replace 'your api key' with your Google AI Studio key\n\n4. Save and restart the chatbot"
     else:
-        answer_text = "✨ Hello! I'm your AI assistant powered by Gemini 1.5 Flash.\n\nAsk me anything in the text box below - I can help with questions, writing, coding, math, and more!\n\nPress ENTER or click Send to submit your question."
+        answer_text = "✨ Hello! I'm your AI assistant powered by Gemini 2.0 Flash.\n\nAsk me anything in the text box below - I can help with questions, writing, coding, math, and more!\n\nPress ENTER or click Send to submit your question."
     
     is_loading = False
     need_redraw = True
@@ -362,7 +362,7 @@ def main():
                     if not GEMINI_API_KEY or GEMINI_API_KEY in ['YOUR_GEMINI_API_KEY', 'your api key', '']:
                         answer_text = "⚠️ API Key Not Configured\n\nTo use the AI Chatbot:\n\n1. Get a free API key from:\n   https://aistudio.google.com/app/apikey\n\n2. Open config/arc.yaml\n\n3. Find the 'api:' section and replace 'your api key' with your Google AI Studio key\n\n4. Save and restart the chatbot"
                     else:
-                        answer_text = "✨ Hello! I'm your AI assistant powered by Gemini 1.5 Flash.\n\nAsk me anything in the text box below - I can help with questions, writing, coding, math, and more!\n\nPress ENTER or click Send to submit your question."
+                        answer_text = "✨ Hello! I'm your AI assistant powered by Gemini 2.0 Flash.\n\nAsk me anything in the text box below - I can help with questions, writing, coding, math, and more!\n\nPress ENTER or click Send to submit your question."
                     scroll_offset = 0
                     need_redraw = True
                 elif answer_rect.collidepoint(event.pos):

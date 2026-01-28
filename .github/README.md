@@ -1,160 +1,88 @@
-# ARC - All-in-one Remote Console
+![Hardware](https://github.com/user-attachments/assets/97f00517-e868-492f-8eb3-124fec76963c)
+# ARC – All-in-one Remote Console
 
-> **Status:** ✅ Fully Reorganized & Cross-Platform Compatible
+## 🚀 What is ARC?
 
-## Quick Start
+**ARC (All-in-one Remote Console)** is a portable, open-source, modular toolkit for makers, hackers, engineers, and anyone passionate about wireless technologies.  
+Built around a Raspberry Pi Zero 2 W, ARC brings together NFC, RF, LoRa, GSM, and a full-featured Linux terminal in a single handheld device, complete with a touchscreen, physical keyboard, and battery power.
 
-```bash
-# Clone the repository
-git clone https://github.com/IstratieStefan/ARC.git
-cd ARC
-
-# Setup virtual environment
-python3 -m venv venv
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run the launcher
-python launcher.py
-```
-
-## What's New? 🎉
-
-The ARC codebase has been **completely reorganized** into a professional, maintainable structure:
-
-### Before → After
-
-```
-❌ Old Structure                    ✅ New Structure
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-25+ root directories               Clean package structure
-Scattered config files             arc/
-Duplicate assets                    ├── core/      (config, UI)
-Inconsistent naming                 ├── desktop/   (launcher, menus)
-No package structure               ├── apps/      (17 apps)
-                                    └── assets/    (icons, fonts)
-```
-
-### Key Improvements
-
-✅ **Professional Structure** - Proper Python package  
-✅ **Cross-Platform** - Works on macOS & Linux  
-✅ **Centralized Assets** - All icons & fonts in one place  
-✅ **Clean Imports** - `from arc.core import config`  
-✅ **Well Documented** - Complete setup & structure docs  
-✅ **100% Functional** - All features working  
-
-## Platform Support
-
-| Feature | macOS | Linux |
-|---------|-------|-------|
-| Display | Windowed (dev) | Fullscreen |
-| Volume | osascript ✅ | amixer ✅ |
-| WiFi | airport ✅ | nmcli ✅ |
-| Bluetooth | system_profiler ✅ | bluetoothctl ✅ |
-
-## Project Structure
-
-```
-ARC/
-├── arc/                    # Main Python package
-│   ├── core/              # Core utilities (config, UI elements)
-│   ├── desktop/           # Desktop environment & launcher
-│   ├── apps/              # All applications (17 apps)
-│   └── assets/            # Icons, fonts, images
-├── config/                # Configuration files
-│   └── arc.yaml          # Main config (cross-platform paths)
-├── docs/                  # Documentation
-├── launcher.py            # Entry point
-└── requirements.txt       # Dependencies
-```
-
-## Applications
-
-17 built-in applications:
-- 🔧 **Tools**: WiFi, Bluetooth, IR, NFC, RF, BadUSB
-- 📱 **Apps**: Calendar, Notes, Music Player, Games
-- 🔌 **Connect**: ARC Connect (web interface)
-- ⚙️ **System**: Settings, Terminal, Files
-
-## Documentation
-
-- 📘 [SETUP.md](SETUP.md) - Installation & setup guide
-- 📗 [STRUCTURE.md](STRUCTURE.md) - Architecture details
-- 📙 [REORGANIZATION_SUMMARY.md](REORGANIZATION_SUMMARY.md) - What changed
-
-## Configuration
-
-Edit `config/arc.yaml` to customize:
-- Colors & theme
-- Screen size
-- Built-in apps
-- Icon paths
-- Keyboard layout
-
-## Development
-
-### Adding a New App
-
-```bash
-# 1. Create app directory
-mkdir -p arc/apps/myapp
-touch arc/apps/myapp/__init__.py
-touch arc/apps/myapp/main.py
-
-# 2. Add icon
-cp myicon.png arc/assets/icons/myapp.png
-
-# 3. Register in config/arc.yaml
-# builtin_apps:
-#   - name: My App
-#     icon: arc/assets/icons/myapp.png
-#     exec: "python -m arc.apps.myapp.main"
-```
-
-### Clean Imports
-
-```python
-from arc.core import config, Button, AppIcon
-from arc.desktop import TopBar, WifiMenu, show_loading_screen
-from arc.apps.myapp import main
-```
-
-## Hardware
-
-Designed for:
-- Orange Pi Zero 2W
-- Raspberry Pi 3/4
-- Any Linux SBC with Python 3.7+
-
-Supports:
-- 3.5" SPI displays
-- I²C keyboards
-- WiFi/Bluetooth
-- GPIO, UART, I²C, SPI modules
-
-## Contributing
-
-Contributions welcome! The new structure makes it easy to:
-1. Find and fix bugs
-2. Add new applications
-3. Improve documentation
-4. Add platform support
-
-## License
-
-See [LICENSE](LICENSE) file.
-
-## Links
-
-- 🌐 [Official Website](https://arc.istratiestefan.com)
-- 📦 [Hardware Repo](https://github.com/IstratieStefan/ARC-Hardware)
-- 📖 [Documentation](docs/)
-- 🐛 [Report Issues](https://github.com/IstratieStefan/ARC/issues)
+> **Think of ARC as the Swiss Army knife for wireless tech:** scan NFC tags, analyze RF signals, communicate over LoRa or GSM, and launch custom apps, all from your pocket.
 
 ---
 
-**Designed in California 🇺🇸 • Built in Romania 🇷🇴**
+
+## 🎯 Key Features
+
+- **Multi-protocol support:**  
+  Interact with and test a huge range of wireless protocols:  
+  - **NFC** (read/write/emulate cards)  
+  - **RF** (analyze and transmit common signals)  
+  - **LoRa** (long-range IoT comms)  
+  - **GSM** (SMS, calls, and data via SIM800L)
+
+- **Touchscreen GUI + Full QWERTY Keyboard:**  
+  Easy-to-use interface designed for both touchscreen and physical input.
+
+- **Modular software architecture:**  
+  Each function (NFC, RF, LoRa, etc.) is its own app, launchable from a custom Python launcher.
+
+- **Portable and battery-powered:**  
+  Designed for fieldwork and everyday portability—no need for a laptop or separate adapters.
+
+- **Fully open-source:**  
+  Hardware designs, schematics, and all source code are open and customizable.
+
+---
+
+## 🛠️ Technical Overview
+
+- **Core:**  
+  - Raspberry Pi Zero 2 W running Debian 11 Lite (32-bit)
+  - Custom PCB with 6-layer design for stability
+
+- **Display:**  
+  - 3.5" SPI TFT, controlled by `fbcp-ili9341` driver  
+  - Touchscreen input
+
+- **User Input:**  
+  - Full QWERTY tactile keyboard (RP2040/Pico microcontroller as USB HID)
+
+- **Wireless modules:**  
+  - **NFC:** PN532 (UART/I2C/SPI)  
+  - **RF:** CC1101/NRF24 (SPI)  
+  - **LoRa:** SX1276 (SPI)  
+  - **GSM:** SIM800L (UART)
+
+- **Software architecture:**  
+  - Linux + Xorg (X11) for GUI
+  - NetworkManager (Wi-Fi), Bluez (Bluetooth)
+  - Custom launcher and apps written in Python using Pygame
+  - Modular structure: new apps and protocols can be added easily
+
+- **Audio:**  
+  - I2S audio output (for beeps, music, or voice)
+
+- **Power:**  
+  - Li-ion phone battery (with charge and protection circuit, battery gauge)
+
+---
+
+## 🖼️ Gallery
+
+![Development](https://github.com/user-attachments/assets/d6d2a515-0eaf-4327-b26b-5b2a4da00ada)
+![Front](https://github.com/user-attachments/assets/de0579b6-031c-4c4d-8d47-989d9715a2b8)
+![Front](https://github.com/user-attachments/assets/d0d650c2-c3e5-4c89-b56b-4c54f1cce6c4)
+![Download](https://github.com/user-attachments/assets/97b7d35d-ce33-4349-95d9-c69049c38d88)
+
+![Software](https://github.com/user-attachments/assets/e000bd59-a31f-419d-8945-ad2524a62cea)
+![IMG_0927](https://github.com/user-attachments/assets/ee1bf564-0469-4747-a7e7-439e4b54048f)
+
+---
+
+## 💡 Why ARC?
+
+- **All-in-one:** Replace a bag of dongles, adapters, and dev boards with a single device.
+- **Open and hackable:** Both hardware and software are easy to modify, expand, and contribute to.
+- **Ready for the field:** Compact, battery-powered, and rugged—built to go anywhere.
+- **Perfect for:** Security researchers, makers, IoT developers, educators, or anyone who works with modern wireless tech.
 
